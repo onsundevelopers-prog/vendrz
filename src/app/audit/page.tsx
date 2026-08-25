@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { createAuditSession, updateAuditSession } from "@/lib/store";
 import { Navbar } from "@/components/landing/Navbar";
 import { Logo } from "@/components/brand/Logo";
-import { AUDIT_STAGES } from "@/lib/services/audit";
 import { useSpotlight } from "@/components/ui/SpotlightCard";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -196,62 +195,6 @@ export default function AuditPage() {
             </div>
           </motion.button>
         </div>
-
-        {/* pipeline strip */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.32, ease }}
-          className="glass-border mt-12 w-full rounded-2xl p-6"
-        >
-          <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">
-            What happens next
-          </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-4">
-            {AUDIT_STAGES.slice(0, 4).map((s, i) => {
-              const active = i === 0;
-              return (
-                <div
-                  key={s.id}
-                  className={`flex items-start gap-3 rounded-xl p-3 ${
-                    active
-                      ? "border border-emerald-500/20 bg-emerald-500/[0.05] shadow-[0_0_28px_-12px_rgba(52,211,153,0.5)]"
-                      : ""
-                  }`}
-                >
-                  <span className="mr-2 text-xs text-zinc-500">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-2 text-[13px] font-medium tracking-[-0.01em] text-zinc-400">
-                      {s.label}
-                      {active && (
-                        <span className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wider text-emerald-400">
-                          <span className="size-1 rounded-full bg-emerald-400" />
-                          Active
-                        </span>
-                      )}
-                    </p>
-                    <p className="mt-0.5 text-[11px] leading-relaxed tracking-tight text-zinc-500">{s.description}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-6 grid gap-6 sm:grid-cols-4">
-            {AUDIT_STAGES.slice(4, 8).map((s, i) => (
-              <div key={s.id} className="flex items-start gap-3">
-                <span className="mr-2 text-xs text-zinc-500">
-                  {String(i + 5).padStart(2, "0")}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[13px] font-medium tracking-[-0.01em] text-zinc-400">{s.label}</p>
-                  <p className="mt-0.5 text-[11px] leading-relaxed tracking-tight text-zinc-500">{s.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
 
         {/* read-only reassurance */}
         <motion.div

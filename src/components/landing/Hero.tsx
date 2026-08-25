@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { Magnetic } from "@/components/ui/Magnetic";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -73,11 +72,9 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.68, ease }}
             className="mt-9 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
           >
-            <Magnetic>
-              <Button href="/audit" size="lg" glow className="w-full px-7 sm:w-auto">
-                Run your free vendor spend audit
-              </Button>
-            </Magnetic>
+            <Button href="/audit" size="lg" glow className="w-full px-7 sm:w-auto">
+              Run your free vendor spend audit
+            </Button>
             <Button
               href="#how-it-works"
               size="lg"
