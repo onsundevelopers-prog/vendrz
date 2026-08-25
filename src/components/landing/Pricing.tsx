@@ -73,7 +73,7 @@ function TierCard({
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay: index * 0.1, ease }}
       className={`spotlight-card relative flex flex-col rounded-2xl p-7 shadow-glow ${
-        tier.featured ? "glass-border-emerald glass-glow" : "glass-border glass-glow"
+        tier.featured ? "glass-border glass-glow" : "glass-border glass-glow"
       }`}
     >
       <div className="spotlight-glow" aria-hidden="true" />
@@ -99,7 +99,7 @@ function TierCard({
         <ul className="mt-7 flex-1 space-y-3">
           {tier.features.map((f) => (
             <li key={f} className="flex items-start gap-2.5 text-[14px]">
-              <span aria-hidden="true" className="mt-[2px] shrink-0 text-emerald-400">
+              <span aria-hidden="true" className="mt-[2px] shrink-0 text-zinc-300">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M2.5 6.2 5 8.5l4.5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>

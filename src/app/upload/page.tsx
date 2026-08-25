@@ -95,7 +95,7 @@ export default function UploadPage() {
         >
           <div className="text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-[#18181B] px-3.5 py-1.5 text-[12px] tracking-tight text-muted">
-              <span className="size-1.5 rounded-full bg-emerald-400" />
+              <span className="size-1.5 rounded-full bg-zinc-400" />
               No signup · No credit card · Results in under a minute
             </span>
             <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg sm:text-[44px]">
@@ -123,7 +123,7 @@ export default function UploadPage() {
             onClick={() => inputRef.current?.click()}
             className={`mt-10 cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ${
               dragOver
-                ? "border-emerald-400/60 bg-emerald-500/[0.06]"
+                ? "border-white/60 bg-white/[0.06]"
                 : "border-white/15 bg-surface hover:border-white/25"
             }`}
           >
@@ -138,17 +138,17 @@ export default function UploadPage() {
                 e.target.value = "";
               }}
             />
-            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06]">
               <span aria-hidden="true" className="block">
-                <span className="block h-[14px] w-[22px] border-2 border-b-0 border-emerald-400/80" style={{ borderRadius: "6px 6px 0 0" }} />
-                <span className="mx-auto -mt-px block h-[7px] w-0 border-x-[5px] border-t-[7px] border-x-transparent border-t-emerald-400/80" />
+                <span className="block h-[14px] w-[22px] border-2 border-b-0 border-zinc-300" style={{ borderRadius: "6px 6px 0 0" }} />
+                <span className="mx-auto -mt-px block h-[7px] w-0 border-x-[5px] border-t-[7px] border-x-transparent border-t-zinc-300" />
               </span>
             </div>
             <p className="mt-5 text-[15px] font-semibold text-fg">
               {dragOver ? "Drop it here" : "Drag & drop your contract"}
             </p>
             <p className="mt-1 text-[13px] tracking-tight text-muted">
-              or <span className="font-medium text-emerald-400">browse files</span> - PDF or DOCX, up to {MAX_MB} MB
+              or <span className="font-medium text-fg">browse files</span> - PDF or DOCX, up to {MAX_MB} MB
             </p>
             <div className="mt-6 flex items-center justify-center gap-5 text-[12px] tracking-tight text-muted">
               <span>PDF</span>
@@ -164,8 +164,8 @@ export default function UploadPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mt-4 flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5 shadow-glow"
             >
-              <div className="flex size-9 items-center justify-center rounded-lg border border-emerald-500/25 bg-emerald-500/10">
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
+              <div className="flex size-9 items-center justify-center rounded-lg border border-white/20 bg-white/[0.06]">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-300">
                   {(file.name.split(".").pop() ?? "doc").slice(0, 4)}
                 </span>
               </div>

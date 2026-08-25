@@ -26,7 +26,7 @@ export default function ResultsPage() {
           <p className="text-[15px] text-muted">
             Analysis not ready - it may still be processing or the session expired.
           </p>
-          <Link href="/upload" className="mt-2 inline-block text-[13px] tracking-tight text-emerald-400 underline underline-offset-4">
+          <Link href="/upload" className="mt-2 inline-block text-[13px] tracking-tight text-muted underline underline-offset-4 hover:text-fg">
             Back to upload
           </Link>
         </div>
@@ -46,8 +46,7 @@ export default function ResultsPage() {
           </Link>
           <div className="flex items-center gap-3">
             {auth.id && (
-              <span className="hidden items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[12px] tracking-tight text-emerald-300 sm:inline-flex">
-                <span className="size-1.5 rounded-full bg-emerald-400" />
+              <span className="hidden items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[12px] tracking-tight text-muted sm:inline-flex">
                 Saved to your account
               </span>
             )}
@@ -78,7 +77,6 @@ export default function ResultsPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2 text-[12px] tracking-tight text-muted">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1">
-                <span className="size-1.5 rounded-full bg-emerald-400/70" />
                 Encrypted · never shared
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1">
@@ -108,8 +106,8 @@ export default function ResultsPage() {
               ×
             </button>
             <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/10">
-                <span className="text-[12px] font-semibold tracking-tight text-emerald-400">14d</span>
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-line bg-white/[0.06]">
+                <span className="text-[12px] font-semibold tracking-tight text-fg">14d</span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] font-semibold text-fg">

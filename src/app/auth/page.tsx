@@ -50,7 +50,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
                   height="15"
                   viewBox="0 0 15 15"
                   fill="none"
-                  className="mt-[3px] shrink-0 text-emerald-400"
+                  className="mt-[3px] shrink-0 text-zinc-400"
                   aria-hidden="true"
                 >
                   <path d="M3 7.8 6 10.5l6-6.3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -108,12 +108,12 @@ function SessionBanner({ sessionId, mode }: { sessionId: string | null; mode: "l
   );
   if (!session?.result || mode !== "signup") return null;
   return (
-    <div className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.07] p-4">
-      <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-400" />
+    <div className="mb-5 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+      <ShieldCheck className="mt-0.5 size-4 shrink-0 text-zinc-400" />
       <div>
-        <p className="text-[13px] font-semibold text-emerald-300">Don&apos;t lose this analysis</p>
-        <p className="mt-0.5 text-[12.5px] leading-relaxed text-emerald-200/70">
-          Your scan of <span className="font-medium">{session.documentName}</span> will be
+        <p className="text-[13px] font-semibold text-fg">Don&apos;t lose this analysis</p>
+        <p className="mt-0.5 text-[12.5px] leading-relaxed text-zinc-400">
+          Your scan of <span className="font-medium text-fg">{session.documentName}</span> will be
           transferred to your new account the moment you sign up.
         </p>
       </div>
@@ -140,19 +140,19 @@ const clerkAppearance = {
     dividerText: "text-[11px] uppercase tracking-[0.1em] text-muted",
     formFieldLabel: "text-[12px] font-medium text-muted",
     formFieldInput:
-      "h-11 rounded-[10px] border border-white/10 bg-white/[0.04] text-[14px] text-fg transition-colors focus:border-emerald-400/60",
+      "h-11 rounded-[10px] border border-white/10 bg-white/[0.04] text-[14px] text-fg transition-colors focus:border-white/40",
     formFieldInputPlaceholder: "text-zinc-600",
-    footerActionLink: "font-medium text-emerald-400 hover:text-emerald-300",
+    footerActionLink: "font-medium text-zinc-300 hover:text-fg",
     footerActionText: "text-[12.5px] text-muted",
     footer: "text-center text-[12.5px] text-muted",
     formFieldError: "text-[12px] text-red-300",
     alert: "rounded-lg border border-red-500/25 bg-red-500/[0.08] text-red-300",
     alertText: "text-red-300",
     identityPreviewText: "text-fg",
-    identityPreviewEditButton: "text-emerald-400",
+    identityPreviewEditButton: "text-zinc-300",
   },
   variables: {
-    colorPrimary: "#34d399",
+    colorPrimary: "#ffffff",
     colorForeground: "#f4f4f5",
     colorMuted: "#a1a1aa",
     colorMutedForeground: "#a1a1aa",
@@ -355,7 +355,7 @@ function LegacyAuthPage() {
             {mode === "signup" ? "Already have an account?" : "New here?"}{" "}
             <Link
               href={`/auth?mode=${mode === "signup" ? "login" : "signup"}${sessionId ? `&session=${sessionId}` : ""}`}
-              className="font-medium text-emerald-400 hover:text-emerald-300"
+              className="font-medium text-zinc-300 hover:text-fg"
             >
               {mode === "signup" ? "Log in" : "Create an account"}
             </Link>

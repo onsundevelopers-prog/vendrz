@@ -46,7 +46,7 @@ export default function RootLayout({
             appearance={{
               theme: dark,
               variables: {
-                colorPrimary: "#34d399",
+                colorPrimary: "#ffffff",
                 colorBackground: "#0d0d11",
                 colorForeground: "#f4f4f5",
                 colorMuted: "#a1a1aa",
@@ -56,7 +56,7 @@ export default function RootLayout({
               },
               elements: {
                 card: "shadow-glow",
-                footerActionLink: "text-emerald-400",
+                footerActionLink: "text-zinc-200",
                 formButtonPrimary: "bg-white text-black hover:bg-zinc-200",
                 socialButtonsBlockButton: "border-white/15",
               },

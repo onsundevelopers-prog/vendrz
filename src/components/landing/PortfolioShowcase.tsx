@@ -54,7 +54,7 @@ export function PortfolioShowcase() {
         >
           <BrowserFrame
             className="glass-border"
-            url="vendrz.app/dashboard/contracts"
+            url="vendrz.app/dashboard"
             right={
               <span className="hidden rounded-full bg-white/[0.06] px-2.5 py-1 text-[10.5px] tracking-tight text-muted sm:inline">
                 6 monitored

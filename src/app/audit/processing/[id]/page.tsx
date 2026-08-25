@@ -69,7 +69,7 @@ export default function AuditProcessingPage() {
       <main className="flex min-h-screen items-center justify-center bg-canvas px-5">
         <div className="text-center">
           <p className="text-[15px] text-muted">This audit session no longer exists.</p>
-          <a href="/audit" className="mt-2 inline-block text-[13px] tracking-tight text-emerald-400 underline underline-offset-4">
+          <a href="/audit" className="mt-2 inline-block text-[13px] tracking-tight text-muted underline underline-offset-4 hover:text-fg">
             Run a free audit
           </a>
         </div>
@@ -92,7 +92,7 @@ export default function AuditProcessingPage() {
       >
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl border border-line bg-surface">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
               Scan
             </span>
           </div>
@@ -119,7 +119,7 @@ export default function AuditProcessingPage() {
                 cx="40"
                 cy="40"
                 r="34"
-                stroke="#34d399"
+                stroke="#e4e4e7"
                 strokeWidth="5"
                 strokeLinecap="round"
                 fill="none"
@@ -151,7 +151,7 @@ export default function AuditProcessingPage() {
                 key={stage.id}
                 className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 transition-all duration-300 ${
                   isActive
-                    ? "border border-emerald-500/30 bg-emerald-500/[0.07]"
+                    ? "border border-white/20 bg-white/[0.05]"
                     : isDone
                       ? "border border-line bg-surface/60"
                       : "border border-transparent opacity-35"
@@ -160,16 +160,16 @@ export default function AuditProcessingPage() {
                 <div
                   className={`flex size-5 shrink-0 items-center justify-center rounded-full ${
                     isDone
-                      ? "bg-emerald-500 text-black"
+                      ? "bg-white text-black"
                       : isActive
-                        ? "bg-emerald-500/15 text-emerald-400"
+                        ? "bg-white/15 text-zinc-200"
                         : "bg-white/5 text-muted"
                   }`}
                 >
                   {isDone ? (
                     <span aria-hidden="true" className="block h-[6px] w-[9px] rotate-45 border-b-2 border-r-2 border-black" />
                   ) : isActive ? (
-                    <span className="size-3 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                    <span className="size-3 animate-spin rounded-full border-2 border-zinc-300 border-t-transparent" />
                   ) : (
                     <span className="size-1 rounded-full bg-white/20" />
                   )}
@@ -180,7 +180,7 @@ export default function AuditProcessingPage() {
                   </p>
                   <p className="text-[11px] tracking-tight text-muted">{stage.description}</p>
                 </div>
-                {isActive && <span className="text-[11px] tracking-tight text-emerald-400">running…</span>}
+                {isActive && <span className="text-[11px] tracking-tight text-zinc-300">running…</span>}
               </div>
             );
           })}
