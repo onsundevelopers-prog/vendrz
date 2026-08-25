@@ -1,0 +1,358 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ------------------------------------------------------------------ */
+  /*  Dark system — developer-grade (Linear / Vercel / Flask school)    */
+  /* ------------------------------------------------------------------ */
+  --color-canvas: #08080a; /* page background (pitch dark)      */
+  --color-surface: #111115; /* container surfaces                */
+  --color-panel: #0d0d11; /* elevated frames / hero media card */
+  --color-float: #121216; /* floating drawers                  */
+  --color-fg: #f4f4f5; /* primary text                      */
+  --color-muted: #a1a1aa; /* secondary / muted text            */
+
+  /* 1px hairlines — rgba(255,255,255,0.08) everywhere */
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.15);
+  --color-rule-light: rgba(255, 255, 255, 0.08);
+  --color-rule-dark: rgba(255, 255, 255, 0.08);
+
+  /* Motion — ambient (idle) + micro */
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-aurora: aurora 16s ease-in-out infinite;
+  --animate-marquee: marquee 36s linear infinite;
+
+  @keyframes shimmer {
+    from {
+      background-position: 0% center;
+    }
+    to {
+      background-position: -200% center;
+    }
+  }
+
+  /* Slow vertical bob for hero media — barely-there "alive" motion */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+
+  /* Drifting ambient glow — the page breathes even when idle */
+  @keyframes aurora {
+    0%,
+    100% {
+      transform: translate3d(-2%, -1%, 0) scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: translate3d(2%, 2%, 0) scale(1.12);
+      opacity: 1;
+    }
+  }
+
+  /* Infinite trust strip scroll */
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Legacy navy scale — kept for compatibility, replaced by surface tokens */
+  --color-navy-950: #0a0b0e;
+  --color-navy-900: #0d0e12;
+  --color-navy-850: #111115;
+  --color-navy-800: #15161b;
+  --color-navy-700: #1d1e24;
+  --color-navy-600: #2a2c34;
+  --color-navy-500: #3d4049;
+
+  --color-canvas-light: #f2f4f8; /* unused, kept for compat */
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(52 211 153 / 0.28);
+}
+
+/* ---------- Precision glow shadow (replaces default shadows) ---------- */
+.shadow-glow {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+/* ---------- Hairline dividers ---------- */
+.divide-rule-light > * + * {
+  border-top: 1px solid var(--color-rule-light);
+}
+
+.divide-rule-dark > * + * {
+  border-top: 1px solid var(--color-rule-dark);
+}
+
+/* ---------- Textures ---------- */
+
+/* Fine engineering grid for dark surfaces */
+.bg-grid-dark {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+.bg-grid-light {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+/* Film grain */
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+}
+
+/* ---------- Ambient canvas ---------- */
+
+/* High-density dot-matrix with a soft radial mask (Vercel-style canvas) */
+.bg-dot-matrix {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1.5px);
+  background-size: 20px 20px;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+/* Ultra-subtle global film grain (2% overlay blend) */
+.noise-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  mix-blend-mode: overlay;
+}
+
+/* ---------- Glass surfaces & gradient borders ---------- */
+
+/* 1px gradient hairline border over a solid panel fill */
+.glass-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#0d0d11, #0d0d11) padding-box,
+    linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) border-box;
+}
+
+/* Emerald-tinted variant for the featured / primary card */
+.glass-border-emerald {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(#0d0d11, #0d0d11) padding-box,
+    linear-gradient(to right, rgba(52, 211, 153, 0.4), rgba(255, 255, 255, 0.06)) border-box;
+}
+
+/* Hover-triggered border glow for glass cards */
+.glass-glow {
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.2s ease;
+}
+.glass-glow:hover {
+  background:
+    linear-gradient(#121216, #121216) padding-box,
+    linear-gradient(to right, rgba(52, 211, 153, 0.35), rgba(255, 255, 255, 0.07)) border-box;
+  box-shadow:
+    0 0 28px -10px rgba(52, 211, 153, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ---------- Cursor spotlight & border beams (Linear style) ---------- */
+
+.spotlight-card {
+  position: relative;
+}
+.spotlight-card > :not(.spotlight-glow) {
+  position: relative;
+  z-index: 1;
+}
+.spotlight-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.06),
+    transparent 40%
+  );
+}
+.spotlight-card:hover .spotlight-glow {
+  opacity: 1;
+}
+
+/* Traveling border beam for active / focused cards */
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.border-beam {
+  position: relative;
+}
+.border-beam::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--beam-angle, 0deg),
+    transparent 0%,
+    rgba(255, 255, 255, 0.6) 8%,
+    transparent 18%,
+    transparent 55%,
+    rgba(52, 211, 153, 0.5) 68%,
+    transparent 82%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: border-beam-spin 4s linear infinite;
+}
+@keyframes border-beam-spin {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+/* ---------- Button shimmer glare ---------- */
+.shimmer-glare {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  left: -160%;
+  width: 55%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, 0.5) 50%, transparent 75%);
+  transform: skewX(-18deg);
+}
+.group:hover .shimmer-glare {
+  opacity: 1;
+  animation: shimmer-sweep 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes shimmer-sweep {
+  from {
+    left: -160%;
+  }
+  to {
+    left: 200%;
+  }
+}
+
+/* ---------- Auth form inputs (dark) ---------- */
+.auth-input {
+  width: 100%;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-fg);
+  font-size: 14px;
+  padding: 0 12px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.auth-input::placeholder {
+  color: #71717a;
+}
+.auth-input:focus {
+  border-color: rgba(52, 211, 153, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- Rolling number cells (NumberFlow-style) ---------- */
+.rn {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.rn-mask {
+  display: inline-block;
+  overflow: hidden;
+  height: 1em;
+  vertical-align: -0.08em;
+}
+.rn-col {
+  display: inline-flex;
+  flex-direction: column;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.rn-item {
+  height: 1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.rn-symbol {
+  display: inline-block;
+}
+
+/* ---------- Motion-reduced ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b2b31;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3d3d45;
+  background-clip: content-box;
+  border: 2px solid transparent;
+}

@@ -1,0 +1,136 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { getSession } from "@/lib/store";
+import { useAuthUser } from "@/lib/auth";
+import { ResultsPreview } from "@/components/results/ResultsPreview";
+import { Logo } from "@/components/brand/Logo";
+import { Button } from "@/components/ui/Button";
+
+export default function ResultsPage() {
+  const params = useParams<{ id: string }>();
+  const session = useMemo(() => getSession(params.id), [params.id]);
+  const [dismissed, setDismissed] = useState(false);
+
+  const auth = useAuthUser();
+  const transferred = session?.transferredToUserId != null;
+  const showSignup = !auth.id && !transferred && !dismissed && session?.result != null;
+
+  if (!session?.result) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-canvas px-5">
+        <div className="text-center">
+          <p className="text-[15px] text-muted">
+            Analysis not ready — it may still be processing or the session expired.
+          </p>
+          <Link href="/upload" className="mt-2 inline-block text-[13px] tracking-tight text-emerald-400 underline underline-offset-4">
+            Back to upload
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const result = session.result;
+
+  return (
+    <main className="min-h-screen bg-canvas">
+      {/* slim top bar */}
+      <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 lg:px-8">
+          <Link href="/">
+            <Logo className="[&_span:last-child]:text-[15px]" />
+          </Link>
+          <div className="flex items-center gap-3">
+            {auth.id && (
+              <span className="hidden items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[12px] tracking-tight text-emerald-300 sm:inline-flex">
+                <span className="size-1.5 rounded-full bg-emerald-400" />
+                Saved to your account
+              </span>
+            )}
+            <Button href="/upload" size="sm" variant="outline">
+              Scan another
+            </Button>
+            <Button href="/dashboard" size="sm">
+              Go to dashboard
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-5 py-10 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[12px] tracking-tight text-muted">
+                Analysis complete · {new Date(result.analyzedAt).toLocaleString("en-US", { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg sm:text-3xl">
+                {result.vendorName} · {result.documentName}
+              </h1>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[12px] tracking-tight text-muted">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1">
+                <span className="size-1.5 rounded-full bg-emerald-400/70" />
+                Encrypted · never shared
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1">
+                Retention: {new Date(session.expiresAt + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </span>
+            </div>
+          </div>
+
+          <ResultsPreview result={result} />
+        </motion.div>
+      </div>
+
+      {/* persistent, non-blocking signup CTA */}
+      {showSignup && (
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="sticky bottom-4 z-40 mx-auto mb-4 w-[calc(100%-2.5rem)] max-w-2xl"
+        >
+          <div className="relative overflow-hidden rounded-2xl border border-line bg-panel p-5 shadow-glow">
+            <button
+              onClick={() => setDismissed(true)}
+              aria-label="Dismiss"
+              className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-lg text-[15px] text-muted hover:bg-white/5 hover:text-fg"
+            >
+              ×
+            </button>
+            <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/10">
+                <span className="text-[12px] font-semibold tracking-tight text-emerald-400">14d</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-semibold text-fg">
+                  Don&apos;t lose this analysis
+                </p>
+                <p className="mt-0.5 text-[13px] font-normal leading-relaxed tracking-[-0.01em] text-muted">
+                  This report expires in 14 days. Create a free account and we&apos;ll
+                  keep monitoring this contract — renewal deadlines, escalations, and
+                  new opportunities — then alert you before they slip past.
+                </p>
+              </div>
+              <Button
+                href={`/auth?mode=signup&session=${session.id}`}
+                className="shrink-0"
+              >
+                Save & monitor it free
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </main>
+  );
+}
