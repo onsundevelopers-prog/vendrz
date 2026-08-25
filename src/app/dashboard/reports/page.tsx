@@ -121,7 +121,7 @@ export default function ReportsPage() {
                 {pct(v.spendTrendPct)}
               </span>
               <span className="w-16 text-right text-[11.5px] text-muted">
-                {v.risk ? `renews ${v.risk.daysToRenewal}d` : "—"}
+                {v.risk ? `renews ${v.risk.daysToRenewal}d` : "-"}
               </span>
               <p className="w-24 text-right text-[13px] font-medium text-fg">{money(v.annualSpend)}</p>
             </div>
@@ -203,7 +203,7 @@ export default function ReportsPage() {
                 {o.vendorName.slice(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13.5px] font-medium text-fg">{o.vendorName} — {o.title}</p>
+                <p className="truncate text-[13.5px] font-medium text-fg">{o.vendorName} - {o.title}</p>
                 <p className="truncate text-[11px] tracking-tight text-muted">{o.recommendedAction}</p>
               </div>
               <p className="w-24 shrink-0 text-right text-[13.5px] font-semibold text-emerald-400">
@@ -216,7 +216,7 @@ export default function ReportsPage() {
 
       <p className="text-[11px] leading-relaxed tracking-tight text-muted/70">
         All savings figures are potential estimates produced by deterministic rules from contracted terms,
-        usage, and billing data — not guaranteed savings. Report generated on sample data (Acme Technologies).
+        usage, and billing data - not guaranteed savings. Report generated on sample data (Acme Technologies).
       </p>
     </div>
   );

@@ -75,7 +75,7 @@ export default function DashboardOverview() {
         id: v.id,
         kind: "renewal" as const,
         title: `${v.name} renews in ${v.risk?.daysToRenewal} days`,
-        detail: v.risk?.autoRenew ? "Auto-renews — cancel by " + (v.risk?.daysToDeadline ?? 0) + " days" : "Manual renewal",
+        detail: v.risk?.autoRenew ? "Auto-renews - cancel by " + (v.risk?.daysToDeadline ?? 0) + " days" : "Manual renewal",
         severity: v.risk?.level ?? "low",
         vendor: v,
       })),
@@ -553,7 +553,7 @@ export default function DashboardOverview() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  AI insight generation — deterministic, derived from real data     */
+/*  AI insight generation - deterministic, derived from real data     */
 /* ------------------------------------------------------------------ */
 
 function buildInsights(vendors: VendorProfile[], threads: { vendorId: string; category: string; unread: boolean }[]): {
@@ -591,7 +591,7 @@ function buildInsights(vendors: VendorProfile[], threads: { vendorId: string; ca
   if (unreadRenewal.length > 0) {
     out.push({
       title: `${unreadRenewal.length} renewal notice${unreadRenewal.length === 1 ? " is" : "s are"} unread in your inbox`,
-      detail: "The agent can summarize these threads and draft replies — nothing is sent without your approval.",
+      detail: "The agent can summarize these threads and draft replies - nothing is sent without your approval.",
       tone: "neutral",
     });
   }
@@ -603,7 +603,7 @@ function buildInsights(vendors: VendorProfile[], threads: { vendorId: string; ca
     const v = lowUtil[0];
     out.push({
       title: `${v.name} is only ${v.usage?.utilizationPct.toFixed(0)}% utilized`,
-      detail: `${v.usage?.activeUsers} of ${v.usage?.seatsPurchased} seats are active — a cancellation candidate worth ${money(v.potentialSavings)}/yr.`,
+      detail: `${v.usage?.activeUsers} of ${v.usage?.seatsPurchased} seats are active - a cancellation candidate worth ${money(v.potentialSavings)}/yr.`,
       tone: "neutral",
     });
   }
@@ -622,7 +622,7 @@ function buildInsights(vendors: VendorProfile[], threads: { vendorId: string; ca
   ).length;
   out.push({
     title: `${clean} vendors are running healthy`,
-    detail: "No renewal risk, no billing variance, strong utilization — nothing to do on these right now.",
+    detail: "No renewal risk, no billing variance, strong utilization - nothing to do on these right now.",
     tone: "positive",
   });
 

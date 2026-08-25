@@ -115,7 +115,7 @@ export default function ContractsPage() {
         </div>
       </Panel>
 
-      {/* uploaded contract scans — preserved legacy flow */}
+      {/* uploaded contract scans - preserved legacy flow */}
       {uploaded.length > 0 && (
         <Panel delay={0.14} className="overflow-hidden">
           <div className="flex items-center gap-2 border-b border-line px-5 py-4">
@@ -230,7 +230,7 @@ function ContractRow({ v }: { v: VendorProfile }) {
         {v.cancellationDeadline ? (
           <p className="text-[12px] text-muted">{formatDate(v.cancellationDeadline)}</p>
         ) : (
-          <span className="text-[11.5px] text-muted/50">—</span>
+          <span className="text-[11.5px] text-muted/50">-</span>
         )}
       </td>
       <td className="px-5 py-3.5">
@@ -244,7 +244,7 @@ function ContractRow({ v }: { v: VendorProfile }) {
             {pct(v.priceEscalationRate)}
           </span>
         ) : (
-          <span className="text-[11.5px] text-muted/50">—</span>
+          <span className="text-[11.5px] text-muted/50">-</span>
         )}
       </td>
       <td className="px-5 py-3.5">
@@ -254,7 +254,7 @@ function ContractRow({ v }: { v: VendorProfile }) {
         {v.potentialSavings > 0 ? (
           <p className="text-[13px] font-medium text-emerald-400">{money(v.potentialSavings)}</p>
         ) : (
-          <span className="text-[11.5px] text-muted/50">—</span>
+          <span className="text-[11.5px] text-muted/50">-</span>
         )}
       </td>
       <td className="px-5 py-3.5 text-right">

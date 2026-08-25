@@ -17,7 +17,7 @@ export default function GmailConnectPage() {
   const connect = () => {
     if (!auth.id) return;
     setConnecting(true);
-    // Simulated OAuth consent (identity already established at login — this
+    // Simulated OAuth consent (identity already established at login - this
     // grants ONLY read-only Gmail scope, separately and explicitly).
     setTimeout(() => {
       connectGmail(auth.id as string);
@@ -65,7 +65,7 @@ export default function GmailConnectPage() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="overflow-hidden rounded-2xl border border-line bg-surface shadow-glow"
       >
-        {/* header — deliberately NOT styled like the login screen */}
+        {/* header - deliberately NOT styled like the login screen */}
         <div className="flex items-center gap-3 border-b border-line bg-panel px-6 py-5">
           <div className="flex size-10 items-center justify-center rounded-xl bg-white/[0.06] ring-1 ring-white/10">
             <span className="text-[13px] font-semibold tracking-tight text-fg">G</span>
@@ -82,7 +82,7 @@ export default function GmailConnectPage() {
         <div className="space-y-6 p-6">
           <p className="text-[14.5px] leading-relaxed text-muted">
             Vendrz will <strong>search</strong> your inbox for emails that look like
-            vendor contracts — renewal notices, agreements, order forms — and{" "}
+            vendor contracts - renewal notices, agreements, order forms - and{" "}
             <strong>propose them as candidates</strong>. Nothing is imported until you
             review the list and explicitly select documents.
           </p>
@@ -157,7 +157,7 @@ export default function GmailConnectPage() {
 
       <p className="mt-4 text-center text-[12.5px] text-muted/70">
         <Link href="/dashboard" className="text-muted underline underline-offset-4 hover:text-fg">
-          Skip — I&apos;ll keep uploading contracts manually
+          Skip - I&apos;ll keep uploading contracts manually
         </Link>
       </p>
     </div>

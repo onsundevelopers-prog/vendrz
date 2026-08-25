@@ -36,7 +36,7 @@ export default function AuditPage() {
       const res = await fetch("/api/extract", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error ?? "Extraction failed — try another file.");
+        alert(data.error ?? "Extraction failed. Try another file.");
         return;
       }
       const session = createAuditSession("manual");
@@ -56,8 +56,6 @@ export default function AuditPage() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-canvas">
       <div className="bg-grid-dark absolute inset-0 opacity-50" />
-      <div className="bg-dot-matrix absolute inset-0" />
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[min(90vw,720px)] -translate-x-1/2 rounded-full bg-gradient-to-tr from-emerald-500/10 via-zinc-500/5 to-transparent blur-3xl" />
       <div className="absolute inset-x-0 top-0 h-px bg-line" />
       <div className="relative">
         <Navbar />
@@ -72,7 +70,7 @@ export default function AuditPage() {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#18181B] px-3.5 py-1.5 text-[12px] tracking-tight">
             <span className="size-1.5 rounded-full bg-emerald-400" />
-            <span className="bg-gradient-to-r from-zinc-400 via-white to-zinc-400 bg-[length:200%_auto] bg-clip-text text-transparent animate-shimmer">
+            <span className="text-zinc-300">
               Free audit · no signup · no credit card
             </span>
           </span>
@@ -80,7 +78,7 @@ export default function AuditPage() {
             Run your free vendor spend audit
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-pretty text-[16px] font-normal leading-[1.55] tracking-[-0.01em] text-muted">
-            See where your company&apos;s money is going — and where you can save. We&apos;ll
+            See where your company&apos;s money is going, and where you can save. We&apos;ll
             analyze spend, surface renewals, and quantify waste before you create an
             account.
           </p>
@@ -88,7 +86,7 @@ export default function AuditPage() {
 
         {/* source options */}
         <div className="mt-12 grid w-full gap-4 lg:grid-cols-3">
-          {/* A — connect gmail (primary) */}
+          {/* A - connect gmail (primary) */}
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -111,7 +109,7 @@ export default function AuditPage() {
               </h3>
               <p className="mt-2 text-[13.5px] leading-relaxed tracking-[-0.01em] text-muted">
                 Read-only scan of your inbox. We surface contract-looking emails and
-                attachments — renewal notices, agreements, order forms — as reviewable
+                attachments: renewal notices, agreements, and order forms, as reviewable
                 candidates.
               </p>
             </div>
@@ -125,7 +123,7 @@ export default function AuditPage() {
             </div>
           </motion.button>
 
-          {/* B — connect aws */}
+          {/* B - connect aws */}
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -158,7 +156,7 @@ export default function AuditPage() {
             </div>
           </motion.button>
 
-          {/* C — manually upload a contract */}
+          {/* C - manually upload a contract */}
           <motion.button
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

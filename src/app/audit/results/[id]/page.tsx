@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { enterDemoMode, getAuditSession } from "@/lib/store";
-import { ExtractionResult } from "@/components/results/ExtractionResult";
+import { generateAnalysis } from "@/lib/pipeline";
+import type { AnalysisResult, AuditSession } from "@/lib/types";
+import { ResultsPreview } from "@/components/results/ResultsPreview";
 import { Beam } from "@/components/ui/Beam";
 import { AnimatedStat } from "@/components/ui/RollingNumber";
 import { Logo } from "@/components/brand/Logo";
@@ -20,9 +22,20 @@ export default function AuditResultsPage() {
   const session = useMemo(() => getAuditSession(params.id), [params.id]);
   const audit = session?.result;
 
-  // Manual uploads land here with real Gemini extraction instead of a demo audit.
-  if (session?.extraction) {
-    return <ExtractionResult session={session} />;
+  // Manual uploads land here with real Gemini extraction. Turn the extraction
+  // into the full deterministic analysis so the report matches the standard
+  // results layout (risk score, savings range, findings with evidence).
+  const extractionAnalysis = useMemo(() => {
+    if (!session?.extraction) return null;
+    return generateAnalysis(
+      session.documentName ?? "Uploaded contract.pdf",
+      "pdf",
+      { extraction: session.extraction }
+    );
+  }, [session]);
+
+  if (extractionAnalysis) {
+    return <ExtractionResultsView session={session!} analysis={extractionAnalysis} />;
   }
 
   if (!audit) {
@@ -152,7 +165,7 @@ export default function AuditResultsPage() {
                   </div>
                 </div>
 
-                {/* right rail — worst offender */}
+                {/* right rail - worst offender */}
                 <div className="hidden flex-col justify-between rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 lg:flex">
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.14em] text-muted">Biggest exposure</p>
@@ -287,7 +300,7 @@ export default function AuditResultsPage() {
               </h3>
               <p className="mt-3 max-w-md text-[14px] leading-relaxed tracking-[-0.01em] text-muted">
                 Create a free account to see all {audit.opportunities.length} opportunities,
-                vendor health scores, billing anomalies, and a prioritized action plan —
+                vendor health scores, billing anomalies, and a prioritized action plan,
                 then track savings as you act.
               </p>
               <div className="mt-6 flex w-full max-w-md flex-col gap-3 sm:flex-row">
@@ -315,9 +328,99 @@ export default function AuditResultsPage() {
         </motion.div>
 
         <p className="mt-8 text-center text-[11.5px] leading-relaxed tracking-tight text-muted/60">
-          Potential savings are estimates produced by deterministic rules — never guaranteed.
+          Potential savings are estimates produced by deterministic rules, never guaranteed.
           <br />
           Audit run on sample data (Acme Technologies) to demo the product end-to-end.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Manual upload: full professional analysis (matches /results).     */
+/* ------------------------------------------------------------------ */
+
+function ExtractionResultsView({
+  session,
+  analysis,
+}: {
+  session: AuditSession;
+  analysis: AnalysisResult;
+}) {
+  return (
+    <main className="min-h-screen bg-canvas">
+      {/* slim top bar */}
+      <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 lg:px-8">
+          <Link href="/" aria-label="Vendrz home">
+            <Logo className="[&_span:last-child]:text-[15px]" />
+          </Link>
+          <div className="flex items-center gap-2 text-[12px] tracking-tight text-muted">
+            <span className="size-1.5 rounded-full bg-emerald-400" />
+            Read-only · nothing imported
+          </div>
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-5 py-10 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease }}
+        >
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[12px] tracking-tight text-muted">
+                Analysis complete · {new Date(analysis.analyzedAt).toLocaleString("en-US", { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg sm:text-3xl">
+                {analysis.vendorName} · {analysis.documentName}
+              </h1>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[12px] tracking-tight text-muted">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1">
+                <span className="size-1.5 rounded-full bg-emerald-400/70" />
+                Encrypted · never shared
+              </span>
+            </div>
+          </div>
+
+          <ResultsPreview result={analysis} />
+        </motion.div>
+
+        {/* save CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.35, ease }}
+          className="mt-10"
+        >
+          <div className="glass-border-emerald rounded-[20px] p-6 text-center sm:p-8">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-emerald-300/80">
+              Save this analysis
+            </p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-fg">
+              Monitor this contract, not just read it.
+            </h3>
+            <p className="mx-auto mt-2 max-w-md text-[14px] text-muted">
+              Create a free account to keep this analysis, track the renewal, and get
+              alerts before it auto-renews.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Link
+                href={`/auth?mode=signup&next=/dashboard&audit=${session.id}`}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-[15px] font-semibold text-black transition-all hover:scale-[1.02] hover:opacity-90"
+              >
+                Unlock &amp; track this contract
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
+        <p className="mt-8 text-center text-[11.5px] tracking-tight text-muted/60">
+          Analysis by Gemini Flash-Lite · findings are deterministic · nothing imported to
+          your accounts
         </p>
       </div>
     </main>

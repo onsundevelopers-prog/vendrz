@@ -201,7 +201,7 @@ function OverviewTab({
               <>
                 {" "}
                 {v.usage.activeUsers} of {v.usage.seatsPurchased} seats are active (
-                {v.usage.utilizationPct.toFixed(0)}% utilization) —{" "}
+                {v.usage.utilizationPct.toFixed(0)}% utilization) -{" "}
                 <span className="text-amber-400">{money(v.usage.unusedSeatCost)}/yr</span> in
                 unused-seat spend.
               </>
@@ -211,7 +211,7 @@ function OverviewTab({
           </p>
           {v.billing.variancePct !== 0 && (
             <p className="mt-3 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2 text-[12.5px] leading-relaxed text-amber-300/90">
-              Billing runs {pct(v.billing.variancePct)} vs the contracted amount —
+              Billing runs {pct(v.billing.variancePct)} vs the contracted amount -
               {v.billing.anomalies.length > 0 ? ` ${v.billing.anomalies[0].detail.toLowerCase()}` : " worth investigating."}
             </p>
           )}
@@ -223,7 +223,7 @@ function OverviewTab({
               <span className="size-1.5 rounded-full bg-amber-400" /> Overlapping tools
             </h3>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">
-              {v.name} overlaps with {v.duplicates.join(", ")} — potentially redundant spend in the
+              {v.name} overlaps with {v.duplicates.join(", ")} - potentially redundant spend in the
               same category.
             </p>
           </Panel>
@@ -354,7 +354,7 @@ function ContractTab({ vendor: v }: { vendor: VendorProfile }) {
           <Row label="Contract value" value={money(v.contractValue)} />
           <Row label="Start date" value={formatDate(v.startDate)} />
           <Row label="Renewal date" value={v.renewalDate ? formatDate(v.renewalDate) : "Rolling / no term"} />
-          <Row label="Cancellation deadline" value={v.cancellationDeadline ? formatDate(v.cancellationDeadline) : "—"} />
+          <Row label="Cancellation deadline" value={v.cancellationDeadline ? formatDate(v.cancellationDeadline) : "-"} />
           <Row label="Auto-renewal" value={v.autoRenew ? "Enabled" : "Disabled"} note={v.autoRenew ? "no-action = renewed" : "manual renewal"} />
           <Row label="Price escalation" value={v.priceEscalationRate ? `${v.priceEscalationRate}%/yr` : "None found"} note={v.priceEscalationRate && v.priceEscalationRate > 5 ? "uncapped" : undefined} />
         </div>
@@ -380,7 +380,7 @@ function ContractTab({ vendor: v }: { vendor: VendorProfile }) {
           </div>
         ) : (
           <p className="mt-4 text-[12.5px] tracking-tight text-muted">
-            {v.renewalDate ? "No imminent renewal risk." : "No fixed contract term — rolling agreement."}
+            {v.renewalDate ? "No imminent renewal risk." : "No fixed contract term - rolling agreement."}
           </p>
         )}
       </Panel>
@@ -425,7 +425,7 @@ function InvoicesTab({ vendor: v }: { vendor: VendorProfile }) {
                         {pct(Math.round((variance / Math.max(1, inv.contractedAmount)) * 100))}
                       </span>
                     ) : (
-                      <span className="text-[12px] text-muted/60">—</span>
+                      <span className="text-[12px] text-muted/60">-</span>
                     )}
                   </td>
                   <td className="px-5 py-3.5">
@@ -457,7 +457,7 @@ function UsageTab({ vendor: v }: { vendor: VendorProfile }) {
       <Panel className="p-8 text-center">
         <p className="mt-3 text-[15px] font-medium text-fg">Usage-based vendor</p>
         <p className="mt-1 text-[12.5px] tracking-tight text-muted">
-          No seat data — billed on consumption. Connect a vendor API for usage-level detail.
+          No seat data - billed on consumption. Connect a vendor API for usage-level detail.
         </p>
       </Panel>
     );
@@ -482,8 +482,8 @@ function UsageTab({ vendor: v }: { vendor: VendorProfile }) {
           {u.utilizationPct >= 80
             ? "Healthy utilization."
             : u.utilizationPct >= 55
-              ? "Moderate utilization — consider right-sizing."
-              : "Low utilization — cancellation or downgrade candidate."}
+              ? "Moderate utilization - consider right-sizing."
+              : "Low utilization - cancellation or downgrade candidate."}
         </p>
       </Panel>
 
@@ -570,7 +570,7 @@ function SavingsTab({ opportunities }: { opportunities: SavingsOpportunity[] }) 
         </Panel>
       ))}
       <p className="text-[11px] tracking-tight text-muted/70">
-        All figures are potential savings estimates produced by deterministic rules — never guaranteed.
+        All figures are potential savings estimates produced by deterministic rules - never guaranteed.
       </p>
     </div>
   );

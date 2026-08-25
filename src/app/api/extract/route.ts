@@ -4,12 +4,12 @@ import { extractContract, extractContractFromFile } from "@/lib/ai/gemini";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MAX_BYTES = 25 * 1024 * 1024; // 25 MB — matches the audit page pill
+const MAX_BYTES = 25 * 1024 * 1024; // 25 MB - matches the audit page pill
 
 /**
  * POST /api/extract
  * Accepts a multipart file (PDF / DOCX / TXT / MD), extracts structured contract
- * data with Gemini, and returns it as JSON. Server-only — the key never leaves
+ * data with Gemini, and returns it as JSON. Server-only - the key never leaves
  * the environment.
  */
 export async function POST(req: NextRequest) {
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     let extraction;
 
     if (name.endsWith(".pdf")) {
-      // Gemini reads PDFs natively — no client-side text extraction needed.
+      // Gemini reads PDFs natively - no client-side text extraction needed.
       const base64 = Buffer.from(await file.arrayBuffer()).toString("base64");
       extraction = await extractContractFromFile({
         mimeType: "application/pdf",
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       const text = await file.text();
       if (text.trim().length < 40) {
         return NextResponse.json(
-          { error: "This file looks empty — no readable text found." },
+          { error: "This file looks empty - no readable text found." },
           { status: 422 }
         );
       }
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       const parsed = await mammoth.extractRawText({ buffer: buf });
       if (parsed.value.trim().length < 40) {
         return NextResponse.json(
-          { error: "This DOCX looks empty — no readable text found." },
+          { error: "This DOCX looks empty - no readable text found." },
           { status: 422 }
         );
       }

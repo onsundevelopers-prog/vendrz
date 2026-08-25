@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 /**
- * Magnetic — the child element is gently pulled toward the cursor on hover
+ * Magnetic - the child element is gently pulled toward the cursor on hover
  * and springs back on leave. A signature flask.do-style micro-interaction
  * for CTAs and primary actions.
  */

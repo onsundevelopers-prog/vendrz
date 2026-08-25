@@ -9,7 +9,7 @@ import { money, formatDateShort, daysUntil } from "@/lib/format";
 import type { ContractStatus, SpendCategory, VendorProfile } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
-/*  Vendor spreadsheet — the operational core of Vendrz.              */
+/*  Vendor spreadsheet - the operational core of Vendrz.              */
 /*  Sortable columns, search, status/category filters, dense rows.    */
 /* ------------------------------------------------------------------ */
 
@@ -272,7 +272,7 @@ export default function VendorsPage() {
       </Panel>
 
       <p className="text-[11px] tracking-tight text-muted/60">
-        Savings figures are deterministic estimates from the savings engine — never guaranteed. Sort any column, or click a vendor row to open the full profile.
+        Savings figures are deterministic estimates from the savings engine - never guaranteed. Sort any column, or click a vendor row to open the full profile.
       </p>
     </div>
   );
@@ -390,7 +390,7 @@ function VendorRow({ vendor: v }: { vendor: VendorProfile }) {
             </p>
           </div>
         ) : (
-          <span className="text-[11.5px] text-muted/60">—</span>
+          <span className="text-[11.5px] text-muted/60">-</span>
         )}
       </td>
       {/* auto-renew */}
@@ -418,7 +418,7 @@ function VendorRow({ vendor: v }: { vendor: VendorProfile }) {
         {v.potentialSavings > 0 ? (
           <p className="text-[13px] font-medium text-emerald-400">{money(v.potentialSavings)}</p>
         ) : (
-          <span className="text-[11.5px] text-muted/60">—</span>
+          <span className="text-[11.5px] text-muted/60">-</span>
         )}
       </td>
       {/* owner */}

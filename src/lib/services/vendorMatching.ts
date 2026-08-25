@@ -17,7 +17,7 @@ export interface MerchantMatch {
  * generic suffixes (*CLAUDE, AI, INC, LLC, .COM, etc.) → match.
  */
 const MERCHANT_ALIASES: Record<string, string> = {
-  // Anthropic — the spec's canonical example
+  // Anthropic - the spec's canonical example
   "ANTHROPIC*CLAUDE": "v-anthropic",
   "ANTHROPIC PBC": "v-anthropic",
   "ANTHROPIC": "v-anthropic",

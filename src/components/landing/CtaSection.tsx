@@ -21,7 +21,7 @@ export function CtaSection() {
         </h2>
         <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
           Run a free vendor spend audit and see the renewals, waste, and savings
-          hiding in your spend — before the deadlines pass, not after.
+          hiding in your spend - before the deadlines pass, not after.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button

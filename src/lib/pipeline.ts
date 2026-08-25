@@ -9,7 +9,7 @@ import type {
 import { daysFromNow } from "./mockData";
 
 /* ------------------------------------------------------------------ */
-/*  Pipeline stages — each maps 1:1 to a backend job stage that the   */
+/*  Pipeline stages - each maps 1:1 to a backend job stage that the   */
 /*  FastAPI worker reports via the job-status endpoint.                */
 /* ------------------------------------------------------------------ */
 
@@ -44,7 +44,7 @@ const STAGE_DURATION_MS: Record<PipelineStage, number> = {
 /*  Deterministic result generation.                                  */
 /*  In production this runs server-side: LLM proposes structured      */
 /*  terms, a validation layer confirms them against the source text,  */
-/*  and the numbers below are produced by rules — the LLM never       */
+/*  and the numbers below are produced by rules - the LLM never       */
 /*  outputs the final dollar figure directly.                         */
 /* ------------------------------------------------------------------ */
 
@@ -74,7 +74,7 @@ export function detectVendor(filename: string): { name: string; category: string
 
 interface GenerationOptions {
   seed?: number;
-  /** Real LLM-extracted terms (from /api/extract) — rules still compute the numbers. */
+  /** Real LLM-extracted terms (from /api/extract) - rules still compute the numbers. */
   extraction?: ContractExtraction | null;
 }
 
@@ -116,7 +116,7 @@ export function generateAnalysis(
     category: detected.category,
   };
 
-  // Structural terms — real LLM-extracted values when available, otherwise
+  // Structural terms - real LLM-extracted values when available, otherwise
   // deterministic from the seeded PRNG. The model proposes the terms; the
   // rules below compute every dollar figure.
   const annualValue = Math.round(
@@ -193,13 +193,13 @@ export function generateAnalysis(
     "renewal",
     missedDeadline ? "critical" : "warning",
     missedDeadline
-      ? "Cancellation window has closed — this contract renews automatically"
+      ? "Cancellation window has closed - this contract renews automatically"
       : `Renews ${formatShort(renewalDate)}`,
     missedDeadline
       ? `The cancel-by date (${cancellationDeadline ? formatShort(cancellationDeadline) : "already passed"}) has passed. You are locked in for another term unless the vendor grants an exception.`
       : `You must act by ${formatShort(cancellationDeadline ?? renewalDate)} to avoid automatic renewal into the next term.`,
     `This Agreement shall renew automatically for successive one (1) year terms unless either party provides written notice of non-renewal not less than ${noticeDays} days prior to the end of the then-current term.`,
-    `§ ${pick(rand, ["6.2", "7.1", "8.3", "4.4"])} — Term & Renewal`,
+    `§ ${pick(rand, ["6.2", "7.1", "8.3", "4.4"])} - Term & Renewal`,
     1 + Math.floor(rand() * 3),
     0.94
   );
@@ -211,7 +211,7 @@ export function generateAnalysis(
       `Auto-renews with ${noticeDays}-day notice`,
       `No action by ${formatShort(cancellationDeadline ?? renewalDate)} commits you to another full term.`,
       `Unless terminated as provided herein, this Agreement shall automatically renew for additional terms of twelve (12) months.`,
-      `§ 7.1 — Term`,
+      `§ 7.1 - Term`,
       1 + Math.floor(rand() * 2),
       0.97
     );
@@ -223,10 +223,10 @@ export function generateAnalysis(
       escalationRate > 5 ? "critical" : "warning",
       `${escalationRate}% annual price escalation`,
       `Your contract escalates ${escalationRate}% per year${
-        escalationRate > 5 ? " with no cap — this compounds quickly" : ""
+        escalationRate > 5 ? " with no cap - this compounds quickly" : ""
       }.`,
       `Pricing shall increase by ${escalationRate}% per annum effective each anniversary of the Effective Date.`,
-      `§ ${pick(rand, ["5.2", "3.4", "9.1"])} — Fees & Payment`,
+      `§ ${pick(rand, ["5.2", "3.4", "9.1"])} - Fees & Payment`,
       1 + Math.floor(rand() * 3),
       0.91
     );

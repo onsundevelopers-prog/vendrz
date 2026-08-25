@@ -29,7 +29,7 @@ const STATS = [
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Rolling-number stat band — the flask.do-style NumberFlow counters. */
+/*  Rolling-number stat band - the flask.do-style NumberFlow counters. */
 /*  Each digit lives in its own mask and rolls to the target value the */
 /*  moment the band scrolls into view.                                 */
 /* ------------------------------------------------------------------ */

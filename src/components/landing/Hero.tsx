@@ -7,7 +7,7 @@ import { Magnetic } from "@/components/ui/Magnetic";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /* ------------------------------------------------------------------ */
-/*  flask.do-style headline — words roll up out of their masks with a  */
+/*  flask.do-style headline - words roll up out of their masks with a  */
 /*  springy ease, then the shimmer sentence follows.                   */
 /* ------------------------------------------------------------------ */
 
@@ -63,7 +63,7 @@ export function Hero() {
             className="mt-6 max-w-xl text-pretty text-lg font-normal leading-[1.5] tracking-[-0.01em] text-muted"
           >
             Vendrz turns your financial transactions, invoices, and contracts
-            into spend intelligence — renewals, waste, billing anomalies, and the savings
+            into spend intelligence: renewals, waste, billing anomalies, and the savings
             hiding inside them.
           </motion.p>
 
@@ -74,7 +74,7 @@ export function Hero() {
             className="mt-9 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
           >
             <Magnetic>
-              <Button href="/audit" size="lg" className="w-full px-7 sm:w-auto">
+              <Button href="/audit" size="lg" glow className="w-full px-7 sm:w-auto">
                 Run your free vendor spend audit
               </Button>
             </Magnetic>

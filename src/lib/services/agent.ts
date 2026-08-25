@@ -2,7 +2,7 @@ import type { CompanyAudit, EmailThread, VendorProfile } from "@/lib/types";
 import { money } from "./engines";
 
 /* ------------------------------------------------------------------ */
-/*  Vendrz vendor agent — deterministic intent engine.                */
+/*  Vendrz vendor agent - deterministic intent engine.                */
 /*  Mirrors the agentic flow: identify vendor → check terms → draft →  */
 /*  require approval → send → record. No email is ever sent without    */
 /*  explicit user confirmation (approval is surfaced as a card).       */
@@ -133,7 +133,7 @@ function summarizeThreads(threads: EmailThread[], v: VendorProfile): string {
       month: "short",
       day: "numeric",
     });
-    return `• [${t.category}] "${t.subject}" (${d}, from ${t.sender}) — ${t.snippet}`;
+    return `• [${t.category}] "${t.subject}" (${d}, from ${t.sender}) - ${t.snippet}`;
   });
   return lines.join("\n");
 }
@@ -172,12 +172,12 @@ export function agentReply(
       const deadlinePassed = risk ? risk.daysToDeadline < 0 : false;
 
       const lines: string[] = [];
-      lines.push(`**${vendor.name} — cancellation review**`);
+      lines.push(`**${vendor.name} - cancellation review**`);
       lines.push("");
       lines.push(`Contract: ${money(vendor.contractValue)}/yr · ${vendor.category} · auto-renew ${vendor.autoRenew ? "ON" : "OFF"}`);
       if (possible) {
         lines.push(
-          `Cancellation is ${deadlinePassed ? "**past** the deadline" : `**possible** — deadline ${risk ? `${risk.daysToDeadline} days from now` : ""}`}`
+          `Cancellation is ${deadlinePassed ? "**past** the deadline" : `**possible** - deadline ${risk ? `${risk.daysToDeadline} days from now` : ""}`}`
         );
         if (deadlinePassed) {
           lines.push(
@@ -201,7 +201,7 @@ export function agentReply(
           vendorId: vendor.id,
           vendorName: vendor.name,
           to: vendorContact(vendor),
-          subject: `Notice of cancellation — ${vendor.name} agreement`,
+          subject: `Notice of cancellation - ${vendor.name} agreement`,
           body: cancellationDraft(vendor, senderName),
         },
         vendors: [{ id: vendor.id, name: vendor.name }],
@@ -223,8 +223,8 @@ export function agentReply(
         return {
           content: `Here's the correspondence I found from **${vendor.name}** (${threads.filter((t) => t.vendorId === vendor.id).length} thread${threads.filter((t) => t.vendorId === vendor.id).length === 1 ? "" : "s"}):\n\n${summary}\n\n**Action required:** ${
             threads.some((t) => t.vendorId === vendor.id && t.unread && t.category === "renewal")
-              ? "Yes — a renewal notice needs attention before the deadline."
-              : "No urgent action — monitor the renewal date."
+              ? "Yes - a renewal notice needs attention before the deadline."
+              : "No urgent action - monitor the renewal date."
           }`,
           vendors: [{ id: vendor.id, name: vendor.name }],
         };
@@ -244,13 +244,13 @@ export function agentReply(
       if (draft) {
         const thread = threads.find((t) => t.vendorId === vendor.id && t.category === "negotiation");
         return {
-          content: `I've drafted a reply to **${vendor.name}**'s renewal thread (${thread?.subject ?? "renewal quote"}). Review it below — I'll send it only after you approve.`,
+          content: `I've drafted a reply to **${vendor.name}**'s renewal thread (${thread?.subject ?? "renewal quote"}). Review it below - I'll send it only after you approve.`,
           approval: {
             action: "send_email",
             vendorId: vendor.id,
             vendorName: vendor.name,
             to: thread?.sender ?? vendorContact(vendor),
-            subject: `Re: ${thread?.subject ?? "Renewal"} — Vendrz`,
+            subject: `Re: ${thread?.subject ?? "Renewal"} - Vendrz`,
             body: draft,
           },
           vendors: [{ id: vendor.id, name: vendor.name }],
@@ -273,8 +273,8 @@ export function agentReply(
       )}/yr\n- Status: ${vendor.contractStatus.replace(/_/g, " ")}\n- Renewal: ${
         vendor.renewalDate ? new Date(vendor.renewalDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "No fixed term"
       }\n- Cancellation deadline: ${
-        vendor.cancellationDeadline ? new Date(vendor.cancellationDeadline + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "—"
-      }\n- Auto-renew: ${vendor.autoRenew ? "ON — no action = renewed" : "OFF"}\n- Risk: ${
+        vendor.cancellationDeadline ? new Date(vendor.cancellationDeadline + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "-"
+      }\n- Auto-renew: ${vendor.autoRenew ? "ON - no action = renewed" : "OFF"}\n- Risk: ${
         risk ? `${risk.level} (renews in ${risk.daysToRenewal} days)` : "None detected"
       }\n- Potential savings: ${money(vendor.potentialSavings)}/yr\n\nAsk me to cancel the contract, summarize their emails, or draft a reply.`,
       vendors: [{ id: vendor.id, name: vendor.name }],
@@ -286,12 +286,12 @@ export function agentReply(
     const atRisk = audit.vendors.filter((v) => v.risk).sort((a, b) => (a.risk?.daysToRenewal ?? 0) - (b.risk?.daysToRenewal ?? 0));
     const top = atRisk.slice(0, 3);
     return {
-      content: `**Portfolio overview** — ${audit.vendorCount} vendors, ${money(
+      content: `**Portfolio overview** - ${audit.vendorCount} vendors, ${money(
         audit.totalAnnualSpend
       )}/yr total spend, ${money(audit.potentialSavings)}/yr in potential savings.\n\n${
         top.length
           ? `Most urgent renewals:\n${top
-              .map((v) => `• ${v.name} — renews in ${v.risk?.daysToRenewal} days (${v.risk?.level})`)
+              .map((v) => `• ${v.name} - renews in ${v.risk?.daysToRenewal} days (${v.risk?.level})`)
               .join("\n")}`
           : "No imminent renewal risks."
       }\n\nI can go deeper on any vendor: status, emails, cancellation, or a draft reply.`,
@@ -302,7 +302,7 @@ export function agentReply(
   /* ---------- generic ---------- */
   return {
     content:
-      "I'm your vendor-management agent. I can:\n\n• **Check a vendor** — “what's the status on Datadog?”\n• **Cancel a contract** — “cancel our Adobe contract”\n• **Summarize emails** — “summarize vendor emails from AWS”\n• **Draft a reply** — “draft a reply to Slack about the renewal quote”\n\nI'll always show you exactly what would be sent and require your confirmation before any email goes out.",
+      "I'm your vendor-management agent. I can:\n\n• **Check a vendor** - “what's the status on Datadog?”\n• **Cancel a contract** - “cancel our Adobe contract”\n• **Summarize emails** - “summarize vendor emails from AWS”\n• **Draft a reply** - “draft a reply to Slack about the renewal quote”\n\nI'll always show you exactly what would be sent and require your confirmation before any email goes out.",
     vendors: [],
   };
 }
@@ -316,7 +316,7 @@ export function approvalOutcome(
   if (action === "cancel_contract") {
     return {
       title: `Cancellation notice sent to ${vendorName}`,
-      detail: `Sent to ${to} — vendor status will be updated to reflect the pending cancellation.`,
+      detail: `Sent to ${to} - vendor status will be updated to reflect the pending cancellation.`,
     };
   }
   return {

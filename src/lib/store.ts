@@ -195,7 +195,7 @@ export function disconnectGmail(userId: string): void {
     }
   }
   write(KEYS.gmail, conns);
-  // Imports already made are kept — only future discovery is revoked.
+  // Imports already made are kept - only future discovery is revoked.
 }
 
 /* ------------------------------ discovery ------------------------------ */
@@ -213,7 +213,7 @@ const CANDIDATES: Array<Omit<DiscoveredDocument, "id" | "gmailConnectionId" | "i
   },
   {
     filename: "AWS_Enterprise_Agreement_2025.pdf",
-    emailSubject: "AWS Enterprise Agreement — renewal notice",
+    emailSubject: "AWS Enterprise Agreement - renewal notice",
     sender: "aws-agreements@amazon.com",
     emailDate: "2026-06-18",
     detectedVendor: "AWS",
@@ -233,7 +233,7 @@ const CANDIDATES: Array<Omit<DiscoveredDocument, "id" | "gmailConnectionId" | "i
   },
   {
     filename: "invoice_q3_2026.pdf",
-    emailSubject: "Invoice #88412 — payment due",
+    emailSubject: "Invoice #88412 - payment due",
     sender: "billing@atlassian.com",
     emailDate: "2026-08-04",
     detectedVendor: "Atlassian",
@@ -253,7 +253,7 @@ const CANDIDATES: Array<Omit<DiscoveredDocument, "id" | "gmailConnectionId" | "i
   },
   {
     filename: "docs_new_pricing_policy.pdf",
-    emailSubject: "Updated pricing — important",
+    emailSubject: "Updated pricing - important",
     sender: "updates@google.com",
     emailDate: "2026-07-30",
     detectedVendor: "Google",
@@ -403,7 +403,7 @@ export function getActivity(userId: string): ActivityRecord[] {
       type: "savings",
       actor: "system",
       title: `Savings opportunity surfaced: ${topOpp.title}`,
-      detail: `Estimated ${money(topOpp.estimatedSavings)}/yr potential — ${topOpp.basis}`,
+      detail: `Estimated ${money(topOpp.estimatedSavings)}/yr potential - ${topOpp.basis}`,
       createdAt: daysAgo(2),
     });
   }
@@ -420,7 +420,7 @@ export function getActivity(userId: string): ActivityRecord[] {
     type: "import",
     actor: "system",
     title: "Financial data connected",
-    detail: "Corporate card, bank, and Stripe feeds synced — 4,215 transactions imported.",
+    detail: "Corporate card, bank, and Stripe feeds synced - 4,215 transactions imported.",
     createdAt: daysAgo(9),
   });
 
@@ -519,7 +519,7 @@ export function getEmailThreads(userId: string): EmailThread[] {
       id: "thr-notion-seats",
       vendorId: "v-notion",
       vendorName: "Notion",
-      subject: "Invoice #4431 — monthly seat billing",
+      subject: "Invoice #4431 - monthly seat billing",
       snippet: "Attached is your monthly invoice for 120 seats. Please note 16 seats show no activity in the last 90 days…",
       sender: "billing@notion.so",
       date: daysFromNow(-3),
@@ -541,7 +541,7 @@ export function getEmailThreads(userId: string): EmailThread[] {
       id: "thr-figma-general",
       vendorId: "v-figma",
       vendorName: "Figma",
-      subject: "Welcome to Figma Enterprise — admin checklist",
+      subject: "Welcome to Figma Enterprise - admin checklist",
       snippet: "Get started with SSO, SCIM provisioning, and your admin dashboard…",
       sender: "success@figma.com",
       date: daysFromNow(-12),
@@ -566,7 +566,7 @@ function money(n: number): string {
 
 let cachedAudit: CompanyAudit | null = null;
 
-/** The Acme Technologies demo company — computed once per session. */
+/** The Acme Technologies demo company - computed once per session. */
 export function getDemoAudit(): CompanyAudit {
   if (!cachedAudit) cachedAudit = buildCompanyAudit();
   return cachedAudit;

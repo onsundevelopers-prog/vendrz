@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /* ------------------------------------------------------------------ */
-/*  RollingNumber — NumberFlow-style rolling digit counter.           */
+/*  RollingNumber - NumberFlow-style rolling digit counter.           */
 /*  Each digit lives in its own vertical mask; on value change the    */
 /*  column rolls to the target digit with a springy ease. Mirrors     */
 /*  the number-flow web component flask.do uses for its timer.        */
@@ -84,7 +84,7 @@ function DigitCell({ char }: { char: string }) {
 }
 
 /**
- * RollingNumber — renders `value` (formatted by `format`) with rolling
+ * RollingNumber - renders `value` (formatted by `format`) with rolling
  * digit cells. Re-rolls whenever `value` changes.
  */
 export function RollingNumber({
@@ -107,7 +107,7 @@ export function RollingNumber({
 }
 
 /**
- * AnimatedStat — counts up from 0 when scrolled into view, rendering
+ * AnimatedStat - counts up from 0 when scrolled into view, rendering
  * through RollingNumber for the rolling-digit effect.
  */
 export function AnimatedStat({

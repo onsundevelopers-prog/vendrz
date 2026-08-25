@@ -2,7 +2,7 @@ import type { AlertRecord, CompanyAudit } from "@/lib/types";
 import { money } from "./engines";
 
 /* ------------------------------------------------------------------ */
-/*  Alert engine — turns computed signals into severity-ranked alerts */
+/*  Alert engine - turns computed signals into severity-ranked alerts */
 /* ------------------------------------------------------------------ */
 
 const DAY = 86400000;
@@ -65,7 +65,7 @@ export function buildAlerts(audit: Pick<CompanyAudit, "vendors" | "spendSeries">
         push(
           "medium",
           `${v.name} renewal approaching`,
-          `Renews in ${v.risk.daysToRenewal} days — ${v.risk.autoRenew ? "auto-renews" : "manual renewal"} if no action is taken.`,
+          `Renews in ${v.risk.daysToRenewal} days - ${v.risk.autoRenew ? "auto-renews" : "manual renewal"} if no action is taken.`,
           "renewal",
           v.id,
           v.name,
@@ -93,7 +93,7 @@ export function buildAlerts(audit: Pick<CompanyAudit, "vendors" | "spendSeries">
         `${v.name} spend up ${v.spendTrendPct}% year over year`,
         `Annualized spend grew from ${money(
           Math.round(v.annualSpend / (1 + v.spendTrendPct / 100))
-        )} to ${money(v.annualSpend)} — well above company average.`,
+        )} to ${money(v.annualSpend)} - well above company average.`,
         "price_increase",
         v.id,
         v.name,
@@ -167,7 +167,7 @@ export function buildAlerts(audit: Pick<CompanyAudit, "vendors" | "spendSeries">
       push(
         "low",
         `Potentially overlapping tools detected`,
-        `${v.name} overlaps with ${dupes.map((d) => d.name).join(", ")} — teams are provisioned in both.`,
+        `${v.name} overlaps with ${dupes.map((d) => d.name).join(", ")} - teams are provisioned in both.`,
         "duplicate_tools",
         v.id,
         v.name

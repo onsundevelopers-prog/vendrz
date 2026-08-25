@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  Vendrz — domain types                                   */
+/*  Vendrz - domain types                                   */
 /*  Mirrors the PRD data model: User, Organization, Vendor, Contract,  */
 /*  Finding, Opportunity, SavingsOutcome, AnonymousSession,            */
 /*  GmailConnection, DiscoveredDocument.                               */
@@ -204,7 +204,7 @@ export interface DashboardStats {
 }
 
 /* ================================================================== */
-/*  Vendor Spend Intelligence Platform — domain                       */
+/*  Vendor Spend Intelligence Platform - domain                       */
 /* ================================================================== */
 
 export type AlertSeverity = "low" | "medium" | "high" | "critical";
@@ -298,7 +298,7 @@ export interface VendorProfile {
   cancellationDeadline: string | null;
   autoRenew: boolean;
   priceEscalationRate: number | null;
-  /** Accountable owner (human) — from the procurement roster. */
+  /** Accountable owner (human) - from the procurement roster. */
   owner: string;
   /** ISO date of the most recent contract review. */
   lastReviewed: string;
@@ -348,7 +348,7 @@ export interface SavingsOpportunity {
   title: string;
   what: string; // WHAT WE FOUND
   why: string; // WHY IT MATTERS
-  estimatedSavings: number; // $/yr — always labeled potential
+  estimatedSavings: number; // $/yr - always labeled potential
   recommendedAction: string;
   status: ActionStatus;
   confidence: number; // 0–1
@@ -446,9 +446,9 @@ export interface AuditSession {
   createdAt: string;
   pipelineStatus: AuditStage | "complete" | "failed";
   companyName: string;
-  /** Set for manual uploads — the source document name. */
+  /** Set for manual uploads - the source document name. */
   documentName?: string | null;
-  /** Set for manual uploads — structured extraction from the uploaded file. */
+  /** Set for manual uploads - structured extraction from the uploaded file. */
   extraction?: ContractExtraction | null;
   result: CompanyAudit | null;
   unlockedToUserId: string | null;

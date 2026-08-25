@@ -52,7 +52,7 @@ function ClerkMobileAuth({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-/* Sign in / account controls — Clerk when configured, plain link otherwise. */
+/* Sign in / account controls - Clerk when configured, plain link otherwise. */
 function DesktopAuth() {
   if (!isClerkEnabled) {
     return (
@@ -108,7 +108,7 @@ export function Navbar() {
           <Logo className="[&_span:last-child]:text-[15px]" />
         </Link>
 
-        {/* center links — sliding hover pill */}
+        {/* center links - sliding hover pill */}
         <div className="hidden items-center gap-1 md:flex">
           {LINKS.map((link, i) => (
             <a
@@ -135,7 +135,7 @@ export function Navbar() {
         {/* right actions */}
         <div className="hidden items-center gap-4 md:flex">
           <DesktopAuth />
-          <Button href="/audit" size="sm">
+          <Button href="/audit" size="sm" glow>
             Run free audit
           </Button>
         </div>
@@ -184,7 +184,7 @@ export function Navbar() {
               ))}
               <div className="flex flex-col gap-2.5 pt-4">
                 <MobileAuth onNavigate={() => setOpen(false)} />
-                <Button href="/audit" className="w-full" onClick={() => setOpen(false)}>
+                <Button href="/audit" className="w-full" glow onClick={() => setOpen(false)}>
                   Run free audit
                 </Button>
               </div>

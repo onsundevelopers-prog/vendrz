@@ -24,11 +24,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Vendrz — Vendor Spend Intelligence Platform",
+    default: "Vendrz - Vendor Spend Intelligence Platform",
     template: "%s · Vendrz",
   },
   description:
-    "Know where your company's money is going — and find where you can save. Vendrz turns transactions, invoices, and contracts into spend intelligence: renewals, waste, billing anomalies, and savings opportunities. Run a free audit, no signup required.",
+    "Know where your company's money is going - and find where you can save. Vendrz turns transactions, invoices, and contracts into spend intelligence: renewals, waste, billing anomalies, and savings opportunities. Run a free audit, no signup required.",
 };
 
 export default function RootLayout({

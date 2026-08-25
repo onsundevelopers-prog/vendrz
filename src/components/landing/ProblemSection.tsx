@@ -6,7 +6,7 @@ const PAINS = [
   {
     num: "01",
     title: "Silent auto-renewal",
-    body: "Miss the window and inaction is commitment — most agreements roll into another full term by default.",
+    body: "Miss the window and inaction is commitment - most agreements roll into another full term by default.",
   },
   {
     num: "02",
@@ -16,7 +16,7 @@ const PAINS = [
   {
     num: "03",
     title: "Escalations that compound",
-    body: "A 5% annual increase sounds small. Uncapped, it stacks every year on a larger base — quietly.",
+    body: "A 5% annual increase sounds small. Uncapped, it stacks every year on a larger base - quietly.",
   },
 ];
 
@@ -26,7 +26,7 @@ export function ProblemSection() {
   return (
     <section className="bg-surface py-24 lg:py-32">
       <div className="mx-auto grid max-w-7xl gap-14 px-5 lg:grid-cols-[1fr_1.15fr] lg:gap-20 lg:px-8">
-        {/* left — editorial header */}
+        {/* left - editorial header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -47,7 +47,7 @@ export function ProblemSection() {
           </p>
         </motion.div>
 
-        {/* right — numbered pains, hairline-separated */}
+        {/* right - numbered pains, hairline-separated */}
         <div className="divide-rule-light">
           {PAINS.map((pain, i) => (
             <motion.div

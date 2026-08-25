@@ -6,17 +6,17 @@ const STEPS = [
   {
     num: "01",
     title: "Connect your data",
-    body: "Financial feeds, invoices, and contracts — read-only. No passwords to vendors, no manual list to build. We match every transaction to a vendor automatically.",
+    body: "Financial feeds, invoices, and contracts - read-only. No passwords to vendors, no manual list to build. We match every transaction to a vendor automatically.",
   },
   {
     num: "02",
     title: "Vendrz analyzes spend",
-    body: "Transactions are normalized, vendors matched, and spend is computed across categories, trends, renewals, usage, and billing anomalies — by rules, not guesses.",
+    body: "Transactions are normalized, vendors matched, and spend is computed across categories, trends, renewals, usage, and billing anomalies - by rules, not guesses.",
   },
   {
     num: "03",
     title: "See waste, risks & savings",
-    body: "Unused seats, duplicate tools, price increases, and renewal traps — each opportunity quantified and tied to the evidence behind it.",
+    body: "Unused seats, duplicate tools, price increases, and renewal traps - each opportunity quantified and tied to the evidence behind it.",
   },
 ];
 

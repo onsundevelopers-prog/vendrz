@@ -55,7 +55,7 @@ export default function SavingsPage() {
     <div className="space-y-6">
       <SectionHeader
         title="Savings engine"
-        subtitle="Where the money is — and where you can get it back"
+        subtitle="Where the money is - and where you can get it back"
       />
 
       {/* tracking funnel */}

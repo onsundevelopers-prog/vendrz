@@ -3,7 +3,7 @@
 import { useId } from "react";
 
 /* ------------------------------------------------------------------ */
-/*  Beam — exact port of flask.do's animated light-beam sweep.        */
+/*  Beam - exact port of flask.do's animated light-beam sweep.        */
 /*  A traveling radial-gradient beam breathes, spikes, edge-fades and */
 /*  hue-shifts along the bottom edge of the wrapped element.          */
 /*  Keyframes + layering mirror the flask.do implementation.          */

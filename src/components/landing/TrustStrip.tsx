@@ -38,7 +38,7 @@ export function TrustStrip() {
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-canvas to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-canvas to-transparent" />
 
-      {/* vendor names — flask.do-style marquee, opposite direction */}
+      {/* vendor names - flask.do-style marquee, opposite direction */}
       <div className="border-b border-line/60 py-3.5">
         <div className="flex w-max animate-marquee" style={{ animationDirection: "reverse" }}>
           <Row items={VENDORS} />

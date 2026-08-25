@@ -7,19 +7,19 @@ const QUOTES = [
     initials: "RK",
     quote:
       "We found a renewal we'd have signed blind. Vendrz flagged it in the time it took to finish a coffee.",
-    title: "R. Kaur — Head of Procurement",
+    title: "R. Kaur - Head of Procurement",
   },
   {
     initials: "DT",
     quote:
       "Every finding links straight to the clause. That paper trail is the whole reason finance trusts it.",
-    title: "D. Tran — Controller",
+    title: "D. Tran - Controller",
   },
   {
     initials: "ML",
     quote:
       "First result in under a minute, no account, no sales call. That alone won us over.",
-    title: "M. Lopez — Ops Lead",
+    title: "M. Lopez - Ops Lead",
   },
 ];
 

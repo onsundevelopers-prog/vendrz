@@ -72,7 +72,7 @@ export default function UploadPage() {
         extraction = data.extraction ?? null;
       }
     } catch {
-      // No backend reachable — the simulated pipeline still produces a result.
+      // No backend reachable - the simulated pipeline still produces a result.
     }
     const ext = file.name.split(".").pop()?.toLowerCase() as "pdf" | "docx";
     startAnalysis(file.name, ext, file.size, extraction);
@@ -103,7 +103,7 @@ export default function UploadPage() {
             </h1>
             <p className="mt-4 text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
               We&apos;ll surface renewal dates, cancellation deadlines, price
-              escalations, and potential savings — with evidence for every finding.
+              escalations, and potential savings - with evidence for every finding.
             </p>
           </div>
 
@@ -148,7 +148,7 @@ export default function UploadPage() {
               {dragOver ? "Drop it here" : "Drag & drop your contract"}
             </p>
             <p className="mt-1 text-[13px] tracking-tight text-muted">
-              or <span className="font-medium text-emerald-400">browse files</span> — PDF or DOCX, up to {MAX_MB} MB
+              or <span className="font-medium text-emerald-400">browse files</span> - PDF or DOCX, up to {MAX_MB} MB
             </p>
             <div className="mt-6 flex items-center justify-center gap-5 text-[12px] tracking-tight text-muted">
               <span>PDF</span>

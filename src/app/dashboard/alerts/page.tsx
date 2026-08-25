@@ -32,7 +32,7 @@ export default function AlertsPage() {
     <div className="space-y-6">
       <SectionHeader
         title="Alerts"
-        subtitle="What's about to cost you more — and what already did"
+        subtitle="What's about to cost you more - and what already did"
       />
 
       <div className="grid gap-4 sm:grid-cols-4">

@@ -1,9 +1,9 @@
 /* ------------------------------------------------------------------ */
-/*  API contract — Vendrz                                   */
+/*  API contract - Vendrz                                   */
 /*                                                                     */
 /*  The UI talks to these functions. Today they are backed by a        */
 /*  localStorage store so the entire flow works with zero backend.     */
-/*  Each maps 1:1 to a FastAPI endpoint below — swapping in the real   */
+/*  Each maps 1:1 to a FastAPI endpoint below - swapping in the real   */
 /*  server is a matter of replacing the bodies with fetch() calls.     */
 /*                                                                     */
 /*  POST   /api/v1/contracts/upload        → createAnonymousSession    */

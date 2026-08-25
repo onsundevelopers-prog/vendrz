@@ -1,7 +1,7 @@
 /**
  * Server-only Gemini client for contract & invoice text extraction.
  *
- * Never import this from a client component — it reads GOOGLE_API_KEY from the
+ * Never import this from a client component - it reads GOOGLE_API_KEY from the
  * environment and calls the Generative Language API directly.
  *
  * Feed it plain text (extracted from PDF/DOCX by the upload flow). It returns
@@ -78,7 +78,7 @@ Extract structured data from the contract text that follows. Rules:
 async function generate(parts: Record<string, unknown>[]): Promise<ContractExtraction> {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
-    throw new Error("GOOGLE_API_KEY is not set — add it to .env.local");
+    throw new Error("GOOGLE_API_KEY is not set - add it to .env.local");
   }
 
   const res = await fetch(`${API_URL}?key=${apiKey}`, {
@@ -115,7 +115,7 @@ export async function extractContract(text: string): Promise<ContractExtraction>
 }
 
 /**
- * Extract directly from a document (PDFs are read natively by Gemini — no
+ * Extract directly from a document (PDFs are read natively by Gemini - no
  * separate text-extraction step needed).
  */
 export async function extractContractFromFile(params: {

@@ -41,7 +41,7 @@ export default function DashboardLayout({
   const audit = getDemoAudit();
   const alertCount = audit.alerts.filter((a) => !a.read).length;
 
-  // Close the mobile menu when navigating — adjust state during render so the
+  // Close the mobile menu when navigating - adjust state during render so the
   // change commits with the navigation instead of cascading from an effect.
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);

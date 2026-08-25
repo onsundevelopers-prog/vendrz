@@ -163,7 +163,7 @@ export function computeHealthScore(seed: VendorSeed): number {
 
   let score = 58;
 
-  // Utilization — healthy usage is the strongest signal.
+  // Utilization - healthy usage is the strongest signal.
   if (usage) {
     score += (usage.utilizationPct / 100) * 20;
     score -= Math.min(8, (usage.inactiveUsers / usage.seatsPurchased) * 14);
@@ -184,7 +184,7 @@ export function computeHealthScore(seed: VendorSeed): number {
     score += 5;
   }
 
-  // Contract risk — escalations and growth that outpace the business.
+  // Contract risk - escalations and growth that outpace the business.
   if (seed.escalationRate) score -= seed.escalationRate * 0.5;
   score -= Math.min(8, Math.max(0, seed.spendTrendPct - 15) * 0.4);
   score -= Math.min(6, billing.anomalies.length * 2);
@@ -295,7 +295,7 @@ function buildInvoices(
       amount,
       contractedAmount: contracted,
       status: i === 0 ? "pending" : "paid",
-      lineItems: [`${seed.name} subscription — ${seed.category}`],
+      lineItems: [`${seed.name} subscription - ${seed.category}`],
       anomalyId: anomaly ? anomaly.id : undefined,
     });
   }
@@ -353,7 +353,7 @@ export function computeVendorOpportunities(
       category,
       type: "duplicate_tools",
       title: `Potential overlap with ${names}`,
-      what: `${vendor.name} overlaps with ${names} in the ${category.toLowerCase()} category — the same teams are provisioned in both.`,
+      what: `${vendor.name} overlaps with ${names} in the ${category.toLowerCase()} category - the same teams are provisioned in both.`,
       why: "Duplicate tools split usage, seats, and admin overhead while you pay full price in each.",
       estimatedSavings: Math.round(vendor.annualSpend * 0.45),
       recommendedAction:
@@ -395,7 +395,7 @@ export function computeVendorOpportunities(
       what: `Your contract escalates ${vendor.priceEscalationRate}% per year${
         vendor.priceEscalationRate > 5 ? " with no cap" : ""
       }.`,
-      why: `Uncapped escalation compounds — capping at CPI (~3%) keeps $${est.toLocaleString()}/yr in the business.`,
+      why: `Uncapped escalation compounds - capping at CPI (~3%) keeps $${est.toLocaleString()}/yr in the business.`,
       estimatedSavings: est,
       recommendedAction: "Negotiate a cap at or below CPI before the next anniversary.",
       confidence: 0.78,
@@ -405,7 +405,7 @@ export function computeVendorOpportunities(
     });
   }
 
-  // 5. Cancellation opportunity — very low utilization
+  // 5. Cancellation opportunity - very low utilization
   if (vendor.usage && vendor.usage.utilizationPct < 40 && vendor.annualSpend >= 2000) {
     opps.push({
       vendorId: vendor.id,
@@ -413,7 +413,7 @@ export function computeVendorOpportunities(
       category,
       type: "cancellation",
       title: `Cancel or cut ${vendor.name}`,
-      what: `Utilization is ${vendor.usage.utilizationPct.toFixed(0)}% — only ${vendor.usage.activeUsers} of ${vendor.usage.seatsPurchased} seats are active.`,
+      what: `Utilization is ${vendor.usage.utilizationPct.toFixed(0)}% - only ${vendor.usage.activeUsers} of ${vendor.usage.seatsPurchased} seats are active.`,
       why: `The team is effectively not using this tool; it costs ${money(
         vendor.annualSpend
       )}/yr.`,
@@ -440,7 +440,7 @@ export function computeVendorOpportunities(
       title: `Recover the ${vendor.billing.variancePct > 0 ? "+" : ""}${vendor.billing.variancePct}% billing variance`,
       what: `Actual monthly billing is ${money(vendor.billing.actualMonthly)} vs ${money(
         vendor.billing.expectedMonthly
-      )} contracted — a ${vendor.billing.variancePct > 0 ? "+" : ""}${vendor.billing.variancePct}% variance.`,
+      )} contracted - a ${vendor.billing.variancePct > 0 ? "+" : ""}${vendor.billing.variancePct}% variance.`,
       why: "The gap is unexplained by usage or headcount and compounds every billing cycle.",
       estimatedSavings: est,
       recommendedAction:
@@ -450,7 +450,7 @@ export function computeVendorOpportunities(
     });
   }
 
-  // 7. Usage optimization — cost per active user above benchmark
+  // 7. Usage optimization - cost per active user above benchmark
   if (vendor.usage && vendor.usage.costPerActiveUser > 60) {
     const excess = (vendor.usage.costPerActiveUser - 45) * vendor.usage.activeUsers * 12 * 0.3;
     if (excess > 400) {
@@ -461,7 +461,7 @@ export function computeVendorOpportunities(
         type: "usage_optimization",
         title: `Optimize cost per active user`,
         what: `Cost per active user is ${money(vendor.usage.costPerActiveUser)}/mo vs a ~$45 benchmark for this category.`,
-        why: "High per-seat pricing means every seat matters — right-sizing tiers or plans would pay off immediately.",
+        why: "High per-seat pricing means every seat matters - right-sizing tiers or plans would pay off immediately.",
         estimatedSavings: Math.round(excess),
         recommendedAction: "Review plan tiers and negotiate a volume discount on the active base.",
         confidence: 0.6,

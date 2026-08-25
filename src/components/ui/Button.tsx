@@ -10,13 +10,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
   href?: string;
+  /** Shimmer + aura + beam treatment (used only on the primary Run free audit CTA). */
+  glow?: boolean;
 }
 
 const VARIANTS: Record<Variant, string> = {
-  /* Primary — white pill, black text, hover scale up */
+  /* Primary - white pill, black text, hover scale up */
   primary:
     "bg-white text-black hover:scale-[1.02] hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-  /* Secondary — transparent, hairline border, hover soft dark bg fill */
+  /* Secondary - transparent, hairline border, hover soft dark bg fill */
   outline:
     "border border-white/15 text-fg hover:bg-white/10 hover:border-white/25",
   ghost: "text-muted hover:text-fg hover:bg-white/5",
@@ -32,15 +34,24 @@ const SIZES: Record<Size, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", href, className = "", children, ...rest }, ref) => {
+  ({ variant = "primary", size = "md", href, glow = false, className = "", children, ...rest }, ref) => {
     const classes = [
       "inline-flex items-center justify-center rounded-full font-semibold tracking-[-0.01em] transition-all duration-200 ease-out select-none whitespace-nowrap",
       "disabled:opacity-50 disabled:pointer-events-none",
       "active:scale-[0.98]",
+      glow ? "cta-glow relative" : "",
       VARIANTS[variant],
       SIZES[size],
       className,
     ].join(" ");
+
+    const glowLayers = glow ? (
+      <>
+        <span aria-hidden="true" className="btn-aura" />
+        <span aria-hidden="true" className="btn-beam" />
+        <span aria-hidden="true" className="btn-shimmer" />
+      </>
+    ) : null;
 
     if (href) {
       const onClick = rest.onClick as
@@ -48,12 +59,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         | undefined;
       return (
         <Link href={href} className={classes} onClick={onClick}>
+          {glowLayers}
           {children}
         </Link>
       );
     }
     return (
       <button ref={ref} className={classes} {...rest}>
+        {glowLayers}
         {children}
       </button>
     );

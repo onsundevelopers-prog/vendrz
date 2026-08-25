@@ -25,7 +25,7 @@ export default function GmailDiscoveryPage() {
   const [importing, setImporting] = useState(false);
   const [prevUserId, setPrevUserId] = useState<string>(userId);
 
-  // Keep the list in sync if the active account changes — adjust state during
+  // Keep the list in sync if the active account changes - adjust state during
   // render instead of in an effect (avoids the set-state-in-effect cascade).
   if (userId !== prevUserId) {
     setPrevUserId(userId);
@@ -100,7 +100,7 @@ export default function GmailDiscoveryPage() {
           </h2>
           <p className="mt-1 max-w-xl text-[13.5px] leading-relaxed text-muted">
             Vendrz searched for contract-signal keywords and attachments. Check the
-            documents you want analyzed — only your selections enter the pipeline.
+            documents you want analyzed - only your selections enter the pipeline.
           </p>
         </div>
         <div className="flex gap-2.5">

@@ -6,11 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 const FAQS = [
   {
     q: "Do I really not need an account to get results?",
-    a: "Correct. Upload a PDF or DOCX and you get the full analysis — risk score, findings with evidence, and a savings range — with no name, email, or signup. We only ask you to create an account if you want us to keep monitoring that contract.",
+    a: "Correct. Upload a PDF or DOCX and you get the full analysis - risk score, findings with evidence, and a savings range - with no name, email, or signup. We only ask you to create an account if you want us to keep monitoring that contract.",
   },
   {
     q: "Where do the savings numbers come from?",
-    a: "Deterministic rules applied to terms extracted from your document — escalation rates, auto-renewal status, annual value — combined with conservative market benchmarks. The LLM never outputs the final dollar figure, and every estimate carries a not-guaranteed disclaimer with its full methodology.",
+    a: "Deterministic rules applied to terms extracted from your document - escalation rates, auto-renewal status, annual value - combined with conservative market benchmarks. The LLM never outputs the final dollar figure, and every estimate carries a not-guaranteed disclaimer with its full methodology.",
   },
   {
     q: "Is my contract shared or used to train models?",

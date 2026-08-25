@@ -120,7 +120,7 @@ function RenewalRow({ v }: { v: VendorProfile }) {
             </p>
           </>
         ) : (
-          <span className="text-[12px] text-muted">—</span>
+          <span className="text-[12px] text-muted">-</span>
         )}
       </td>
       <td className="px-5 py-3.5 text-[13px] font-medium text-fg">{money(v.annualSpend)}</td>
@@ -130,7 +130,7 @@ function RenewalRow({ v }: { v: VendorProfile }) {
             {pct(v.risk.expectedIncreasePct)}
           </span>
         ) : (
-          <span className="text-[12px] text-muted/60">—</span>
+          <span className="text-[12px] text-muted/60">-</span>
         )}
       </td>
       <td className="px-5 py-3.5">

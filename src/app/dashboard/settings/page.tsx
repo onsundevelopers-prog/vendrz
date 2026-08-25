@@ -64,7 +64,7 @@ export default function SettingsPage() {
           </span>
         </div>
         <p className="mt-3 text-[12px] text-muted/70">
-          Authentication provider is used for identity only — it grants no mailbox access.
+          Authentication provider is used for identity only - it grants no mailbox access.
         </p>
       </motion.section>
 
@@ -95,7 +95,7 @@ export default function SettingsPage() {
                     <span className="">gmail.readonly</span>
                   </>
                 ) : (
-                  "Not connected — optional contract discovery"
+                  "Not connected - optional contract discovery"
                 )}
               </p>
             </div>

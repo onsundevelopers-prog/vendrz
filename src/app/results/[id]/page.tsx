@@ -24,7 +24,7 @@ export default function ResultsPage() {
       <main className="flex min-h-screen items-center justify-center bg-canvas px-5">
         <div className="text-center">
           <p className="text-[15px] text-muted">
-            Analysis not ready — it may still be processing or the session expired.
+            Analysis not ready - it may still be processing or the session expired.
           </p>
           <Link href="/upload" className="mt-2 inline-block text-[13px] tracking-tight text-emerald-400 underline underline-offset-4">
             Back to upload
@@ -117,8 +117,8 @@ export default function ResultsPage() {
                 </p>
                 <p className="mt-0.5 text-[13px] font-normal leading-relaxed tracking-[-0.01em] text-muted">
                   This report expires in 14 days. Create a free account and we&apos;ll
-                  keep monitoring this contract — renewal deadlines, escalations, and
-                  new opportunities — then alert you before they slip past.
+                  keep monitoring this contract - renewal deadlines, escalations, and
+                  new opportunities - then alert you before they slip past.
                 </p>
               </div>
               <Button

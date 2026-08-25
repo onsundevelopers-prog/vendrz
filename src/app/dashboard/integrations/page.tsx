@@ -18,7 +18,7 @@ export default function IntegrationsPage() {
     <div className="space-y-6">
       <SectionHeader
         title="Integrations"
-        subtitle="Connect your data. Read-only, always — we cannot move money."
+        subtitle="Connect your data. Read-only, always - we cannot move money."
       />
 
       {/* trust banner */}
@@ -58,7 +58,7 @@ export default function IntegrationsPage() {
             <p className="text-[14.5px] font-semibold text-fg">Gmail contract discovery</p>
             <p className="mt-0.5 text-[13px] leading-relaxed text-muted">
               {gmail
-                ? "Connected — discover contract-looking emails and attachments, then choose what to import."
+                ? "Connected - discover contract-looking emails and attachments, then choose what to import."
                 : "Optional, read-only discovery of contract-looking emails and attachments. Nothing imports without your say-so."}
             </p>
           </div>

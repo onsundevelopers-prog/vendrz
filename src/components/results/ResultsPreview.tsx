@@ -138,7 +138,7 @@ export function ResultsPreview({
       </div>
 
       <div className={`grid gap-0 ${compact ? "lg:grid-cols-[260px_1fr]" : "lg:grid-cols-[280px_1fr]"}`}>
-        {/* left rail — risk + savings */}
+        {/* left rail - risk + savings */}
         <div className="border-b border-line p-5 lg:border-b-0 lg:border-r">
           <RiskGauge score={result.riskScore} label={result.riskLabel} />
 
@@ -159,12 +159,12 @@ export function ResultsPreview({
           <div className="mt-4 space-y-1.5">
             {result.renewalDate && <KeyFact label="Renews" value={fmtDate(result.renewalDate)} />}
             {result.cancellationDeadline && <KeyFact label="Cancel by" value={fmtDate(result.cancellationDeadline)} />}
-            {result.autoRenew && <KeyFact label="Auto-renew" value={`${result.autoRenewNoticeDays ?? "—"} day notice`} />}
+            {result.autoRenew && <KeyFact label="Auto-renew" value={`${result.autoRenewNoticeDays ?? "-"} day notice`} />}
             {result.annualValue ? <KeyFact label="Annual value" value={money(result.annualValue)} /> : null}
           </div>
         </div>
 
-        {/* right — findings / method */}
+        {/* right - findings / method */}
         <div className="p-5">
           <div className="relative mb-4 flex items-center gap-1 rounded-lg bg-white/[0.06] p-1">
             {(

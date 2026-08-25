@@ -40,7 +40,7 @@ export function PortfolioShowcase() {
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
             Once you claim an account, Vendrz keeps a live view of your whole
-            portfolio — renewals, risk, and opportunity ranges for every scanned
+            portfolio - renewals, risk, and opportunity ranges for every scanned
             contract.
           </p>
         </motion.div>

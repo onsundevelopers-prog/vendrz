@@ -16,7 +16,7 @@ export const pct = (n: number, digits = 0): string =>
   `${n > 0 ? "+" : ""}${n.toFixed(digits)}%`;
 
 export const formatDate = (iso: string | null): string => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -25,7 +25,7 @@ export const formatDate = (iso: string | null): string => {
 };
 
 export const formatDateShort = (iso: string | null): string => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",

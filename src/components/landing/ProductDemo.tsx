@@ -27,12 +27,12 @@ export function ProductDemo() {
             The scanner
           </p>
           <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">
-            One upload. Dates, risks &amp; savings — with receipts.
+            One upload. Dates, risks &amp; savings - with receipts.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
             Every scan runs the same staged pipeline: extraction, clause
             segmentation, validation, then rule-based risk scoring. Nothing is
-            generated on vibes — every number traces back to a clause.
+            generated on vibes - every number traces back to a clause.
           </p>
         </motion.div>
 
@@ -47,7 +47,7 @@ export function ProductDemo() {
           <ResultsPreview result={DEMO_RESULT} />
         </motion.div>
 
-        {/* pipeline — the real stages, as mono trace */}
+        {/* pipeline - the real stages, as mono trace */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

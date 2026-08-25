@@ -16,13 +16,13 @@ import { Button } from "@/components/ui/Button";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const TRUST_POINTS = [
-  "Read-only access — we can never move money or touch your accounts",
+  "Read-only access - we can never move money or touch your accounts",
   "Contracts encrypted in transit and at rest, never shared",
   "Renewal, risk and savings intelligence with receipts for every finding",
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Split shell — brand panel left, auth card right                    */
+/*  Split shell - brand panel left, auth card right                    */
 /* ------------------------------------------------------------------ */
 
 function AuthSplit({ children }: { children: React.ReactNode }) {
@@ -39,7 +39,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
             Vendor intelligence, in one place.
           </h1>
           <p className="mt-4 max-w-sm text-pretty text-[15px] leading-[1.6] tracking-[-0.01em] text-muted">
-            Every contract, renewal deadline, risk and savings opportunity —
+            Every contract, renewal deadline, risk and savings opportunity -
             extracted, monitored and acted on from a single command center.
           </p>
           <ul className="mt-9 space-y-4">
@@ -122,7 +122,7 @@ function SessionBanner({ sessionId, mode }: { sessionId: string | null; mode: "l
 }
 
 /* ------------------------------------------------------------------ */
-/*  Clerk mode — hosted components styled to match Vendrz.             */
+/*  Clerk mode - hosted components styled to match Vendrz.             */
 /* ------------------------------------------------------------------ */
 
 const clerkAppearance = {

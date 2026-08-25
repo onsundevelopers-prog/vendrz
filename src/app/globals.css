@@ -5,7 +5,7 @@
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* ------------------------------------------------------------------ */
-  /*  Dark system — developer-grade (Linear / Vercel / Flask school)    */
+  /*  Dark system - developer-grade (Linear / Vercel / Flask school)    */
   /* ------------------------------------------------------------------ */
   --color-canvas: #08080a; /* page background (pitch dark)      */
   --color-surface: #111115; /* container surfaces                */
@@ -14,13 +14,13 @@
   --color-fg: #f4f4f5; /* primary text                      */
   --color-muted: #a1a1aa; /* secondary / muted text            */
 
-  /* 1px hairlines — rgba(255,255,255,0.08) everywhere */
+  /* 1px hairlines - rgba(255,255,255,0.08) everywhere */
   --color-line: rgba(255, 255, 255, 0.08);
   --color-line-strong: rgba(255, 255, 255, 0.15);
   --color-rule-light: rgba(255, 255, 255, 0.08);
   --color-rule-dark: rgba(255, 255, 255, 0.08);
 
-  /* Motion — infinite trust strip scroll */
+  /* Motion - infinite trust strip scroll */
   --animate-marquee: marquee 36s linear infinite;
 
   @keyframes marquee {
@@ -32,7 +32,7 @@
     }
   }
 
-  /* Legacy navy scale — kept for compatibility, replaced by surface tokens */
+  /* Legacy navy scale - kept for compatibility, replaced by surface tokens */
   --color-navy-950: #0a0b0e;
   --color-navy-900: #0d0e12;
   --color-navy-850: #111115;
@@ -227,6 +227,103 @@ body {
 .auth-input:focus {
   border-color: rgba(52, 211, 153, 0.5);
   background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- Run free audit CTA: shimmer + aura + beam ---------- */
+
+/* Only the primary Run free audit buttons carry animation. */
+.cta-glow {
+  isolation: isolate;
+}
+
+/* aura - pulsing emerald halo behind the button */
+.cta-glow .btn-aura {
+  position: absolute;
+  inset: -12px;
+  z-index: -1;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgba(52, 211, 153, 0.5), transparent 72%);
+  filter: blur(12px);
+  opacity: 0.7;
+  animation: cta-aura-pulse 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes cta-aura-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.07);
+  }
+}
+
+/* beam - traveling emerald hairline around the perimeter */
+@property --cta-beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.cta-glow .btn-beam {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--cta-beam-angle, 0deg),
+    transparent 0%,
+    rgba(52, 211, 153, 0.9) 10%,
+    rgba(255, 255, 255, 0.8) 16%,
+    transparent 28%,
+    transparent 62%,
+    rgba(52, 211, 153, 0.55) 72%,
+    transparent 84%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: cta-beam-spin 3.6s linear infinite;
+  pointer-events: none;
+}
+@keyframes cta-beam-spin {
+  to {
+    --cta-beam-angle: 360deg;
+  }
+}
+
+/* shimmer - light sweep across the button face */
+.cta-glow .btn-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+.cta-glow .btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  background: linear-gradient(
+    110deg,
+    transparent 40%,
+    rgba(0, 0, 0, 0.045) 47%,
+    rgba(255, 255, 255, 0.95) 51%,
+    rgba(52, 211, 153, 0.3) 56%,
+    transparent 64%
+  );
+  animation: cta-shimmer-sweep 3s ease-in-out infinite;
+}
+@keyframes cta-shimmer-sweep {
+  0% {
+    transform: translateX(-70%);
+  }
+  55%,
+  100% {
+    transform: translateX(70%);
+  }
 }
 
 /* ---------- Rolling number cells (NumberFlow-style) ---------- */

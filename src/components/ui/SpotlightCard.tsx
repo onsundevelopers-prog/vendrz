@@ -8,7 +8,7 @@ import {
 } from "react";
 
 /* ------------------------------------------------------------------ */
-/*  Cursor spotlight (Linear style) — a radial glow that follows the  */
+/*  Cursor spotlight (Linear style) - a radial glow that follows the  */
 /*  pointer across dark card surfaces.                                 */
 /* ------------------------------------------------------------------ */
 

@@ -1,6 +1,6 @@
 
 /**
- * Browser chrome wrapper — makes a product panel read as a real application
+ * Browser chrome wrapper - makes a product panel read as a real application
  * window instead of a decorative card.
  */
 export function BrowserFrame({

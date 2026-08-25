@@ -140,7 +140,7 @@ export function Pricing() {
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
             Every plan includes unlimited audits. No credit card required to see
-            your first result — ever.
+            your first result - ever.
           </p>
         </motion.div>
 

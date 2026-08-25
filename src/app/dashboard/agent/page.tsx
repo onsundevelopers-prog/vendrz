@@ -59,7 +59,7 @@ function AgentInner() {
   const endRef = useRef<HTMLDivElement>(null);
   const [prevUserId, setPrevUserId] = useState(userId);
 
-  // Prefill from ?vendor= — jump straight to that vendor's status.
+  // Prefill from ?vendor= - jump straight to that vendor's status.
   useEffect(() => {
     const vendor = params.get("vendor");
     if (!vendor) return;
@@ -111,7 +111,7 @@ function AgentInner() {
       const agentMsg: AgentMessage = {
         id: `m-${Date.now()}`,
         role: "agent",
-        content: `✅ **${pendingApproval.action === "cancel_contract" ? "Cancellation notice" : "Reply"} sent to ${pendingApproval.vendorName}** — recorded in your activity log. ${
+        content: `✅ **${pendingApproval.action === "cancel_contract" ? "Cancellation notice" : "Reply"} sent to ${pendingApproval.vendorName}** - recorded in your activity log. ${
           pendingApproval.action === "cancel_contract"
             ? "I've flagged the vendor for follow-up at the renewal date."
             : "You'll see a copy in the sent folder of the connected inbox."
@@ -177,7 +177,7 @@ function AgentInner() {
             Gemini vendor agent
           </h2>
           <p className="mt-1 text-[12.5px] tracking-tight text-muted">
-            Manages vendors, reads your vendor correspondence, drafts replies — and never sends without your approval
+            Manages vendors, reads your vendor correspondence, drafts replies - and never sends without your approval
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -217,7 +217,7 @@ function AgentInner() {
             </div>
           </div>
           <div className="px-5 py-4">
-            <p className="text-[10.5px] uppercase tracking-[0.12em] text-muted">Draft — nothing sent yet</p>
+            <p className="text-[10.5px] uppercase tracking-[0.12em] text-muted">Draft - nothing sent yet</p>
             <div className="mt-2 rounded-xl border border-line bg-canvas px-4 py-3.5">
               <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">{pendingApproval.subject}</p>
               <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-fg/90">
@@ -281,7 +281,7 @@ function AgentInner() {
                   <span className="flex size-14 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.07] text-[22px] text-emerald-400">✦</span>
                   <p className="mt-4 text-[15px] font-semibold text-fg">How can I help with your vendors?</p>
                   <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-muted">
-                    I can check vendor status, summarize their emails, draft replies, and execute cancellations — always with your approval before sending.
+                    I can check vendor status, summarize their emails, draft replies, and execute cancellations - always with your approval before sending.
                   </p>
                   <div className="mt-5 flex max-w-md flex-col gap-2">
                     {SUGGESTIONS.map((s) => (

@@ -1,7 +1,7 @@
 import type { BillingAnomaly, ContractStatus, SpendCategory } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
-/*  Vendor seeds — the deterministic input for every engine.          */
+/*  Vendor seeds - the deterministic input for every engine.          */
 /*  Flagship vendors (AWS, Adobe, Slack, Cursor) carry the spec's     */
 /*  worked examples so the demo behaves exactly like the product doc. */
 /* ------------------------------------------------------------------ */
@@ -285,7 +285,7 @@ export const CURATED_VENDORS: VendorSeed[] = [
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Long-tail filler vendors — deterministic generation from a pool.  */
+/*  Long-tail filler vendors - deterministic generation from a pool.  */
 /* ------------------------------------------------------------------ */
 
 export interface FillerEntry {

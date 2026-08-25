@@ -6,7 +6,7 @@ import { useSpotlight } from "@/components/ui/SpotlightCard";
 const ITEMS: { label: string; body: string }[] = [
   {
     label: "Risk score",
-    body: "Deterministic rules, not model vibes — every point attributable to a clause.",
+    body: "Deterministic rules, not model vibes - every point attributable to a clause.",
   },
   {
     label: "Evidence citations",
@@ -70,7 +70,7 @@ export function Capabilities() {
             Trust the clause, not the claim.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
-            Finance leaders don&apos;t need more AI confidence. They need receipts —
+            Finance leaders don&apos;t need more AI confidence. They need receipts -
             every feature is built to be verified.
           </p>
         </motion.div>
