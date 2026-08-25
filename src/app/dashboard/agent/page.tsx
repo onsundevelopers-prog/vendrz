@@ -15,7 +15,6 @@ import {
 } from "@/lib/store";
 import { agentReply, approvalOutcome } from "@/lib/services/agent";
 import { useAuthUser } from "@/lib/auth";
-import { Panel } from "@/components/ui/primitives";
 import { timeAgo, formatDateShort } from "@/lib/format";
 import type { AgentMessage, EmailThread } from "@/lib/types";
 
@@ -203,7 +202,7 @@ function AgentInner() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/[0.05]"
+          className="overflow-hidden border border-amber-500/30 bg-amber-500/[0.05]"
         >
           <div className="flex items-center gap-3 border-b border-amber-500/20 px-5 py-3.5">
             <span className="flex size-8 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 text-[15px]">⚠</span>
@@ -273,7 +272,25 @@ function AgentInner() {
       <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
         {/* chat column */}
         <div className="space-y-5">
-          <Panel className="flex h-[560px] flex-col overflow-hidden">
+          <div className="panel-surface flex h-[560px] flex-col overflow-hidden">
+            <div className="panel-header">
+              <span className="panel-title">Conversation</span>
+              <span className="panel-sub">read-only until you approve</span>
+              <div className="flex items-center gap-1">
+                {messages.length > 0 && (
+                  <button
+                    onClick={() => {
+                      clearAgentMessages(userId);
+                      setMessages([]);
+                      setPendingApproval(null);
+                    }}
+                    className="toolbar-btn !h-7"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
             {/* chat messages */}
             <div className="flex-1 space-y-4 overflow-y-auto p-5">
               {messages.length === 0 && !thinking && (
@@ -288,7 +305,7 @@ function AgentInner() {
                       <button
                         key={s}
                         onClick={() => void send(s)}
-                        className="rounded-xl border border-line bg-white/[0.03] px-4 py-2.5 text-left text-[12.5px] tracking-tight text-muted transition-colors hover:border-emerald-500/30 hover:text-fg"
+                        className="rounded-md border border-line bg-white/[0.03] px-4 py-2.5 text-left text-[12.5px] tracking-tight text-muted transition-colors hover:border-emerald-500/30 hover:text-fg"
                       >
                         {s}
                       </button>
@@ -301,7 +318,7 @@ function AgentInner() {
                 <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div className={`max-w-[85%] ${m.role === "user" ? "text-right" : ""}`}>
                     <div
-                      className={`inline-block rounded-2xl border px-4 py-3 text-left text-[13.5px] leading-relaxed tracking-[-0.01em] ${
+                      className={`inline-block rounded-lg border px-4 py-3 text-left text-[13.5px] leading-relaxed tracking-[-0.01em] ${
                         m.role === "user"
                           ? "border-white/10 bg-white/[0.07] text-fg"
                           : "border-line bg-white/[0.03] text-fg/90"
@@ -326,7 +343,7 @@ function AgentInner() {
 
               {thinking && (
                 <div className="flex justify-start">
-                  <div className="flex items-center gap-2 rounded-2xl border border-line bg-white/[0.03] px-4 py-3">
+                  <div className="flex items-center gap-2 rounded-lg border border-line bg-white/[0.03] px-4 py-3">
                     <span className="flex gap-1">
                       {[0, 1, 2].map((i) => (
                         <motion.span
@@ -372,13 +389,13 @@ function AgentInner() {
                 The agent never sends emails without your explicit confirmation.
               </p>
             </div>
-          </Panel>
+          </div>
         </div>
 
         {/* right rail */}
         <div className="space-y-5">
           {/* email panel */}
-          <Panel className="overflow-hidden">
+          <div className="panel-surface overflow-hidden">
             <div className="flex items-center justify-between border-b border-line px-4 py-3.5">
               <div>
                 <h3 className="text-[14px] font-semibold tracking-[-0.01em] text-fg">Vendor inbox</h3>
@@ -420,11 +437,11 @@ function AgentInner() {
                 })}
               </div>
             </div>
-          </Panel>
+          </div>
 
           {/* thread detail */}
           {selected && (
-            <Panel className="p-4">
+            <div className="border border-line bg-surface p-4">
               <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Selected thread</p>
               <p className="mt-1.5 text-[13.5px] font-medium leading-snug text-fg">{selected.subject}</p>
               <p className="mt-1 text-[12px] leading-relaxed text-muted">{selected.snippet}</p>
@@ -448,11 +465,11 @@ function AgentInner() {
                   Summarize
                 </button>
               </div>
-            </Panel>
+            </div>
           )}
 
           {/* agent actions panel */}
-          <Panel className="overflow-hidden">
+          <div className="panel-surface overflow-hidden">
             <div className="border-b border-line px-4 py-3.5">
               <h3 className="text-[14px] font-semibold tracking-[-0.01em] text-fg">Agent actions</h3>
               <p className="text-[11px] tracking-tight text-muted">Drafts, sends, and cancellations</p>
@@ -486,7 +503,7 @@ function AgentInner() {
                 </button>
               </div>
             </div>
-          </Panel>
+          </div>
         </div>
       </div>
     </div>

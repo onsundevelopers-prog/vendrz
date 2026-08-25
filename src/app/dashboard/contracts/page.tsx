@@ -1,270 +1,354 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useNow } from "@/lib/useNow";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { Plus, ScanSearch, Sparkles } from "lucide-react";
 import { getContracts, getDemoAudit } from "@/lib/store";
 import { useAuthUser } from "@/lib/auth";
-import { Panel } from "@/components/ui/primitives";
-import { money, formatDate, pct } from "@/lib/format";
-import type { VendorProfile } from "@/lib/types";
-
-type SortKey = "renewal" | "spend" | "savings" | "risk";
+import { DataTable, type Column } from "@/components/ui/DataTable";
+import { Inspector, DetailRow } from "@/components/ui/Inspector";
+import {
+  AmountCell,
+  ArrowLink,
+  AutoRenewChip,
+  Kpi,
+  KpiStrip,
+  PageHeader,
+  RiskChip,
+  StatusChip,
+  VendorCell,
+} from "@/components/dashboard/shared";
+import { money, formatDate, formatDateShort, pct, daysUntil } from "@/lib/format";
+import type { ContractRecord, VendorProfile } from "@/lib/types";
 
 export default function ContractsPage() {
+  const router = useRouter();
   const audit = getDemoAudit();
   const auth = useAuthUser();
   const uploaded = getContracts(auth.id ?? "").filter((c) => !c.isSample);
-
-  const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("renewal");
-  const [sortAsc, setSortAsc] = useState(true);
+  const [selected, setSelected] = useState<VendorProfile | null>(null);
 
   const withTerms = useMemo(
     () =>
-      audit.vendors.filter((v) => v.renewalDate || v.contractStatus !== "active" || v.priceEscalationRate),
+      audit.vendors.filter(
+        (v) => v.renewalDate || v.contractStatus !== "active" || v.priceEscalationRate
+      ),
     [audit.vendors]
   );
 
-  const filtered = useMemo(() => {
-    let list = withTerms;
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (v) => v.name.toLowerCase().includes(q) || v.category.toLowerCase().includes(q)
-      );
-    }
-    const sorted = [...list].sort((a, b) => {
-      switch (sortKey) {
-        case "renewal":
-          return (a.renewalDate ?? "9999").localeCompare(b.renewalDate ?? "9999");
-        case "spend":
-          return a.annualSpend - b.annualSpend;
-        case "savings":
-          return a.potentialSavings - b.potentialSavings;
-        case "risk":
-          return a.healthScore - b.healthScore;
-      }
-    });
-    return sortAsc ? sorted : sorted.reverse();
-  }, [withTerms, query, sortKey, sortAsc]);
+  const columns: Column<VendorProfile>[] = useMemo(
+    () => [
+      {
+        id: "vendor",
+        label: "Vendor",
+        width: 190,
+        sortable: true,
+        sortValue: (v) => v.name,
+        filterValue: (v) => `${v.name} ${v.category}`,
+        render: (v) => <VendorCell name={v.name} sub={v.description} href={`/dashboard/vendors/${v.id}`} />,
+      },
+      {
+        id: "status",
+        label: "Status",
+        width: 110,
+        sortable: true,
+        sortValue: (v) => v.contractStatus,
+        filterValue: (v) => v.contractStatus,
+        render: (v) => <StatusChip status={v.contractStatus} />,
+      },
+      {
+        id: "value",
+        label: "Annual value",
+        width: 110,
+        align: "right",
+        sortable: true,
+        sortValue: (v) => v.contractValue,
+        render: (v) => <AmountCell value={v.contractValue} suffix="/yr" />,
+      },
+      {
+        id: "start",
+        label: "Start",
+        width: 100,
+        sortable: true,
+        sortValue: (v) => v.startDate,
+        render: (v) => <span className="text-[12px] text-muted">{formatDateShort(v.startDate)}</span>,
+      },
+      {
+        id: "renewal",
+        label: "Renewal",
+        width: 120,
+        sortable: true,
+        sortValue: (v) => v.renewalDate ?? "9999",
+        filterValue: (v) => v.renewalDate ?? "",
+        render: (v) => {
+          if (!v.renewalDate) return <span className="text-[11.5px] text-muted/60">Rolling</span>;
+          const d = daysUntil(v.renewalDate);
+          return (
+            <div>
+              <span className={`text-[12.5px] font-medium ${d <= 30 ? "text-red-400" : d <= 60 ? "text-amber-400" : "text-fg"}`}>
+                {formatDateShort(v.renewalDate)}
+              </span>
+              <span className="ml-1.5 text-[10px] text-muted">{d}d</span>
+            </div>
+          );
+        },
+      },
+      {
+        id: "cancel",
+        label: "Cancel by",
+        width: 110,
+        sortable: true,
+        sortValue: (v) => v.cancellationDeadline ?? "9999",
+        render: (v) => {
+          if (!v.cancellationDeadline) return <span className="text-[11.5px] text-muted/60">-</span>;
+          const d = daysUntil(v.cancellationDeadline);
+          return (
+            <span className={`text-[12px] font-medium ${d < 0 ? "text-red-400" : d <= 14 ? "text-amber-400" : "text-fg/85"}`}>
+              {formatDateShort(v.cancellationDeadline)}
+            </span>
+          );
+        },
+      },
+      {
+        id: "auto",
+        label: "Auto-renew",
+        width: 110,
+        sortable: true,
+        sortValue: (v) => Number(v.autoRenew),
+        render: (v) => <AutoRenewChip on={v.autoRenew} />,
+      },
+      {
+        id: "escalation",
+        label: "Escalation",
+        width: 90,
+        align: "right",
+        sortable: true,
+        sortValue: (v) => v.priceEscalationRate ?? 0,
+        render: (v) =>
+          v.priceEscalationRate ? (
+            <span className="text-[12.5px] font-medium text-orange-400">{pct(v.priceEscalationRate)}</span>
+          ) : (
+            <span className="text-[11.5px] text-muted/60">-</span>
+          ),
+      },
+      {
+        id: "risk",
+        label: "Risk",
+        width: 100,
+        sortable: true,
+        sortValue: (v) => v.risk?.level ?? "zzz",
+        render: (v) => <RiskChip level={v.risk?.level} />,
+      },
+      {
+        id: "savings",
+        label: "Potential savings",
+        width: 130,
+        align: "right",
+        sortable: true,
+        sortValue: (v) => v.potentialSavings,
+        render: (v) =>
+          v.potentialSavings > 0 ? (
+            <AmountCell value={v.potentialSavings} accent="text-emerald-400" />
+          ) : (
+            <span className="text-[11.5px] text-muted/60">-</span>
+          ),
+      },
+      {
+        id: "reviewed",
+        label: "Last reviewed",
+        width: 110,
+        sortable: true,
+        sortValue: (v) => v.lastReviewed,
+        render: (v) => <span className="text-[12px] text-muted">{formatDateShort(v.lastReviewed)}</span>,
+      },
+    ],
+    []
+  );
+
+  const riskCount = withTerms.filter((v) => v.risk).length;
+  const urgentCount = withTerms.filter((v) => v.risk && v.risk.daysToRenewal <= 60).length;
+  const escCount = withTerms.filter((v) => (v.priceEscalationRate ?? 0) >= 5).length;
+  const savings = withTerms.reduce((a, v) => a + v.potentialSavings, 0);
 
   return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div>
-          <h2 className="text-xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg">Contracts</h2>
-          <p className="mt-1 text-[12.5px] tracking-tight text-muted">
-            {withTerms.length} contract-term vendors · renewals, escalations &amp; risk
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative w-full sm:w-64">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-muted">⌕</span>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search vendor…"
-              className="h-10 w-full rounded-xl border border-line bg-surface pl-8 pr-3 text-[13px] tracking-tight text-fg outline-none transition-colors placeholder:text-muted focus:border-emerald-400/60"
-            />
-          </div>
+    <div className="space-y-4">
+      <PageHeader
+        title="Contracts"
+        sub={`${withTerms.length} contracts with terms · ${money(audit.totalAnnualSpend)}/yr committed`}
+        actions={
           <Link
-            href="/upload"
-            className="inline-flex h-10 items-center rounded-full bg-white px-4 text-[13px] font-medium text-black transition-opacity hover:opacity-90"
+            href="/audit"
+            className="toolbar-btn primary !h-8"
           >
-            Scan a contract
+            <Plus size={14} /> Scan a contract
           </Link>
-        </div>
-      </motion.div>
+        }
+      />
 
-      <Panel delay={0.08} className="overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-left">
-            <thead>
-              <tr className="border-b border-line">
-                <th className="px-5 py-3.5"><Sortable label="Vendor" k="renewal" sortKey={sortKey} sortAsc={sortAsc} onSort={(k, asc) => { setSortKey(k); setSortAsc(asc); }} /></th>
-                <th className="px-5 py-3.5"><Sortable label="Annual spend" k="spend" sortKey={sortKey} sortAsc={sortAsc} onSort={(k, asc) => { setSortKey(k); setSortAsc(asc); }} /></th>
-                <th className="px-5 py-3.5"><Sortable label="Renewal" k="renewal" sortKey={sortKey} sortAsc={sortAsc} onSort={(k, asc) => { setSortKey(k); setSortAsc(asc); }} /></th>
-                <th className="px-5 py-3.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Cancel by</th>
-                <th className="px-5 py-3.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Auto-renew</th>
-                <th className="px-5 py-3.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Escalation</th>
-                <th className="px-5 py-3.5"><Sortable label="Health" k="risk" sortKey={sortKey} sortAsc={sortAsc} onSort={(k, asc) => { setSortKey(k); setSortAsc(asc); }} /></th>
-                <th className="px-5 py-3.5"><Sortable label="Savings" k="savings" sortKey={sortKey} sortAsc={sortAsc} onSort={(k, asc) => { setSortKey(k); setSortAsc(asc); }} /></th>
-                <th className="px-5 py-3.5" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {filtered.map((v) => (
-                <ContractRow key={v.id} v={v} />
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="px-5 py-12 text-center text-[13px] tracking-tight text-muted">
-                    No contracts match this filter.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
+      <KpiStrip>
+        <Kpi label="Contracts" value={withTerms.length} sub="with renewal terms" />
+        <Kpi label="Renewal risk" value={riskCount} accent="text-amber-400" sub="within 90 days or window closed" />
+        <Kpi label="Urgent" value={urgentCount} accent="text-red-400" sub="renewal within 60 days" />
+        <Kpi label="Escalating 5%+" value={escCount} accent="text-orange-400" sub="annual price increases" />
+        <Kpi label="Potential savings" value={savings} format={money} accent="text-emerald-400" sub="estimates, not guaranteed" />
+      </KpiStrip>
+
+      <DataTable
+        storageKey="contracts"
+        columns={columns}
+        rows={withTerms}
+        rowKey={(v) => v.id}
+        selectable
+        onRowClick={setSelected}
+        defaultSort={{ id: "renewal", dir: "asc" }}
+        searchKeys={(v) => [v.name, v.category, v.description, v.owner]}
+        searchPlaceholder="Search contracts…"
+        toolbar={
+          <>
+            <span className="px-1 text-[12px] font-medium text-muted">All contracts</span>
+            <Link href="/dashboard/agent" className="toolbar-btn">
+              <Sparkles size={13} /> Ask the agent
+            </Link>
+          </>
+        }
+        rowActions={(v) => [
+          { label: "Open vendor", onSelect: () => router.push(`/dashboard/vendors/${v.id}`) },
+          { label: "Ask the agent", onSelect: () => router.push(`/dashboard/agent?vendor=${encodeURIComponent(v.name)}`) },
+        ]}
+        bulkActions={[
+          {
+            label: "Ask agent about selected",
+            onSelect: (keys) => {
+              const names = withTerms.filter((v) => keys.has(v.id)).map((v) => v.name).slice(0, 5);
+              router.push(`/dashboard/agent?vendor=${encodeURIComponent(names.join(", "))}`);
+            },
+          },
+        ]}
+      />
 
       {/* uploaded contract scans - preserved legacy flow */}
       {uploaded.length > 0 && (
-        <Panel delay={0.14} className="overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-line px-5 py-4">
-            <span className="size-1.5 rounded-full bg-emerald-400/70" />
-            <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-fg">Your contract scans</h3>
-            <span className="ml-auto rounded-full border border-line bg-white/[0.04] px-2 py-0.5 text-[10.5px] text-muted">
-              {uploaded.length}
-            </span>
+        <div className="panel-surface overflow-hidden">
+          <div className="panel-header">
+            <span className="panel-title">Your contract scans</span>
+            <span className="chip">{uploaded.length}</span>
           </div>
           <div className="divide-y divide-line">
             {uploaded.map((c) => (
-              <Link
-                key={c.id}
-                href={`/dashboard/vendors/${c.id}`}
-                className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-white/[0.03]"
-              >
-                <div className="flex size-8 items-center justify-center rounded-lg bg-white/[0.06] text-[10.5px] font-semibold text-fg">
-                  {c.vendorName.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13.5px] font-medium text-fg">{c.vendorName}</p>
-                  <p className="truncate text-[11px] tracking-tight text-muted">{c.linkedDocument}</p>
-                </div>
-                <p className="text-[12.5px] text-muted">{money(c.annualSpend)}/yr</p>
-                <span className="text-[12px] text-emerald-400">View →</span>
-              </Link>
+              <UploadedRow key={c.id} c={c} />
             ))}
           </div>
-        </Panel>
+        </div>
       )}
 
-      <p className="text-[11px] tracking-tight text-muted/70">
-        Contract terms are extracted from connected agreements and financial records. Upload a PDF
-        contract for clause-level analysis with evidence.
+      <p className="text-[11px] tracking-tight text-muted/60">
+        Terms are extracted from connected agreements and financial records. Upload a PDF contract for
+        clause-level analysis with evidence.
       </p>
+
+      <Inspector
+        open={selected !== null}
+        onClose={() => setSelected(null)}
+        title={selected ? `${selected.name} · contract` : ""}
+        sub={selected ? selected.category : ""}
+        footer={
+          selected && (
+            <div className="flex gap-2">
+              <Link
+                href={`/dashboard/vendors/${selected.id}`}
+                className="toolbar-btn primary flex-1 justify-center"
+              >
+                Open vendor profile
+              </Link>
+              <Link
+                href={`/dashboard/agent?vendor=${encodeURIComponent(selected.name)}`}
+                className="toolbar-btn flex-1 justify-center"
+              >
+                <Sparkles size={13} /> Ask agent
+              </Link>
+            </div>
+          )
+        }
+      >
+        {selected && (
+          <div className="py-1">
+            <div className="px-4 py-3">
+              <div className="flex items-center gap-2">
+                <StatusChip status={selected.contractStatus} />
+                <RiskChip level={selected.risk?.level} />
+              </div>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-muted">{selected.description}</p>
+            </div>
+            <DetailRow label="Annual value">
+              <span className="font-semibold">{money(selected.contractValue)}</span>
+              <span className="ml-1 text-[11px] text-muted">/yr</span>
+            </DetailRow>
+            <DetailRow label="Effective date">{formatDate(selected.startDate)}</DetailRow>
+            <DetailRow label="Renewal">{selected.renewalDate ? formatDate(selected.renewalDate) : "Rolling"}</DetailRow>
+            <DetailRow label="Cancel by">{selected.cancellationDeadline ? formatDate(selected.cancellationDeadline) : "-"}</DetailRow>
+            <DetailRow label="Auto-renew">
+              <AutoRenewChip on={selected.autoRenew} />
+            </DetailRow>
+            <DetailRow label="Price escalation">
+              {selected.priceEscalationRate ? pct(selected.priceEscalationRate) : "None stated"}
+            </DetailRow>
+            <DetailRow label="Owner">{selected.owner}</DetailRow>
+            <DetailRow label="Last reviewed">{formatDate(selected.lastReviewed)}</DetailRow>
+
+            {selected.risk && (
+              <>
+                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-amber-400">
+                  Renewal risk
+                </p>
+                <DetailRow label="Renews in">{selected.risk.daysToRenewal} days</DetailRow>
+                <DetailRow label="Deadline">{selected.risk.daysToDeadline < 0 ? "missed" : `${selected.risk.daysToDeadline} days left`}</DetailRow>
+                <DetailRow label="Expected increase">{pct(selected.risk.expectedIncreasePct)}</DetailRow>
+                <DetailRow label="Renewal cost">{money(selected.risk.potentialRenewalCost)}/yr</DetailRow>
+              </>
+            )}
+
+            {selected.potentialSavings > 0 && (
+              <>
+                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-emerald-400">
+                  Savings opportunity
+                </p>
+                <div className="px-4 py-3">
+                  <p className="text-[22px] font-semibold tracking-tight text-emerald-400">
+                    {money(selected.potentialSavings)}
+                    <span className="ml-1 text-[11px] font-normal text-muted">/yr potential</span>
+                  </p>
+                  <ArrowLink href="/dashboard/savings" label="See the savings engine" />
+                </div>
+              </>
+            )}
+
+            <div className="px-4 py-4">
+              <button
+                onClick={() => router.push("/audit")}
+                className="toolbar-btn w-full justify-center"
+              >
+                <ScanSearch size={13} /> Scan an updated document
+              </button>
+            </div>
+          </div>
+        )}
+      </Inspector>
     </div>
   );
 }
 
-function Sortable({
-  label,
-  k,
-  sortKey,
-  sortAsc,
-  onSort,
-}: {
-  label: string;
-  k: SortKey;
-  sortKey: SortKey;
-  sortAsc: boolean;
-  onSort: (k: SortKey, asc: boolean) => void;
-}) {
+function UploadedRow({ c }: { c: ContractRecord }) {
   return (
-    <button
-      onClick={() => {
-        if (sortKey === k) onSort(k, !sortAsc);
-        else onSort(k, k === "renewal");
-      }}
-      className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-fg ${
-        sortKey === k ? "text-fg" : "text-muted"
-      }`}
+    <Link
+      key={c.id}
+      href={`/dashboard/vendors/${c.id}`}
+      className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-white/[0.03]"
     >
-      {label}
-      <span className="text-[11px] leading-none text-zinc-500">↕</span>
-    </button>
-  );
-}
-
-function ContractRow({ v }: { v: VendorProfile }) {
-  const now = useNow();
-  const days =
-    v.renewalDate && v.risk
-      ? v.risk.daysToRenewal
-      : v.renewalDate
-        ? Math.ceil((new Date(v.renewalDate + "T00:00:00").getTime() - now) / 86400000)
-        : null;
-  const urgency =
-    days === null ? "ok" : days < 0 ? "overdue" : days <= 45 ? "urgent" : days <= 90 ? "soon" : "ok";
-  const urgencyColor =
-    urgency === "overdue"
-      ? "text-red-400"
-      : urgency === "urgent"
-        ? "text-orange-400"
-        : urgency === "soon"
-          ? "text-amber-400"
-          : "text-muted";
-
-  return (
-    <tr className="group transition-colors hover:bg-white/[0.03]">
-      <td className="px-5 py-3.5">
-        <Link href={`/dashboard/vendors/${v.id}`} className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-white/[0.06] text-[11px] font-semibold text-fg">
-            {v.name.slice(0, 2).toUpperCase()}
-          </div>
-          <div>
-            <p className="text-[13.5px] font-medium text-fg group-hover:text-emerald-300">{v.name}</p>
-            <p className="text-[10.5px] tracking-tight text-muted">{v.category}</p>
-          </div>
-        </Link>
-      </td>
-      <td className="px-5 py-3.5 text-[13px] font-medium text-fg">{money(v.annualSpend)}</td>
-      <td className="px-5 py-3.5">
-        <p className="text-[13px] font-medium text-fg">{v.renewalDate ? formatDate(v.renewalDate) : "Rolling"}</p>
-        {v.renewalDate && (
-          <p className={`text-[11px] tracking-tight ${urgencyColor}`}>
-            {days !== null ? (days < 0 ? "expired" : `${days} days`) : ""}
-            {v.autoRenew ? " · auto-renews" : ""}
-          </p>
-        )}
-      </td>
-      <td className="px-5 py-3.5">
-        {v.cancellationDeadline ? (
-          <p className="text-[12px] text-muted">{formatDate(v.cancellationDeadline)}</p>
-        ) : (
-          <span className="text-[11.5px] text-muted/50">-</span>
-        )}
-      </td>
-      <td className="px-5 py-3.5">
-        <span className={`text-[12px] ${v.autoRenew ? "text-amber-400" : "text-emerald-400"}`}>
-          {v.autoRenew ? "Enabled" : "Manual"}
-        </span>
-      </td>
-      <td className="px-5 py-3.5">
-        {v.priceEscalationRate ? (
-          <span className="text-[12.5px] font-medium text-orange-400">
-            {pct(v.priceEscalationRate)}
-          </span>
-        ) : (
-          <span className="text-[11.5px] text-muted/50">-</span>
-        )}
-      </td>
-      <td className="px-5 py-3.5">
-        <span className="text-[13px] font-semibold text-fg">{v.healthScore}</span>
-      </td>
-      <td className="px-5 py-3.5">
-        {v.potentialSavings > 0 ? (
-          <p className="text-[13px] font-medium text-emerald-400">{money(v.potentialSavings)}</p>
-        ) : (
-          <span className="text-[11.5px] text-muted/50">-</span>
-        )}
-      </td>
-      <td className="px-5 py-3.5 text-right">
-        <Link
-          href={`/dashboard/vendors/${v.id}`}
-          className="text-[12px] tracking-tight text-muted transition-colors hover:text-emerald-400"
-        >
-          Review →
-        </Link>
-      </td>
-    </tr>
+      <VendorCell name={c.vendorName} sub={c.linkedDocument} />
+      <span className="ml-auto text-[12.5px] text-muted">{money(c.annualSpend)}/yr</span>
+      <RiskChip level={c.riskScore >= 80 ? "critical" : c.riskScore >= 60 ? "high" : c.riskScore >= 35 ? "medium" : "low"} />
+      <span className="text-[12px] text-emerald-400">View →</span>
+    </Link>
   );
 }

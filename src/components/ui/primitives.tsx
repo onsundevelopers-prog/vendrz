@@ -1,30 +1,21 @@
 "use client";
 
-import { motion } from "framer-motion";
 import type { AlertSeverity, ActionStatus } from "@/lib/types";
 import { AnimatedStat } from "./RollingNumber";
 
-const ease = [0.22, 1, 0.36, 1] as const;
-
+/** Flat hairline panel - the base surface across the workspace. */
 export function Panel({
   children,
   className = "",
-  delay = 0,
+  delay,
 }: {
   children: React.ReactNode;
   className?: string;
+  /** Accepted for compatibility with existing pages; panels are flat now. */
   delay?: number;
 }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay, ease }}
-      className={`rounded-2xl border border-line bg-surface ${className}`}
-    >
-      {children}
-    </motion.div>
-  );
+  void delay;
+  return <div className={`border border-line bg-surface ${className}`}>{children}</div>;
 }
 
 export function SectionHeader({
@@ -70,8 +61,9 @@ export function StatCard({
   delay?: number;
   animate?: boolean;
 }) {
+  void delay;
   return (
-    <Panel delay={delay} className="p-5">
+    <Panel className="p-5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted">
           {label}
