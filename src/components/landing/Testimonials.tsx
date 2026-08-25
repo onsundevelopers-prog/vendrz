@@ -6,7 +6,7 @@ const QUOTES = [
   {
     initials: "RK",
     quote:
-      "We found a renewal we'd have signed blind. Watchtower flagged it in the time it took to finish a coffee.",
+      "We found a renewal we'd have signed blind. Vendrz flagged it in the time it took to finish a coffee.",
     title: "R. Kaur — Head of Procurement",
   },
   {

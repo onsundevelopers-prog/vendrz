@@ -196,6 +196,32 @@ export function computeHealthScore(seed: VendorSeed): number {
 /*  Vendor profile assembly                                           */
 /* ------------------------------------------------------------------ */
 
+const OWNERS = [
+  "Priya Sharma",
+  "Marcus Webb",
+  "Dana Kowalski",
+  "Tom Ellison",
+  "Ava Rodriguez",
+  "Noah Kim",
+  "Sofia Alvarez",
+  "Liam O'Connor",
+  "Emma Chen",
+  "Jordan Blake",
+] as const;
+
+/** Deterministic owner + review date so every vendor row is stable. */
+export function vendorOwner(seedId: string): string {
+  const h = hash(seedId);
+  return OWNERS[h % OWNERS.length];
+}
+
+export function vendorLastReviewed(seedId: string, atRisk: boolean): string {
+  const h = hash(seedId + ":review");
+  // At-risk vendors get reviewed recently; healthy ones drift further back.
+  const span = atRisk ? 21 : 60;
+  return daysFromNow(-(2 + (h % span)));
+}
+
 export function buildVendorProfile(seed: VendorSeed): VendorProfile {
   const series = computeMonthlySeries(seed);
   const annualSpend = series.reduce((a, b) => a + b, 0);
@@ -231,6 +257,8 @@ export function buildVendorProfile(seed: VendorSeed): VendorProfile {
     costPerActiveUser: usage ? usage.costPerActiveUser : 0,
     potentialSavings: 0, // filled by the savings engine
     healthScore: health,
+    owner: vendorOwner(seed.id),
+    lastReviewed: vendorLastReviewed(seed.id, risk !== null && risk.level !== "low"),
     usage,
     billing: {
       expectedMonthly: billing.expectedMonthly,

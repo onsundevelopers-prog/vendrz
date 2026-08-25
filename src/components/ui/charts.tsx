@@ -125,15 +125,6 @@ export function AreaChart({
         animate={{ scale: 1 }}
         transition={{ delay: 1, ease }}
       />
-      {/* ping pulse on the latest data node */}
-      <circle
-        className="animate-ping"
-        cx={last[0]}
-        cy={last[1]}
-        r="3.5"
-        fill={color}
-        style={{ transformBox: "fill-box", transformOrigin: "center" }}
-      />
     </svg>
   );
 }

@@ -29,10 +29,10 @@ export default function IntegrationsPage() {
         className="flex flex-wrap items-center gap-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] px-5 py-4"
       >
         <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/25 bg-emerald-500/10">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-400">VW</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-emerald-400">VZ</span>
         </div>
         <p className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-muted">
-          Vendor Watchtower can <strong className="text-fg">analyze</strong> your financial data. It
+          Vendrz can <strong className="text-fg">analyze</strong> your financial data. It
           cannot move money, make payments, or modify your accounts. Every connection uses secure,
           read-only OAuth-style authorization.
         </p>

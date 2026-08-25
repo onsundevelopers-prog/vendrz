@@ -11,6 +11,7 @@ import { getDemoAudit } from "@/lib/store";
 const NAV = [
   { label: "Overview", href: "/dashboard" },
   { label: "Vendors", href: "/dashboard/vendors" },
+  { label: "Agent", href: "/dashboard/agent" },
   { label: "Spend", href: "/dashboard/spend" },
   { label: "Savings", href: "/dashboard/savings" },
   { label: "Contracts", href: "/dashboard/contracts" },
@@ -78,7 +79,7 @@ export default function DashboardLayout({
   const sidebar = (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center gap-2 px-5">
-        <Link href="/" aria-label="Vendor Watchtower" className="min-w-0">
+        <Link href="/" aria-label="Vendrz" className="min-w-0">
           <Logo className="[&_span:last-child]:text-[14px]" />
         </Link>
       </div>
@@ -115,12 +116,6 @@ export default function DashboardLayout({
                   : "text-muted hover:bg-white/[0.04] hover:text-fg"
               }`}
             >
-              <span
-                aria-hidden="true"
-                className={`size-1 rounded-full transition-colors ${
-                  active ? "bg-emerald-400" : "bg-transparent"
-                }`}
-              />
               {item.label}
               {item.label === "Alerts" && alertCount > 0 && (
                 <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-red-500/15 text-[10px] font-semibold text-red-400">
@@ -205,8 +200,7 @@ export default function DashboardLayout({
         <div className="flex-1">
           <p className="text-[15px] font-semibold tracking-[-0.01em] text-fg">{currentLabel}</p>
         </div>
-        <span className="hidden items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[12px] tracking-tight text-emerald-300 sm:inline-flex">
-          <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" />
+        <span className="hidden rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[12px] tracking-tight text-emerald-300 sm:inline-flex">
           Monitoring active
         </span>
       </header>

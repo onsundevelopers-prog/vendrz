@@ -74,15 +74,14 @@ export default function GmailConnectPage() {
             <p className="text-[15px] font-semibold text-fg">Connect Gmail</p>
             <p className="text-[12.5px] text-muted/70">Optional · read-only · you stay in control</p>
           </div>
-          <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-line bg-white/[0.04] px-3 py-1 text-[11.5px] font-medium tracking-tight text-muted">
-            <span className="size-1 rounded-full bg-white/30" />
+          <span className="ml-auto inline-flex items-center rounded-full border border-line bg-white/[0.04] px-3 py-1 text-[11.5px] font-medium tracking-tight text-muted">
             Not a login
           </span>
         </div>
 
         <div className="space-y-6 p-6">
           <p className="text-[14.5px] leading-relaxed text-muted">
-            Watchtower will <strong>search</strong> your inbox for emails that look like
+            Vendrz will <strong>search</strong> your inbox for emails that look like
             vendor contracts — renewal notices, agreements, order forms — and{" "}
             <strong>propose them as candidates</strong>. Nothing is imported until you
             review the list and explicitly select documents.

@@ -39,7 +39,7 @@ export function PortfolioShowcase() {
             Every contract, every deadline, one table.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
-            Once you claim an account, Watchtower keeps a live view of your whole
+            Once you claim an account, Vendrz keeps a live view of your whole
             portfolio — renewals, risk, and opportunity ranges for every scanned
             contract.
           </p>
@@ -54,7 +54,7 @@ export function PortfolioShowcase() {
         >
           <BrowserFrame
             className="glass-border"
-            url="watchtower.app/dashboard/contracts"
+            url="vendrz.app/dashboard/contracts"
             right={
               <span className="hidden rounded-full bg-white/[0.06] px-2.5 py-1 text-[10.5px] tracking-tight text-muted sm:inline">
                 6 monitored

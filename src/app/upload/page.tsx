@@ -152,9 +152,7 @@ export default function UploadPage() {
             </p>
             <div className="mt-6 flex items-center justify-center gap-5 text-[12px] tracking-tight text-muted">
               <span>PDF</span>
-              <span className="size-0.5 rounded-full bg-white/25" />
               <span>DOCX</span>
-              <span className="size-0.5 rounded-full bg-white/25" />
               <span>Encrypted</span>
             </div>
           </div>

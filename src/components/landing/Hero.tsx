@@ -38,11 +38,7 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden bg-canvas">
       <div className="bg-grid-dark absolute inset-0 opacity-60" />
-      <div className="bg-dot-matrix absolute inset-0" />
       <div className="absolute inset-x-0 top-0 h-px bg-line" />
-
-      {/* ambient glow behind the headline */}
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[420px] w-[min(86vw,720px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-emerald-500/[0.07] via-zinc-500/[0.03] to-transparent blur-3xl animate-aurora" />
 
       <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-5 pb-24 pt-32 sm:pb-28 lg:px-8 lg:pt-36">
         <div className="flex max-w-3xl flex-col items-center text-center">
@@ -54,7 +50,7 @@ export function Hero() {
           >
             <StaggeredWords text="Know where your money's going." />
             <span className="relative mt-2 inline-block">
-              <span className="bg-gradient-to-r from-fg via-zinc-400 to-fg bg-[length:200%_auto] bg-clip-text text-transparent animate-shimmer">
+              <span className="text-zinc-400">
                 <StaggeredWords text="Find where you can save." delay={0.32} />
               </span>
             </span>
@@ -66,7 +62,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.55, ease }}
             className="mt-6 max-w-xl text-pretty text-lg font-normal leading-[1.5] tracking-[-0.01em] text-muted"
           >
-            Vendor Watchtower turns your financial transactions, invoices, and contracts
+            Vendrz turns your financial transactions, invoices, and contracts
             into spend intelligence — renewals, waste, billing anomalies, and the savings
             hiding inside them.
           </motion.p>
@@ -110,11 +106,8 @@ export function Hero() {
           className="mt-16 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-[13px] tracking-tight text-muted/60"
         >
           <span>Renewal warnings</span>
-          <span className="size-1 rounded-full bg-white/20" aria-hidden="true" />
           <span>Waste detection</span>
-          <span className="size-1 rounded-full bg-white/20" aria-hidden="true" />
           <span>Spend intelligence</span>
-          <span className="size-1 rounded-full bg-white/20" aria-hidden="true" />
           <span>Savings tracking</span>
         </motion.div>
       </div>

@@ -1,5 +1,7 @@
 import type {
   Account,
+  ActivityRecord,
+  AgentMessage,
   AnalysisResult,
   AnonymousSession,
   AuditSession,
@@ -8,6 +10,7 @@ import type {
   ContractRecord,
   DashboardStats,
   DiscoveredDocument,
+  EmailThread,
   GmailConnection,
   PipelineStage,
 } from "./types";
@@ -29,6 +32,9 @@ const KEYS = {
   gmail: "wt.gmail",
   discovery: "wt.discovery",
   auditSessions: "wt.auditSessions",
+  activity: "wt.activity",
+  agentMessages: "wt.agentMessages",
+  emailThreads: "wt.emailThreads",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -356,6 +362,204 @@ export function getDashboardStats(userId: string): DashboardStats {
     totalOpportunityLow: contracts.reduce((a, c) => a + c.opportunityLow, 0),
     totalOpportunityHigh: contracts.reduce((a, c) => a + c.opportunityHigh, 0),
   };
+}
+
+/* ------------------------------ activity log ------------------------------ */
+
+/** Seed activity derived from the demo audit so the feed is real, not lorem. */
+export function getActivity(userId: string): ActivityRecord[] {
+  const audit = getDemoAudit();
+  const stored = read<Record<string, ActivityRecord[]>>(KEYS.activity, {});
+  const mine = stored[userId] ?? [];
+
+  if (mine.length > 0) return [...mine].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  // First visit: derive a realistic feed from the audit itself.
+  const seed: ActivityRecord[] = [];
+  const now = Date.now();
+  const daysAgo = (d: number, h = 0) =>
+    new Date(now - d * 86400000 - h * 3600000).toISOString();
+
+  for (const a of audit.alerts.slice(0, 4)) {
+    seed.push({
+      id: `act-alert-${a.id}`,
+      vendorId: a.vendorId,
+      vendorName: a.vendorName,
+      type: "alert",
+      actor: "system",
+      title: a.title,
+      detail: a.detail,
+      createdAt: a.createdAt ?? daysAgo(1),
+    });
+  }
+  const topOpp = [...audit.opportunities]
+    .filter((o) => o.status !== "dismissed")
+    .sort((a, b) => b.estimatedSavings - a.estimatedSavings)[0];
+  if (topOpp) {
+    seed.push({
+      id: "act-opp-1",
+      vendorId: topOpp.vendorId,
+      vendorName: topOpp.vendorName,
+      type: "savings",
+      actor: "system",
+      title: `Savings opportunity surfaced: ${topOpp.title}`,
+      detail: `Estimated ${money(topOpp.estimatedSavings)}/yr potential — ${topOpp.basis}`,
+      createdAt: daysAgo(2),
+    });
+  }
+  seed.push({
+    id: "act-review-1",
+    type: "review",
+    actor: "user",
+    title: "Quarterly vendor review completed",
+    detail: "Reviewed 147 vendors across 8 categories; 12 contracts flagged for renewal action.",
+    createdAt: daysAgo(6),
+  });
+  seed.push({
+    id: "act-import-1",
+    type: "import",
+    actor: "system",
+    title: "Financial data connected",
+    detail: "Corporate card, bank, and Stripe feeds synced — 4,215 transactions imported.",
+    createdAt: daysAgo(9),
+  });
+
+  stored[userId] = seed;
+  write(KEYS.activity, stored);
+  return [...seed].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export function logActivity(userId: string, record: Omit<ActivityRecord, "id" | "createdAt">): ActivityRecord {
+  const stored = read<Record<string, ActivityRecord[]>>(KEYS.activity, {});
+  const mine = stored[userId] ?? [];
+  const full: ActivityRecord = {
+    ...record,
+    id: uid("act"),
+    createdAt: new Date().toISOString(),
+  };
+  stored[userId] = [full, ...mine].slice(0, 60);
+  write(KEYS.activity, stored);
+  return full;
+}
+
+/* ------------------------------ agent ------------------------------ */
+
+export function getAgentMessages(userId: string): AgentMessage[] {
+  return read<Record<string, AgentMessage[]>>(KEYS.agentMessages, {})[userId] ?? [];
+}
+
+export function saveAgentMessage(userId: string, msg: AgentMessage): AgentMessage[] {
+  const all = read<Record<string, AgentMessage[]>>(KEYS.agentMessages, {});
+  const mine = all[userId] ?? [];
+  const next = [...mine, msg];
+  all[userId] = next.slice(-80);
+  write(KEYS.agentMessages, all);
+  return next;
+}
+
+export function clearAgentMessages(userId: string): void {
+  const all = read<Record<string, AgentMessage[]>>(KEYS.agentMessages, {});
+  all[userId] = [];
+  write(KEYS.agentMessages, all);
+}
+
+/** Vendor correspondence surfaced from the connected inbox. */
+export function getEmailThreads(userId: string): EmailThread[] {
+  getDemoAudit();
+  const stored = read<Record<string, EmailThread[]>>(KEYS.emailThreads, {});
+  const mine = stored[userId];
+  if (mine && mine.length > 0) return mine;
+
+  const threads: EmailThread[] = [
+    {
+      id: "thr-adobe-renewal",
+      vendorId: "v-adobe",
+      vendorName: "Adobe",
+      subject: "Your Adobe Creative Cloud subscription renews in 37 days",
+      snippet: "Your annual plan is set to auto-renew on the current terms. Review your seat count to avoid over-billing…",
+      sender: "renewals@adobe.com",
+      date: daysFromNow(-2),
+      unread: true,
+      category: "renewal",
+    },
+    {
+      id: "thr-aws-billing",
+      vendorId: "v-aws",
+      vendorName: "AWS",
+      subject: "AWS billing alert: spend 27% above baseline",
+      snippet: "Your projected monthly spend exceeds the contracted baseline. No new workloads were detected…",
+      sender: "aws-billing@amazon.com",
+      date: daysFromNow(-4),
+      unread: true,
+      category: "invoice",
+    },
+    {
+      id: "thr-slack-neg",
+      vendorId: "v-slack",
+      vendorName: "Slack",
+      subject: "Re: Your 2026 renewal quote",
+      snippet: "As discussed, we can offer a 12% discount on annual commitment if you sign before the current term ends…",
+      sender: "accountexec@slack.com",
+      date: daysFromNow(-5),
+      unread: false,
+      category: "negotiation",
+    },
+    {
+      id: "thr-docusign-cancel",
+      vendorId: "v-docusign",
+      vendorName: "DocuSign",
+      subject: "Important: cancellation deadline passed",
+      snippet: "The cancellation window for your agreement closed 6 days ago. Your subscription will renew automatically…",
+      sender: "notices@docusign.com",
+      date: daysFromNow(-1),
+      unread: true,
+      category: "renewal",
+    },
+    {
+      id: "thr-notion-seats",
+      vendorId: "v-notion",
+      vendorName: "Notion",
+      subject: "Invoice #4431 — monthly seat billing",
+      snippet: "Attached is your monthly invoice for 120 seats. Please note 16 seats show no activity in the last 90 days…",
+      sender: "billing@notion.so",
+      date: daysFromNow(-3),
+      unread: false,
+      category: "invoice",
+    },
+    {
+      id: "thr-hubspot-price",
+      vendorId: "v-hubspot",
+      vendorName: "HubSpot",
+      subject: "Marketing Hub pricing update effective next renewal",
+      snippet: "Prices for your current tier will increase 12% at your next renewal. Reach out to discuss options…",
+      sender: "renewals@hubspot.com",
+      date: daysFromNow(-7),
+      unread: false,
+      category: "renewal",
+    },
+    {
+      id: "thr-figma-general",
+      vendorId: "v-figma",
+      vendorName: "Figma",
+      subject: "Welcome to Figma Enterprise — admin checklist",
+      snippet: "Get started with SSO, SCIM provisioning, and your admin dashboard…",
+      sender: "success@figma.com",
+      date: daysFromNow(-12),
+      unread: false,
+      category: "general",
+    },
+  ];
+  stored[userId] = threads;
+  write(KEYS.emailThreads, stored);
+  return threads;
+}
+
+function money(n: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(Math.round(n));
 }
 
 /* ------------------------------ demo mode ------------------------------ */

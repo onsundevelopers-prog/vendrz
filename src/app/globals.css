@@ -20,46 +20,9 @@
   --color-rule-light: rgba(255, 255, 255, 0.08);
   --color-rule-dark: rgba(255, 255, 255, 0.08);
 
-  /* Motion — ambient (idle) + micro */
-  --animate-shimmer: shimmer 2.5s linear infinite;
-  --animate-float: float 7s ease-in-out infinite;
-  --animate-aurora: aurora 16s ease-in-out infinite;
+  /* Motion — infinite trust strip scroll */
   --animate-marquee: marquee 36s linear infinite;
 
-  @keyframes shimmer {
-    from {
-      background-position: 0% center;
-    }
-    to {
-      background-position: -200% center;
-    }
-  }
-
-  /* Slow vertical bob for hero media — barely-there "alive" motion */
-  @keyframes float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-7px);
-    }
-  }
-
-  /* Drifting ambient glow — the page breathes even when idle */
-  @keyframes aurora {
-    0%,
-    100% {
-      transform: translate3d(-2%, -1%, 0) scale(1);
-      opacity: 0.8;
-    }
-    50% {
-      transform: translate3d(2%, 2%, 0) scale(1.12);
-      opacity: 1;
-    }
-  }
-
-  /* Infinite trust strip scroll */
   @keyframes marquee {
     from {
       transform: translateX(0);
@@ -146,14 +109,6 @@ body {
 
 /* ---------- Ambient canvas ---------- */
 
-/* High-density dot-matrix with a soft radial mask (Vercel-style canvas) */
-.bg-dot-matrix {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1.5px);
-  background-size: 20px 20px;
-  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-}
-
 /* Ultra-subtle global film grain (2% overlay blend) */
 .noise-grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -179,20 +134,14 @@ body {
     linear-gradient(to right, rgba(52, 211, 153, 0.4), rgba(255, 255, 255, 0.06)) border-box;
 }
 
-/* Hover-triggered border glow for glass cards */
+/* Subtle hover lift for glass cards */
 .glass-glow {
   transition:
-    background 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.2s ease;
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 .glass-glow:hover {
-  background:
-    linear-gradient(#121216, #121216) padding-box,
-    linear-gradient(to right, rgba(52, 211, 153, 0.35), rgba(255, 255, 255, 0.07)) border-box;
-  box-shadow:
-    0 0 28px -10px rgba(52, 211, 153, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* ---------- Cursor spotlight & border beams (Linear style) ---------- */
@@ -256,31 +205,6 @@ body {
 @keyframes border-beam-spin {
   to {
     --beam-angle: 360deg;
-  }
-}
-
-/* ---------- Button shimmer glare ---------- */
-.shimmer-glare {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
-  left: -160%;
-  width: 55%;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, 0.5) 50%, transparent 75%);
-  transform: skewX(-18deg);
-}
-.group:hover .shimmer-glare {
-  opacity: 1;
-  animation: shimmer-sweep 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-@keyframes shimmer-sweep {
-  from {
-    left: -160%;
-  }
-  to {
-    left: 200%;
   }
 }
 

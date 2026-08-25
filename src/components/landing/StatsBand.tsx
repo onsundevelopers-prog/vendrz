@@ -37,9 +37,6 @@ const STATS = [
 export function StatsBand() {
   return (
     <section className="relative overflow-hidden border-y border-line bg-canvas py-16 lg:py-20">
-      {/* soft emerald aura behind the numbers */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[min(80vw,720px)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-emerald-500/[0.07] via-zinc-500/[0.03] to-transparent blur-3xl" />
-
       <div className="relative mx-auto max-w-6xl px-5 lg:px-8">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
@@ -48,7 +45,7 @@ export function StatsBand() {
           transition={{ duration: 0.6, ease }}
           className="text-center text-[12px] font-medium uppercase tracking-[0.2em] text-muted"
         >
-          Watchtower in numbers
+          Vendrz in numbers
         </motion.p>
 
         <div className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-4 lg:grid-cols-4">

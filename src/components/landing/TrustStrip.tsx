@@ -19,17 +19,12 @@ const VENDORS = [
   "Snowflake",
 ];
 
-function Row({ items, dot = true }: { items: string[]; dot?: boolean }) {
+function Row({ items }: { items: string[] }) {
   return (
     <div className="flex shrink-0 items-center">
       {items.map((item) => (
-        <span key={item} className="flex items-center gap-3 pr-6">
-          <span className="whitespace-nowrap text-[13px] tracking-tight text-muted">
-            {item}
-          </span>
-          {dot && (
-            <span className="size-1 rounded-full bg-white/20" aria-hidden="true" />
-          )}
+        <span key={item} className="whitespace-nowrap pr-8 text-[13px] tracking-tight text-muted">
+          {item}
         </span>
       ))}
     </div>
@@ -46,8 +41,8 @@ export function TrustStrip() {
       {/* vendor names — flask.do-style marquee, opposite direction */}
       <div className="border-b border-line/60 py-3.5">
         <div className="flex w-max animate-marquee" style={{ animationDirection: "reverse" }}>
-          <Row items={VENDORS} dot={false} />
-          <Row items={VENDORS} dot={false} />
+          <Row items={VENDORS} />
+          <Row items={VENDORS} />
         </div>
       </div>
 

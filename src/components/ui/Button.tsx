@@ -37,20 +37,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       "inline-flex items-center justify-center rounded-full font-semibold tracking-[-0.01em] transition-all duration-200 ease-out select-none whitespace-nowrap",
       "disabled:opacity-50 disabled:pointer-events-none",
       "active:scale-[0.98]",
-      variant === "primary" ? "group relative overflow-hidden" : "",
       VARIANTS[variant],
       SIZES[size],
       className,
     ].join(" ");
-
-    const inner = (
-      <>
-        {variant === "primary" && (
-          <span aria-hidden="true" className="shimmer-glare" />
-        )}
-        {children}
-      </>
-    );
 
     if (href) {
       const onClick = rest.onClick as
@@ -58,13 +48,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         | undefined;
       return (
         <Link href={href} className={classes} onClick={onClick}>
-          {inner}
+          {children}
         </Link>
       );
     }
     return (
       <button ref={ref} className={classes} {...rest}>
-        {inner}
+        {children}
       </button>
     );
   }

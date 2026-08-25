@@ -99,7 +99,7 @@ export default function GmailDiscoveryPage() {
             Review discovered documents
           </h2>
           <p className="mt-1 max-w-xl text-[13.5px] leading-relaxed text-muted">
-            Watchtower searched for contract-signal keywords and attachments. Check the
+            Vendrz searched for contract-signal keywords and attachments. Check the
             documents you want analyzed — only your selections enter the pipeline.
           </p>
         </div>

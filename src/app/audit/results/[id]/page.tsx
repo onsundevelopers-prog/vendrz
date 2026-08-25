@@ -57,7 +57,7 @@ export default function AuditResultsPage() {
       {/* slim top bar */}
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 lg:px-8">
-          <Link href="/" aria-label="Vendor Watchtower home">
+          <Link href="/" aria-label="Vendrz home">
             <Logo className="[&_span:last-child]:text-[15px]" />
           </Link>
           <div className="flex items-center gap-2 text-[12px] tracking-tight text-muted">
@@ -75,7 +75,7 @@ export default function AuditResultsPage() {
           transition={{ duration: 0.6, ease }}
           className="text-center"
         >            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-1.5 text-[12px] tracking-tight text-emerald-300">
-            <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" />
+            <span className="size-1.5 rounded-full bg-emerald-400" />
             Analysis complete · {audit.companyName}
           </span>
           <p className="mt-3 text-[12px] tracking-tight text-muted">
@@ -108,7 +108,7 @@ export default function AuditResultsPage() {
               <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-3">
                 <div className="flex items-center gap-2.5">
                   <div className="flex size-6 items-center justify-center rounded-md bg-white/10">
-                    <span className="text-[9px] font-semibold uppercase tracking-wide text-fg">VW</span>
+                    <span className="text-[9px] font-semibold uppercase tracking-wide text-fg">VZ</span>
                   </div>
                   <span className="text-[11.5px] tracking-tight text-muted">
                     Vendor Spend Intelligence · trailing 12 months
@@ -190,7 +190,7 @@ export default function AuditResultsPage() {
           <div className="flex items-end justify-between">
             <div>
               <h2 className="text-xl font-semibold tracking-[-0.03em] text-fg">
-                Watchtower found {audit.opportunities.filter((o) => o.status !== "dismissed").length} potential savings opportunities.
+                Vendrz found {audit.opportunities.filter((o) => o.status !== "dismissed").length} potential savings opportunities.
               </h2>
               <p className="mt-1 text-[12.5px] tracking-tight text-muted">
                 A preview of what&apos;s inside the full report

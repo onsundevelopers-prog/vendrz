@@ -10,7 +10,7 @@ const STEPS = [
   },
   {
     num: "02",
-    title: "Watchtower analyzes spend",
+    title: "Vendrz analyzes spend",
     body: "Transactions are normalized, vendors matched, and spend is computed across categories, trends, renewals, usage, and billing anomalies — by rules, not guesses.",
   },
   {
@@ -28,9 +28,6 @@ export function HowItWorks() {
       id="how-it-works"
       className="relative overflow-hidden bg-canvas py-24 lg:py-32"
     >
-      {/* ambient glow — drifts slowly behind the section */}
-      <div className="pointer-events-none absolute left-1/2 top-1/3 h-[420px] w-[min(80vw,640px)] -translate-x-1/2 rounded-full bg-gradient-to-tr from-emerald-500/[0.06] via-zinc-500/[0.03] to-transparent blur-3xl animate-aurora" />
-
       <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

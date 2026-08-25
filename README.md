@@ -1,8 +1,8 @@
-# Vendor Watchtower
+# Vendrz
 
 > Find the money hiding in your vendor contracts.
 
-Vendor Watchtower is an AI SaaS that lets anyone upload a vendor contract with **no
+Vendrz is an AI SaaS that lets anyone upload a vendor contract with **no
 signup**, instantly surfaces renewal dates, cancellation deadlines, auto-renewal terms,
 price escalations, and dollar-quantified savings opportunities **with evidence** — then
 invites the user to create an account to save and monitor it.
@@ -29,9 +29,11 @@ npm run dev        # http://localhost:3000
 | Processing | `/processing/[id]` | Multi-step sequential status tied to real pipeline stages (extraction → classification → segmentation → LLM → validation → risk rules → savings → results). |
 | Results (pre-signup) | `/results/[id]` | Risk score 0–100 with label, evidence-linked findings (source section + page), savings range with a "how we calculated this" breakdown and not-guaranteed disclaimer, persistent but dismissible signup CTA. |
 | Auth | `/auth?mode=signup\|login` | Google (identity only — never requests mailbox scope) + email/password via **Clerk** (or demo-mode fallback without keys). Anonymous session is transferred to the new account on signup; the analysis is never lost. |
-| Dashboard | `/dashboard` | Overview stats (contracts monitored, upcoming renewals, opportunities, high-risk), quick actions, upcoming-renewals and at-risk lists, Gmail upsell card. |
+| Dashboard | `/dashboard` | Real vendor-intelligence overview: spend trend + category charts, AI insights, renewal timeline, cancellation deadlines, risk distribution, contract value by vendor, attention list, and a live activity feed — all from the same underlying vendor model. |
+| Vendor spreadsheet | `/dashboard/vendors` | Operational spreadsheet with 12 columns (vendor, contract, status, contract value, renewal, cancellation deadline, auto-renew, risk, potential savings, owner, last reviewed, actions). Sortable, searchable, status/category/owner filters, clear empty states. |
+| Vendor profile | `/dashboard/vendors/[id]` | Spend, status, renewal, cancellation deadline, escalation, risk, opportunity, invoices, usage, savings, and activity — tabbed deep-dive per vendor. |
+| Vendor agent | `/dashboard/agent` | Gemini-powered vendor-management agent: check vendor status, summarize vendor emails from the connected inbox, draft replies, and execute cancellations. Every send is gated behind an explicit approval card and recorded in the activity log. |
 | Contracts table | `/dashboard/contracts` | Vendor, annual spend, renewal countdown, risk score, opportunity range; filterable by status, searchable, sortable. |
-| Vendor profile | `/dashboard/vendors/[id]` | Spend, status, renewal, cancellation deadline, escalation, risk, opportunity, linked documents, actions (Review / Negotiate / Renew / Cancel / Mark resolved). |
 | Connect Gmail | `/dashboard/gmail` | Reached only from the dashboard; plain-language scope explanation; visually distinct from the login screen; read-only `gmail.readonly` + `gmail.metadata`. |
 | Gmail discovery | `/dashboard/gmail/discovery` | Reviewable candidate list (filename, subject, sender, date, vendor, type, confidence). Nothing imports until explicitly selected; selections flow through the same pipeline. |
 | Settings | `/dashboard/settings` | Connected Accounts with Gmail Disconnect flow (stops future discovery; keeps already-imported contracts and login untouched). |
@@ -66,9 +68,9 @@ no middleware — the whole product still works out of the box.
 1. **Push to git** — the repo is initialized already:
    ```bash
    git add .
-   git commit -m "Vendor Watchtower"
+   git commit -m "Vendrz"
    git branch -M main
-   git remote add origin https://github.com/<you>/vendor-watchtower.git
+   git remote add origin https://github.com/<you>/vendrz.git
    git push -u origin main
    ```
 2. **Import on Vercel** — create a new project from the GitHub repo (framework preset:
@@ -96,11 +98,10 @@ no middleware — the whole product still works out of the box.
 
 ## Design system
 
-- **Palette**: deep navy base (`#0B1220`–`#0F172A`) on marketing surfaces, cool-gray
-  body text, light canvas (`#F2F4F8`) for app surfaces. One sharp accent —
-  emerald (`#10B981`) — used only for savings/positive CTAs; amber/red reserved for
-  risk badges.
-- **Type**: Inter (400–700) for precision UI, IBM Plex Mono for figures and evidence
-  citations.
-- **Textures**: fine engineering grid, restrained radial glows, film grain on dark
-  surfaces. No glassy video aesthetics, no decorative floating icons.
+- **Palette**: black/dark canvas with cool-gray surfaces and hairline borders; one
+  sharp accent — emerald (`#34D399`) — used only for savings/positive actions;
+  amber/red reserved for risk. No gradients-for-decoration, no decorative dots.
+- **Type**: Inter (400–700) for precision UI. No monospaced chrome — figures and
+  labels render in the same sans type.
+- **Texture**: flat surfaces, subtle borders, restrained motion (fade/rise only).
+  The product looks like a serious B2B procurement tool, not a template.

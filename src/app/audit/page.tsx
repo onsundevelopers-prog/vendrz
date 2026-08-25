@@ -96,7 +96,7 @@ export default function AuditPage() {
             onClick={() => start("gmail")}
             ref={refA}
             onMouseMove={onMoveA}
-            className="glass-border glass-glow spotlight-card border-beam group flex h-full flex-col justify-between rounded-xl p-6 text-left"
+            className="glass-border glass-glow spotlight-card group flex h-full flex-col justify-between rounded-xl p-6 text-left"
           >
             <div className="spotlight-glow" aria-hidden="true" />
             <div className="flex size-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-[13px] font-semibold tracking-tight text-zinc-300">
@@ -228,7 +228,7 @@ export default function AuditPage() {
                     <p className="flex items-center gap-2 text-[13px] font-medium tracking-[-0.01em] text-zinc-400">
                       {s.label}
                       {active && (
-                        <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wider text-emerald-400">
+                        <span className="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[9.5px] uppercase tracking-wider text-emerald-400">
                           <span className="size-1 rounded-full bg-emerald-400" />
                           Active
                         </span>

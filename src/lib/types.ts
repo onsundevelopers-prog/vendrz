@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  Vendor Watchtower — domain types                                   */
+/*  Vendrz — domain types                                   */
 /*  Mirrors the PRD data model: User, Organization, Vendor, Contract,  */
 /*  Finding, Opportunity, SavingsOutcome, AnonymousSession,            */
 /*  GmailConnection, DiscoveredDocument.                               */
@@ -298,6 +298,10 @@ export interface VendorProfile {
   cancellationDeadline: string | null;
   autoRenew: boolean;
   priceEscalationRate: number | null;
+  /** Accountable owner (human) — from the procurement roster. */
+  owner: string;
+  /** ISO date of the most recent contract review. */
+  lastReviewed: string;
   seats: number;
   activeUsers: number;
   unusedSeats: number;
@@ -448,4 +452,57 @@ export interface AuditSession {
   extraction?: ContractExtraction | null;
   result: CompanyAudit | null;
   unlockedToUserId: string | null;
+}
+
+/* ------------------------- activity + agent ------------------------- */
+
+export type ActivityActor = "agent" | "user" | "system";
+
+export type ActivityType =
+  | "alert"
+  | "import"
+  | "review"
+  | "email_sent"
+  | "email_drafted"
+  | "cancellation"
+  | "status_change"
+  | "savings";
+
+export interface ActivityRecord {
+  id: string;
+  vendorId?: string;
+  vendorName?: string;
+  type: ActivityType;
+  actor: ActivityActor;
+  title: string;
+  detail: string;
+  createdAt: string; // ISO
+}
+
+export interface AgentMessage {
+  id: string;
+  role: "user" | "agent";
+  content: string;
+  createdAt: string;
+  /** Present when the agent needs explicit approval to send. */
+  pendingApproval?: {
+    action: "send_email" | "cancel_contract";
+    vendorId: string;
+    vendorName: string;
+    to: string;
+    subject: string;
+    body: string;
+  };
+}
+
+export interface EmailThread {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  subject: string;
+  snippet: string;
+  sender: string;
+  date: string; // ISO
+  unread: boolean;
+  category: "renewal" | "invoice" | "negotiation" | "general";
 }

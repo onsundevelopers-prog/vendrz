@@ -41,7 +41,7 @@ export function ExtractionResult({ session }: { session: AuditSession }) {
       {/* slim top bar */}
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 lg:px-8">
-          <Link href="/" aria-label="Vendor Watchtower home">
+          <Link href="/" aria-label="Vendrz home">
             <Logo className="[&_span:last-child]:text-[15px]" />
           </Link>
           <div className="flex items-center gap-2 text-[12px] tracking-tight text-muted">
@@ -60,7 +60,7 @@ export function ExtractionResult({ session }: { session: AuditSession }) {
           className="text-center"
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3.5 py-1.5 text-[12px] tracking-tight text-emerald-300">
-            <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" />
+            <span className="size-1.5 rounded-full bg-emerald-400" />
             Analysis complete · {x.vendorName}
           </span>
           <p className="mt-3 text-[12px] tracking-tight text-muted">

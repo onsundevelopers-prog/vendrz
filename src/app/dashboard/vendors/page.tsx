@@ -1,44 +1,123 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { getDemoAudit } from "@/lib/store";
 import { Panel } from "@/components/ui/primitives";
-import { Sparkline } from "@/components/ui/charts";
-import { money, pct } from "@/lib/format";
-import type { SpendCategory, VendorProfile } from "@/lib/types";
+import { money, formatDateShort, daysUntil } from "@/lib/format";
+import type { ContractStatus, SpendCategory, VendorProfile } from "@/lib/types";
 
-type SortKey = "spend" | "trend" | "health" | "savings" | "utilization";
+/* ------------------------------------------------------------------ */
+/*  Vendor spreadsheet — the operational core of Vendrz.              */
+/*  Sortable columns, search, status/category filters, dense rows.    */
+/* ------------------------------------------------------------------ */
+
+type SortKey =
+  | "name"
+  | "category"
+  | "status"
+  | "contractValue"
+  | "renewalDate"
+  | "cancellationDeadline"
+  | "autoRenew"
+  | "risk"
+  | "potentialSavings"
+  | "owner"
+  | "lastReviewed";
+
+interface Column {
+  key: SortKey | null;
+  label: string;
+  align?: "left" | "right";
+  width?: string;
+}
+
+const COLUMNS: Column[] = [
+  { key: "name", label: "Vendor" },
+  { key: "category", label: "Contract" },
+  { key: "status", label: "Status" },
+  { key: "contractValue", label: "Contract value", align: "right" },
+  { key: "renewalDate", label: "Renewal" },
+  { key: "cancellationDeadline", label: "Cancel by" },
+  { key: "autoRenew", label: "Auto-renew" },
+  { key: "risk", label: "Risk" },
+  { key: "potentialSavings", label: "Potential savings", align: "right" },
+  { key: "owner", label: "Owner" },
+  { key: "lastReviewed", label: "Last reviewed" },
+];
+
+const STATUS_META: Record<ContractStatus, { label: string; cls: string }> = {
+  active: { label: "Active", cls: "border-emerald-500/25 bg-emerald-500/10 text-emerald-400" },
+  expiring_soon: { label: "Expiring soon", cls: "border-amber-500/25 bg-amber-500/10 text-amber-400" },
+  at_risk: { label: "At risk", cls: "border-red-500/25 bg-red-500/10 text-red-400" },
+};
+
+const RISK_META: Record<string, { label: string; cls: string }> = {
+  critical: { label: "Critical", cls: "border-red-500/30 bg-red-500/10 text-red-400" },
+  high: { label: "High", cls: "border-orange-500/25 bg-orange-500/10 text-orange-400" },
+  medium: { label: "Medium", cls: "border-amber-500/25 bg-amber-500/10 text-amber-400" },
+  low: { label: "Low", cls: "border-white/10 bg-white/[0.04] text-zinc-400" },
+};
+
+const OWNERS = [
+  "Priya Sharma",
+  "Marcus Webb",
+  "Dana Kowalski",
+  "Tom Ellison",
+  "Ava Rodriguez",
+  "Noah Kim",
+  "Sofia Alvarez",
+  "Liam O'Connor",
+  "Emma Chen",
+  "Jordan Blake",
+];
 
 export default function VendorsPage() {
   const audit = getDemoAudit();
   const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<ContractStatus | "all">("all");
   const [cat, setCat] = useState<SpendCategory | "all">("all");
-  const [sortKey, setSortKey] = useState<SortKey>("spend");
+  const [owner, setOwner] = useState<string | "all">("all");
+  const [sortKey, setSortKey] = useState<SortKey>("contractValue");
   const [sortAsc, setSortAsc] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
-  const categories = audit.categories.map((c) => c.name);
+  const categories = useMemo(
+    () => [...new Set(audit.vendors.map((v) => v.category))].sort(),
+    [audit.vendors]
+  );
 
-  let list = audit.vendors;
-  if (cat !== "all") list = list.filter((v) => v.category === cat);
-  if (query.trim()) {
-    const q = query.toLowerCase();
-    list = list.filter(
-      (v) => v.name.toLowerCase().includes(q) || v.category.toLowerCase().includes(q)
-    );
-  }
-  const sortVal = (v: VendorProfile): number => {
-    switch (sortKey) {
-      case "spend": return v.annualSpend;
-      case "trend": return v.spendTrendPct;
-      case "health": return v.healthScore;
-      case "savings": return v.potentialSavings;
-      case "utilization": return v.utilizationPct ?? 0;
+  const filtered = useMemo(() => {
+    let list = audit.vendors;
+    if (status !== "all") list = list.filter((v) => v.contractStatus === status);
+    if (cat !== "all") list = list.filter((v) => v.category === cat);
+    if (owner !== "all") list = list.filter((v) => v.owner === owner);
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      list = list.filter(
+        (v) =>
+          v.name.toLowerCase().includes(q) ||
+          v.category.toLowerCase().includes(q) ||
+          v.owner.toLowerCase().includes(q) ||
+          v.description.toLowerCase().includes(q)
+      );
     }
-  };
-  const filtered = [...list].sort((a, b) => sortVal(a) - sortVal(b));
-  if (sortAsc) filtered.reverse();
+    const sorted = [...list].sort((a, b) => {
+      const cmp = compare(a, b, sortKey);
+      return sortAsc ? cmp : -cmp;
+    });
+    return sorted;
+  }, [audit.vendors, query, status, cat, owner, sortKey, sortAsc]);
+
+  const counts = useMemo(() => {
+    const c: Record<ContractStatus | "all", number> = { all: audit.vendors.length, active: 0, expiring_soon: 0, at_risk: 0 };
+    for (const v of audit.vendors) c[v.contractStatus] += 1;
+    return c;
+  }, [audit.vendors]);
+
+  const totalValue = filtered.reduce((a, v) => a + v.contractValue, 0);
+  const totalSavings = filtered.reduce((a, v) => a + v.potentialSavings, 0);
 
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortAsc(!sortAsc);
@@ -49,85 +128,131 @@ export default function VendorsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* header */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
       >
         <div>
-          <h2 className="text-xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg">Vendors</h2>
+          <h2 className="text-xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg">Vendor spreadsheet</h2>
           <p className="mt-1 text-[12.5px] tracking-tight text-muted">
-            {audit.vendorCount} vendors · {money(audit.totalAnnualSpend)}/yr total
+            {audit.vendorCount} vendors · {money(audit.totalAnnualSpend)}/yr · {money(audit.potentialSavings)}/yr identified savings
           </p>
         </div>
-        <div className="relative w-full sm:w-72">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-muted">⌕</span>
+        <Link
+          href="/dashboard/agent"
+          className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08] px-4 py-2 text-[13px] font-medium tracking-tight text-emerald-300 transition-colors hover:bg-emerald-500/15"
+        >
+          <span aria-hidden="true" className="text-[14px] leading-none">✦</span>
+          Ask the agent
+        </Link>
+      </motion.div>
+
+      {/* toolbar */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="relative flex-1">
+          <span aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] text-muted">⌕</span>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search vendors…"
-            className="h-10 w-full rounded-xl border border-line bg-surface pl-8 pr-3 text-[13px] tracking-tight text-fg outline-none transition-colors placeholder:text-muted focus:border-emerald-400/60"
+            placeholder="Search vendors, categories, owners…"
+            className="h-10 w-full rounded-xl border border-line bg-surface pl-9 pr-3 text-[13px] tracking-tight text-fg outline-none transition-colors placeholder:text-muted focus:border-emerald-400/50"
           />
         </div>
-      </motion.div>
-
-      {/* category filter */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        <button
-          onClick={() => setCat("all")}
-          className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-            cat === "all"
-              ? "bg-white text-black"
-              : "border border-line bg-surface text-muted hover:border-white/25 hover:text-fg"
-          }`}
-        >
-          All <span className="ml-1 text-[11px] opacity-60">{audit.vendorCount}</span>
-        </button>
-        {categories.map((c) => (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {(["all", "active", "expiring_soon", "at_risk"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatus(s)}
+              className={`rounded-full px-3.5 py-1.5 text-[12.5px] font-medium transition-colors ${
+                status === s
+                  ? "bg-white text-black"
+                  : "border border-line bg-surface text-muted hover:border-white/25 hover:text-fg"
+              }`}
+            >
+              {s === "all" ? "All" : s.replace(/_/g, " ")}
+              <span className={`ml-1 text-[10.5px] ${status === s ? "opacity-60" : "opacity-60"}`}>{counts[s]}</span>
+            </button>
+          ))}
           <button
-            key={c}
-            onClick={() => setCat(c)}
-            className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-              cat === c
-                ? "bg-white text-black"
+            onClick={() => setShowFilters(!showFilters)}
+            className={`rounded-full border px-3.5 py-1.5 text-[12.5px] font-medium transition-colors ${
+              showFilters || cat !== "all" || owner !== "all"
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
                 : "border border-line bg-surface text-muted hover:border-white/25 hover:text-fg"
             }`}
           >
-            {c}
-            <span className="ml-1 text-[11px] opacity-60">
-              {audit.vendors.filter((v) => v.category === c).length}
-            </span>
+            Filters {(cat !== "all" || owner !== "all") && "·"}
           </button>
-        ))}
+        </div>
       </div>
 
-      {/* table */}
-      <Panel delay={0.1} className="overflow-hidden">
+      {/* expandable filters */}
+      {showFilters && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="overflow-hidden"
+        >
+          <div className="grid gap-4 rounded-2xl border border-line bg-surface p-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-[11px] uppercase tracking-[0.1em] text-muted">Category</span>
+              <select
+                value={cat}
+                onChange={(e) => setCat(e.target.value as SpendCategory | "all")}
+                className="mt-1.5 h-9 w-full rounded-lg border border-line bg-canvas px-3 text-[13px] text-fg outline-none focus:border-emerald-400/50"
+              >
+                <option value="all">All categories</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-[11px] uppercase tracking-[0.1em] text-muted">Owner</span>
+              <select
+                value={owner}
+                onChange={(e) => setOwner(e.target.value)}
+                className="mt-1.5 h-9 w-full rounded-lg border border-line bg-canvas px-3 text-[13px] text-fg outline-none focus:border-emerald-400/50"
+              >
+                <option value="all">All owners</option>
+                {OWNERS.map((o) => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </motion.div>
+      )}
+
+      {/* summary strip */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 px-1 text-[12px] tracking-tight text-muted">
+        <span><span className="font-semibold text-fg">{filtered.length}</span> shown</span>
+        <span>value <span className="font-semibold text-fg">{money(totalValue)}</span></span>
+        <span>potential savings <span className="font-semibold text-emerald-400">{money(totalSavings)}</span></span>
+      </div>
+
+      {/* spreadsheet */}
+      <Panel className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-left">
+          <table className="w-full min-w-[1240px] text-left">
             <thead>
-              <tr className="border-b border-line">
-                <th className="px-5 py-3.5">
-                  <Sortable label="Vendor" k="spend" sortKey={sortKey} onSort={toggleSort} />
+              <tr className="border-b border-line bg-white/[0.02]">
+                {COLUMNS.map((c) => (
+                  <th key={c.key ?? c.label} className={`px-4 py-3 ${c.align === "right" ? "text-right" : ""}`}>
+                    {c.key ? (
+                      <Sortable label={c.label} k={c.key} sortKey={sortKey} sortAsc={sortAsc} onSort={toggleSort} right={c.align === "right"} />
+                    ) : (
+                      <span className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">{c.label}</span>
+                    )}
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-right">
+                  <span className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted">Actions</span>
                 </th>
-                <th className="px-5 py-3.5">
-                  <Sortable label="Annual spend" k="spend" sortKey={sortKey} onSort={toggleSort} />
-                </th>
-                <th className="px-5 py-3.5">
-                  <Sortable label="Trend" k="trend" sortKey={sortKey} onSort={toggleSort} />
-                </th>
-                <th className="px-5 py-3.5">
-                  <Sortable label="Utilization" k="utilization" sortKey={sortKey} onSort={toggleSort} />
-                </th>
-                <th className="px-5 py-3.5">
-                  <Sortable label="Health" k="health" sortKey={sortKey} onSort={toggleSort} />
-                </th>
-                <th className="px-5 py-3.5">
-                  <Sortable label="Potential savings" k="savings" sortKey={sortKey} onSort={toggleSort} />
-                </th>
-                <th className="px-5 py-3.5" />
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -136,8 +261,8 @@ export default function VendorsPage() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-[13px] tracking-tight text-muted">
-                    No vendors match this filter.
+                  <td colSpan={COLUMNS.length + 1}>
+                    <EmptyState onReset={() => { setQuery(""); setStatus("all"); setCat("all"); setOwner("all"); }} />
                   </td>
                 </tr>
               )}
@@ -145,102 +270,209 @@ export default function VendorsPage() {
           </table>
         </div>
       </Panel>
+
+      <p className="text-[11px] tracking-tight text-muted/60">
+        Savings figures are deterministic estimates from the savings engine — never guaranteed. Sort any column, or click a vendor row to open the full profile.
+      </p>
     </div>
   );
+}
+
+/* ------------------------- sorting ------------------------- */
+
+function compare(a: VendorProfile, b: VendorProfile, key: SortKey): number {
+  switch (key) {
+    case "name": return a.name.localeCompare(b.name);
+    case "category": return a.category.localeCompare(b.category);
+    case "status": return a.contractStatus.localeCompare(b.contractStatus);
+    case "contractValue": return a.contractValue - b.contractValue;
+    case "renewalDate": return (a.renewalDate ?? "9999").localeCompare(b.renewalDate ?? "9999");
+    case "cancellationDeadline": return (a.cancellationDeadline ?? "9999").localeCompare(b.cancellationDeadline ?? "9999");
+    case "autoRenew": return Number(a.autoRenew) - Number(b.autoRenew);
+    case "risk": return (a.risk?.daysToRenewal ?? 999) - (b.risk?.daysToRenewal ?? 999);
+    case "potentialSavings": return a.potentialSavings - b.potentialSavings;
+    case "owner": return a.owner.localeCompare(b.owner);
+    case "lastReviewed": return a.lastReviewed.localeCompare(b.lastReviewed);
+  }
 }
 
 function Sortable({
   label,
   k,
   sortKey,
+  sortAsc,
   onSort,
+  right,
 }: {
   label: string;
   k: SortKey;
   sortKey: SortKey;
+  sortAsc: boolean;
   onSort: (k: SortKey) => void;
+  right?: boolean;
 }) {
+  const active = sortKey === k;
   return (
     <button
       onClick={() => onSort(k)}
-      className={`inline-flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-fg ${
-        sortKey === k ? "text-fg" : "text-muted"
-      }`}
+      className={`group inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] transition-colors hover:text-fg ${active ? "text-emerald-300" : "text-muted"} ${right ? "flex-row-reverse" : ""}`}
     >
       {label}
-      <span className="text-[11px] leading-none text-zinc-500">↕</span>
+      <span className={`text-[10px] leading-none transition-opacity ${active ? "opacity-100" : "opacity-40 group-hover:opacity-80"}`}>
+        {active ? (sortAsc ? "▲" : "▼") : "▲▼"}
+      </span>
     </button>
   );
 }
 
+/* ------------------------- row ------------------------- */
+
 function VendorRow({ vendor: v }: { vendor: VendorProfile }) {
-  const trendUp = v.spendTrendPct >= 0;
-  const utilColor =
-    v.utilizationPct >= 75 ? "text-emerald-400" : v.utilizationPct >= 50 ? "text-amber-400" : "text-red-400";
-  const healthColor =
-    v.healthScore >= 80 ? "#34d399" : v.healthScore >= 60 ? "#e4e4e7" : v.healthScore >= 40 ? "#fbbf24" : "#f87171";
+  const renewalDays = daysUntil(v.renewalDate);
+  const cancelDays = daysUntil(v.cancellationDeadline);
+  const status = STATUS_META[v.contractStatus];
+  const riskMeta = v.risk ? RISK_META[v.risk.level] : null;
 
   return (
     <tr className="group transition-colors hover:bg-white/[0.03]">
-      <td className="px-5 py-3.5">
+      {/* vendor */}
+      <td className="px-4 py-3">
         <Link href={`/dashboard/vendors/${v.id}`} className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-[11px] font-semibold tracking-tight text-fg">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-[10.5px] font-semibold tracking-tight text-fg">
             {v.name.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-[14px] font-medium text-fg group-hover:text-emerald-300">{v.name}</p>
-            <p className="truncate text-[11px] tracking-tight text-muted">{v.category}</p>
+            <p className="truncate text-[13.5px] font-medium text-fg group-hover:text-emerald-300">{v.name}</p>
+            <p className="truncate text-[10.5px] tracking-tight text-muted">{v.description}</p>
           </div>
         </Link>
       </td>
-      <td className="px-5 py-3.5">
-        <div className="flex items-center gap-2.5">
-          <p className="text-[13px] font-medium text-fg">{money(v.annualSpend)}</p>
-          <Sparkline data={v.monthlySeries} width={64} height={22} color={trendUp ? "#34d399" : "#f87171"} />
-        </div>
-      </td>
-      <td className="px-5 py-3.5">
-        <span className={`text-[12.5px] font-medium ${trendUp ? "text-orange-400" : "text-emerald-400"}`}>
-          {pct(v.spendTrendPct)}
+      {/* contract */}
+      <td className="px-4 py-3">
+        <span className="rounded-md border border-line bg-white/[0.03] px-2 py-0.5 text-[11px] font-medium tracking-tight text-fg/80">
+          {v.category}
         </span>
       </td>
-      <td className="px-5 py-3.5">
-        {v.seats > 0 ? (
+      {/* status */}
+      <td className="px-4 py-3">
+        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-tight ${status.cls}`}>
+          <span className={`size-1.5 rounded-full ${v.contractStatus === "active" ? "bg-emerald-400" : v.contractStatus === "expiring_soon" ? "bg-amber-400" : "bg-red-400"}`} />
+          {status.label}
+        </span>
+      </td>
+      {/* contract value */}
+      <td className="px-4 py-3 text-right">
+        <p className="text-[13px] font-medium text-fg">{money(v.contractValue)}</p>
+        <p className="text-[10px] tracking-tight text-muted">/yr</p>
+      </td>
+      {/* renewal */}
+      <td className="px-4 py-3">
+        {v.renewalDate ? (
           <div>
-            <p className={`text-[12.5px] font-medium ${utilColor}`}>
-              {v.utilizationPct.toFixed(0)}%
+            <p className={`text-[12.5px] font-medium ${renewalDays <= 30 ? "text-red-400" : renewalDays <= 60 ? "text-amber-400" : "text-fg"}`}>
+              {formatDateShort(v.renewalDate)}
             </p>
-            <p className="text-[10.5px] tracking-tight text-muted">
-              {v.activeUsers}/{v.seats} seats
+            <p className="text-[10px] tracking-tight text-muted">{renewalDays} days</p>
+          </div>
+        ) : (
+          <span className="text-[11.5px] text-muted/60">Rolling</span>
+        )}
+      </td>
+      {/* cancellation deadline */}
+      <td className="px-4 py-3">
+        {v.cancellationDeadline ? (
+          <div>
+            <p className={`text-[12.5px] font-medium ${cancelDays < 0 ? "text-red-400" : cancelDays <= 14 ? "text-amber-400" : "text-fg"}`}>
+              {formatDateShort(v.cancellationDeadline)}
+            </p>
+            <p className="text-[10px] tracking-tight text-muted">
+              {cancelDays < 0 ? `${Math.abs(cancelDays)}d past` : `${cancelDays}d left`}
             </p>
           </div>
         ) : (
-          <span className="text-[11px] tracking-tight text-muted">usage-based</span>
+          <span className="text-[11.5px] text-muted/60">—</span>
         )}
       </td>
-      <td className="px-5 py-3.5">
-        <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-fg">{v.healthScore}</span>
-          <div className="h-1 w-10 overflow-hidden rounded-full bg-white/[0.08]">
-            <div className="h-full rounded-full" style={{ width: `${v.healthScore}%`, background: healthColor }} />
-          </div>
-        </div>
+      {/* auto-renew */}
+      <td className="px-4 py-3">
+        {v.autoRenew ? (
+          <span className="inline-flex items-center gap-1 text-[11.5px] font-medium text-orange-400">
+            <span className="size-1.5 rounded-full bg-orange-400" /> ON
+          </span>
+        ) : (
+          <span className="text-[11.5px] text-muted/60">OFF</span>
+        )}
       </td>
-      <td className="px-5 py-3.5">
+      {/* risk */}
+      <td className="px-4 py-3">
+        {riskMeta ? (
+          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10.5px] font-medium tracking-tight ${riskMeta.cls}`}>
+            {riskMeta.label}
+          </span>
+        ) : (
+          <span className="text-[11.5px] text-muted/60">None</span>
+        )}
+      </td>
+      {/* potential savings */}
+      <td className="px-4 py-3 text-right">
         {v.potentialSavings > 0 ? (
           <p className="text-[13px] font-medium text-emerald-400">{money(v.potentialSavings)}</p>
         ) : (
-          <span className="text-[11px] text-muted/60">—</span>
+          <span className="text-[11.5px] text-muted/60">—</span>
         )}
       </td>
-      <td className="px-5 py-3.5 text-right">
-        <Link
-          href={`/dashboard/vendors/${v.id}`}
-          className="text-[12px] tracking-tight text-muted transition-colors hover:text-emerald-400"
-        >
-          View →
-        </Link>
+      {/* owner */}
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-white/[0.07] text-[9.5px] font-semibold text-fg/80">
+            {v.owner.split(" ").map((p) => p[0]).slice(0, 2).join("")}
+          </div>
+          <span className="whitespace-nowrap text-[12px] tracking-tight text-fg/85">{v.owner}</span>
+        </div>
+      </td>
+      {/* last reviewed */}
+      <td className="px-4 py-3">
+        <span className="text-[12px] tracking-tight text-muted">{formatDateShort(v.lastReviewed)}</span>
+      </td>
+      {/* actions */}
+      <td className="px-4 py-3 text-right">
+        <div className="flex items-center justify-end gap-1.5">
+          <Link
+            href={`/dashboard/vendors/${v.id}`}
+            className="rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-medium tracking-tight text-muted transition-colors hover:border-emerald-500/30 hover:text-emerald-300"
+          >
+            Open
+          </Link>
+          <Link
+            href={`/dashboard/agent?vendor=${encodeURIComponent(v.name)}`}
+            className="rounded-lg px-2.5 py-1 text-[11.5px] font-medium tracking-tight text-muted transition-colors hover:bg-white/5 hover:text-fg"
+          >
+            Ask agent
+          </Link>
+        </div>
       </td>
     </tr>
+  );
+}
+
+/* ------------------------- empty state ------------------------- */
+
+function EmptyState({ onReset }: { onReset: () => void }) {
+  return (
+    <div className="px-6 py-16 text-center">
+      <div className="mx-auto flex size-12 items-center justify-center rounded-2xl border border-line bg-white/[0.03]">
+        <span aria-hidden="true" className="text-[16px] text-muted">⌕</span>
+      </div>
+      <p className="mt-4 text-[15px] font-medium text-fg">No vendors match your filters</p>
+      <p className="mx-auto mt-1 max-w-sm text-[13px] leading-relaxed text-muted/70">
+        Try clearing the search or resetting the status, category, and owner filters.
+      </p>
+      <button
+        onClick={onReset}
+        className="mt-5 rounded-full border border-line bg-surface px-4 py-2 text-[12.5px] font-medium tracking-tight text-fg transition-colors hover:border-emerald-500/30 hover:text-emerald-300"
+      >
+        Reset filters
+      </button>
+    </div>
   );
 }
