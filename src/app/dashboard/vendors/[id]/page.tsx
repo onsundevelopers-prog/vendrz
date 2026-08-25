@@ -37,7 +37,7 @@ export default function VendorPage() {
     return (
       <div className="py-20 text-center">
         <p className="text-[15px] text-muted">Vendor not found.</p>
-        <Link href="/dashboard/vendors" className="mt-2 inline-block text-[13px] tracking-tight text-emerald-400 underline underline-offset-4">
+        <Link href="/dashboard/vendors" className="mt-2 inline-block text-[13px] tracking-tight text-muted underline underline-offset-4 hover:text-fg">
           Back to vendors
         </Link>
       </div>
@@ -58,8 +58,8 @@ export default function VendorPage() {
     vendor.contractStatus === "at_risk"
       ? "border-red-500/30 bg-red-500/10 text-red-400"
       : vendor.contractStatus === "expiring_soon"
-        ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
-        : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
+        ? "border-white/15 bg-white/[0.06] text-fg"
+        : "border-white/15 bg-white/[0.06] text-fg";
 
   const metrics = [
     { label: "Annual spend", value: money(vendor.annualSpend), note: `${vendor.category}` },
@@ -68,19 +68,17 @@ export default function VendorPage() {
       label: "Spend change",
       value: pct(vendor.spendTrendPct),
       note: "vs prior year",
-      accent: trendUp ? "text-orange-400" : "text-emerald-400",
+      accent: trendUp ? "text-red-400" : "text-fg",
     },
     {
       label: "Potential savings",
       value: money(vendor.potentialSavings),
       note: "estimates · not guaranteed",
-      accent: "text-emerald-400",
     },
     {
       label: "Renewal date",
       value: vendor.renewalDate ? formatDate(vendor.renewalDate) : "Rolling",
       note: vendor.risk ? `${days}d away · auto-${vendor.autoRenew ? "renews" : "renewal"}` : "no fixed term",
-      accent: vendor.risk ? "text-amber-400" : undefined,
     },
   ];
 
@@ -193,16 +191,14 @@ function OverviewTab({
           <p className="mt-2 text-[13.5px] leading-relaxed tracking-[-0.01em] text-muted">
             {v.name} accounts for <span className="text-fg">{money(v.annualSpend)}</span> of
             annual vendor spend ({v.category.toLowerCase()} category), with a{" "}
-            <span className={v.spendTrendPct >= 0 ? "text-orange-400" : "text-emerald-400"}>
-              {pct(v.spendTrendPct)}
-            </span>{" "}
+            <span className="text-fg">{pct(v.spendTrendPct)}</span>{" "}
             year-over-year change.
             {v.usage ? (
               <>
                 {" "}
                 {v.usage.activeUsers} of {v.usage.seatsPurchased} seats are active (
                 {v.usage.utilizationPct.toFixed(0)}% utilization) -{" "}
-                <span className="text-amber-400">{money(v.usage.unusedSeatCost)}/yr</span> in
+                <span className="text-fg">{money(v.usage.unusedSeatCost)}/yr</span> in
                 unused-seat spend.
               </>
             ) : (
@@ -210,7 +206,7 @@ function OverviewTab({
             )}
           </p>
           {v.billing.variancePct !== 0 && (
-            <p className="mt-3 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2 text-[12.5px] leading-relaxed text-amber-300/90">
+            <p className="mt-3 border border-red-500/25 bg-red-500/[0.05] px-3 py-2 text-[12.5px] leading-relaxed text-red-300/90">
               Billing runs {pct(v.billing.variancePct)} vs the contracted amount -
               {v.billing.anomalies.length > 0 ? ` ${v.billing.anomalies[0].detail.toLowerCase()}` : " worth investigating."}
             </p>
@@ -220,7 +216,7 @@ function OverviewTab({
         {v.duplicates.length > 0 && (
           <Panel className="p-5">
             <h3 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-fg">
-              <span className="size-1.5 rounded-full bg-amber-400" /> Overlapping tools
+              <span className="size-1.5 rounded-full bg-zinc-400" /> Overlapping tools
             </h3>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">
               {v.name} overlaps with {v.duplicates.join(", ")} - potentially redundant spend in the
@@ -232,7 +228,7 @@ function OverviewTab({
         {alerts.length > 0 && (
           <Panel className="overflow-hidden">
             <div className="flex items-center gap-2 border-b border-line px-5 py-4">
-              <span className="size-1.5 rounded-full bg-amber-400" />
+              <span className="size-1.5 rounded-full bg-zinc-400" />
               <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-fg">Active alerts</h3>
             </div>
             <div className="divide-y divide-line">
@@ -256,7 +252,7 @@ function OverviewTab({
                 <div key={o.id} className="rounded-xl border border-line p-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-[13px] font-medium text-fg">{o.title}</p>
-                    <p className="shrink-0 text-[13px] font-semibold text-emerald-400">
+                    <p className="shrink-0 text-[13px] font-semibold text-fg">
                       {money(o.estimatedSavings)}
                     </p>
                   </div>
@@ -265,7 +261,7 @@ function OverviewTab({
               ))}
               <button
                 onClick={() => onOpenTab("savings")}
-                className="inline-block text-[12px] tracking-tight text-emerald-400 hover:text-emerald-300"
+                className="inline-block text-[12px] tracking-tight text-muted hover:text-fg"
               >
                 View all {opportunities.length} →
               </button>
@@ -311,7 +307,7 @@ function SpendTab({ vendor: v }: { vendor: VendorProfile }) {
             <Row
               label="YoY change"
               value={pct(v.spendTrendPct)}
-              accent={v.spendTrendPct >= 0 ? "text-orange-400" : "text-emerald-400"}
+              accent={v.spendTrendPct >= 0 ? "text-red-400" : "text-fg"}
             />
             <Row label="Prior year" value={money(v.annualSpend / (1 + v.spendTrendPct / 100))} />
             <Row label="Category" value={v.category} />
@@ -360,17 +356,16 @@ function ContractTab({ vendor: v }: { vendor: VendorProfile }) {
         </div>
       </Panel>
 
-      <Panel className="p-5">
-        <h3 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-fg">
-          <span className="size-1.5 rounded-full bg-amber-400" /> Renewal risk
-        </h3>
+      <Panel className="p-5">          <h3 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-fg">
+            <span className="size-1.5 rounded-full bg-zinc-400" /> Renewal risk
+          </h3>
         {v.risk ? (
           <div className="mt-4 space-y-3.5">
             <SeverityBadge severity={v.risk.level} />
             <Row label="Renewal in" value={`${v.risk.daysToRenewal} days`} />
             <Row label="Cancel by" value={`${v.risk.daysToDeadline} days`} />
             <Row label="Notice period" value={`${v.risk.noticePeriodDays} days`} />
-            <Row label="Expected increase" value={`${v.risk.expectedIncreasePct}%`} accent="text-orange-400" />
+            <Row label="Expected increase" value={`${v.risk.expectedIncreasePct}%`} />
             <Row
               label="Renewal cost"
               value={money(v.risk.potentialRenewalCost)}
@@ -421,7 +416,7 @@ function InvoicesTab({ vendor: v }: { vendor: VendorProfile }) {
                   <td className="px-5 py-3.5 text-[13px] font-medium text-fg">{money(inv.amount)}</td>
                   <td className="px-5 py-3.5">
                     {variance !== 0 ? (
-                      <span className={`text-[12.5px] font-medium ${variance > 0 ? "text-orange-400" : "text-emerald-400"}`}>
+                      <span className={`text-[12.5px] font-medium ${variance > 0 ? "text-red-400" : "text-fg"}`}>
                         {pct(Math.round((variance / Math.max(1, inv.contractedAmount)) * 100))}
                       </span>
                     ) : (
@@ -433,7 +428,7 @@ function InvoicesTab({ vendor: v }: { vendor: VendorProfile }) {
                       inv.status === "paid"
                         ? "border-white/10 bg-white/[0.05] text-muted"
                         : inv.status === "pending"
-                          ? "border-amber-500/25 bg-amber-500/10 text-amber-400"
+                          ? "border-white/15 bg-white/[0.06] text-fg"
                           : "border-red-500/25 bg-red-500/10 text-red-400"
                     }`}>
                       {inv.status}
@@ -494,22 +489,22 @@ function UsageTab({ vendor: v }: { vendor: VendorProfile }) {
         </Panel>
         <Panel className="p-4">
           <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">Active seats</p>
-          <p className="mt-2 text-[24px] font-semibold tracking-tight text-emerald-400">{u.activeUsers}</p>
+          <p className="mt-2 text-[24px] font-semibold tracking-tight text-fg">{u.activeUsers}</p>
         </Panel>
         <Panel className="p-4">
           <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">Inactive seats</p>
-          <p className="mt-2 text-[24px] font-semibold tracking-tight text-orange-400">{u.inactiveUsers}</p>
+          <p className="mt-2 text-[24px] font-semibold tracking-tight text-fg">{u.inactiveUsers}</p>
         </Panel>
         <Panel className="p-4">
           <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">Cost / active user</p>
           <p className="mt-2 text-[24px] font-semibold tracking-tight text-fg">{money(u.costPerActiveUser)}<span className="text-xs text-muted">/mo</span></p>
         </Panel>
-        <Panel className="col-span-2 border-emerald-500/25 bg-emerald-500/[0.05] p-4">
-          <p className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.1em] text-emerald-300">
-            <span className="size-1.5 rounded-full bg-emerald-400" /> Unused-seat cost
+        <Panel className="col-span-2 border-red-500/25 bg-red-500/[0.04] p-4">
+          <p className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.1em] text-red-300">
+            <span className="size-1.5 rounded-full bg-red-400" /> Unused-seat cost
           </p>
-          <p className="mt-2 text-[26px] font-semibold tracking-tight text-emerald-400">
-            {money(u.unusedSeatCost)}<span className="text-sm text-emerald-400/60">/yr</span>
+          <p className="mt-2 text-[26px] font-semibold tracking-tight text-red-400">
+            {money(u.unusedSeatCost)}<span className="text-sm text-red-400/60">/yr</span>
           </p>
         </Panel>
       </div>
@@ -541,7 +536,7 @@ function SavingsTab({ opportunities }: { opportunities: SavingsOpportunity[] }) 
               <p className="mt-0.5 text-[11px] uppercase tracking-wide text-muted">{o.type.replace(/_/g, " ")}</p>
             </div>
             <div className="text-right">
-              <p className="text-[22px] font-semibold tracking-tight text-emerald-400">
+              <p className="text-[22px] font-semibold tracking-tight text-fg">
                 {money(o.estimatedSavings)}
               </p>
               <p className="text-[10.5px] tracking-tight text-muted">/yr potential</p>
@@ -557,11 +552,11 @@ function SavingsTab({ opportunities }: { opportunities: SavingsOpportunity[] }) 
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">{o.why}</p>
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] px-4 py-3">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white/[0.03] px-4 py-3">
             <div className="flex items-start gap-2.5">
-              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-emerald-400" />
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-zinc-400" />
               <div>
-                <p className="text-[10px] uppercase tracking-[0.12em] text-emerald-300">Recommended action</p>
+                <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Recommended action</p>
                 <p className="mt-0.5 text-[13px] leading-relaxed text-fg">{o.recommendedAction}</p>
               </div>
             </div>
@@ -590,12 +585,12 @@ function ActivityTab({
   const events: { time: string; color: string; text: string }[] = [
     ...alerts.map((a) => ({
       time: a.createdAt,
-      color: "bg-amber-400",
+      color: "bg-zinc-400",
       text: a.title,
     })),
     ...opportunities.map((o) => ({
       time: o.createdAt,
-      color: "bg-emerald-400",
+      color: "bg-zinc-300",
       text: `Opportunity identified: ${o.title} (${money(o.estimatedSavings)}/yr)`,
     })),
   ].sort((a, b) => b.time.localeCompare(a.time));

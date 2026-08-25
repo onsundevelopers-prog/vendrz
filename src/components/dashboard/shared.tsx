@@ -63,16 +63,17 @@ export function KpiStrip({ children }: { children: React.ReactNode }) {
 
 /* ------------------------------ chips ------------------------------ */
 
+/* Monochrome status language: only destructive states carry red. */
 export const STATUS_META: Record<ContractStatus, { label: string; cls: string; dot: string }> = {
-  active: { label: "Active", cls: "chip-green", dot: "bg-emerald-400" },
-  expiring_soon: { label: "Expiring soon", cls: "chip-amber", dot: "bg-amber-400" },
+  active: { label: "Active", cls: "chip-neutral", dot: "bg-zinc-400" },
+  expiring_soon: { label: "Expiring soon", cls: "chip-neutral", dot: "bg-zinc-300" },
   at_risk: { label: "At risk", cls: "chip-red", dot: "bg-red-400" },
 };
 
 export const RISK_META: Record<AlertSeverity, { label: string; cls: string; dot: string }> = {
   low: { label: "Low", cls: "chip-neutral", dot: "bg-zinc-500" },
-  medium: { label: "Medium", cls: "chip-amber", dot: "bg-amber-400" },
-  high: { label: "High", cls: "chip-orange", dot: "bg-orange-400" },
+  medium: { label: "Medium", cls: "chip-neutral", dot: "bg-zinc-400" },
+  high: { label: "High", cls: "chip-neutral", dot: "bg-zinc-300" },
   critical: { label: "Critical", cls: "chip-red", dot: "bg-red-400" },
 };
 
@@ -99,8 +100,8 @@ export function RiskChip({ level }: { level: AlertSeverity | null | undefined })
 
 export function AutoRenewChip({ on }: { on: boolean }) {
   return on ? (
-    <span className="chip chip-orange">
-      <span className="status-dot bg-orange-400" />
+    <span className="chip chip-neutral">
+      <span className="status-dot bg-zinc-400" />
       Auto-renew
     </span>
   ) : (
@@ -134,7 +135,7 @@ export function VendorCell({
   );
   if (href) {
     return (
-      <Link href={href} className="group block hover:text-emerald-300">
+      <Link href={href} className="group block hover:text-fg">
         {inner}
       </Link>
     );
@@ -155,7 +156,7 @@ export function ArrowLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1 text-[11.5px] font-medium text-emerald-400 hover:text-emerald-300"
+      className="inline-flex items-center gap-1 text-[11.5px] font-medium text-muted hover:text-fg"
     >
       {label}
       <ArrowRight size={11} />

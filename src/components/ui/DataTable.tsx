@@ -379,7 +379,7 @@ export function DataTable<T>({
                 <Filter size={13} />
                 Filter
                 {filterCount > 0 && (
-                  <span className="rounded-full bg-emerald-400 px-1.5 text-[10px] font-bold text-black">
+                  <span className="rounded-full bg-white px-1.5 text-[10px] font-bold text-black">
                     {filterCount}
                   </span>
                 )}
@@ -424,7 +424,7 @@ export function DataTable<T>({
           </div>
           {filterCount > 0 && (
             <button
-              className="mt-2 text-[11.5px] text-emerald-400 hover:text-emerald-300"
+              className="mt-2 text-[11.5px] text-muted hover:text-fg"
               onClick={() => setFilters({})}
             >
               Clear all filters
@@ -453,7 +453,7 @@ export function DataTable<T>({
                       if (el) el.indeterminate = someSelected && !allSelected;
                     }}
                     onChange={toggleAll}
-                    className="accent-emerald-400"
+                    className="accent-white"
                     aria-label="Select all rows"
                   />
                 </th>
@@ -480,7 +480,7 @@ export function DataTable<T>({
                       {c.sortable ? (
                         <button
                           className={`flex items-center gap-1 hover:text-fg ${
-                            activeSort ? "!text-emerald-300" : ""
+                            activeSort ? "!text-fg" : ""
                           } ${c.align === "right" ? "flex-row-reverse" : ""}`}
                           onClick={() =>
                             setSort((s) =>
@@ -553,7 +553,7 @@ export function DataTable<T>({
                         checked={selected}
                         onChange={() => toggleRow(r)}
                         onClick={(e) => e.stopPropagation()}
-                        className="accent-emerald-400"
+                        className="accent-white"
                         aria-label={`Select row ${i + 1}`}
                       />
                     </td>
@@ -605,7 +605,7 @@ export function DataTable<T>({
         <span>
           <span className="font-medium text-fg">{filtered.length}</span> rows
           {selection.size > 0 && (
-            <span className="text-emerald-400"> · {selection.size} selected</span>
+            <span className="text-fg"> · {selection.size} selected</span>
           )}
         </span>
         <span className="ml-auto flex items-center gap-2">

@@ -7,12 +7,12 @@ import { AreaChart, DonutChart } from "@/components/ui/charts";
 import { money, formatDate, pct } from "@/lib/format";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Software: "#34d399",
-  Cloud: "#38bdf8",
-  Marketing: "#f472b6",
-  Operations: "#fbbf24",
-  Finance: "#a78bfa",
-  HR: "#fb923c",
+  Software: "#e4e4e7",
+  Cloud: "#c8c8cc",
+  Marketing: "#a1a1aa",
+  Operations: "#8a8a92",
+  Finance: "#71717a",
+  HR: "#5c5c64",
   Infrastructure: "#e2e8f0",
   Other: "#71717a",
 };
@@ -48,7 +48,7 @@ export default function ReportsPage() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-muted">
-                <span className="size-1.5 rounded-full bg-emerald-400" />
+                <span className="size-1.5 rounded-full bg-zinc-400" />
                 Vendor Spend Intelligence Report
               </p>
               <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-fg">{report.company}</h3>
@@ -63,11 +63,11 @@ export default function ReportsPage() {
               </div>
               <div>
                 <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">Potential savings</p>
-                <p className="mt-1 text-[26px] font-semibold tracking-tight text-emerald-400">{money(report.potentialSavings)}</p>
+                <p className="mt-1 text-[26px] font-semibold tracking-tight text-fg">{money(report.potentialSavings)}</p>
               </div>
               <div>
                 <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">Confirmed savings</p>
-                <p className="mt-1 text-[26px] font-semibold tracking-tight text-emerald-400">{money(report.confirmedSavings)}</p>
+                <p className="mt-1 text-[26px] font-semibold tracking-tight text-fg">{money(report.confirmedSavings)}</p>
               </div>
               <div>
                 <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">Vendor health</p>
@@ -117,7 +117,7 @@ export default function ReportsPage() {
                 <p className="text-[13.5px] font-medium text-fg">{v.name}</p>
                 <p className="text-[10.5px] tracking-tight text-muted">{v.category}</p>
               </div>
-              <span className={`text-[11.5px] ${v.spendTrendPct >= 0 ? "text-orange-400" : "text-emerald-400"}`}>
+              <span className={`text-[11.5px] ${v.spendTrendPct >= 0 ? "text-red-400" : "text-fg"}`}>
                 {pct(v.spendTrendPct)}
               </span>
               <span className="w-16 text-right text-[11.5px] text-muted">
@@ -141,7 +141,7 @@ export default function ReportsPage() {
                 <SeverityBadge severity={v.risk?.level ?? "low"} />
                 <p className="min-w-0 flex-1 truncate text-[13.5px] text-fg">{v.name}</p>
                 <p className="text-[11.5px] text-muted">{formatDate(v.renewalDate)}</p>
-                <p className="w-24 text-right text-[13px] font-medium text-amber-400">
+                <p className="w-24 text-right text-[13px] font-medium text-red-400">
                   {money(v.risk?.potentialRenewalCost ?? v.annualSpend)}
                 </p>
               </div>
@@ -161,7 +161,7 @@ export default function ReportsPage() {
                   <p className="text-[11.5px] text-muted">
                     {v.billing.anomalies.length} anomaly{v.billing.anomalies.length > 1 ? "ies" : "y"}
                   </p>
-                  <p className="w-24 text-right text-[13px] font-medium text-orange-400">
+                  <p className="w-24 text-right text-[13px] font-medium text-red-400">
                     {pct(v.billing.variancePct)}
                   </p>
                 </div>
@@ -178,7 +178,7 @@ export default function ReportsPage() {
                 <div key={v.id} className="flex items-center gap-3 px-5 py-2.5">
                   <p className="min-w-0 flex-1 truncate text-[13.5px] text-fg">{v.name}</p>
                   <p className="text-[11.5px] text-muted">{v.usage?.inactiveUsers} seats</p>
-                  <p className="w-24 text-right text-[13px] font-medium text-emerald-400">
+                  <p className="w-24 text-right text-[13px] font-medium text-red-400">
                     {money(v.usage?.unusedSeatCost ?? 0)}
                   </p>
                 </div>
@@ -206,7 +206,7 @@ export default function ReportsPage() {
                 <p className="truncate text-[13.5px] font-medium text-fg">{o.vendorName} - {o.title}</p>
                 <p className="truncate text-[11px] tracking-tight text-muted">{o.recommendedAction}</p>
               </div>
-              <p className="w-24 shrink-0 text-right text-[13.5px] font-semibold text-emerald-400">
+              <p className="w-24 shrink-0 text-right text-[13.5px] font-semibold text-fg">
                 {money(o.estimatedSavings)}
               </p>
             </div>

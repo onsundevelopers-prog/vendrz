@@ -60,7 +60,7 @@ body {
 }
 
 ::selection {
-  background: rgb(52 211 153 / 0.28);
+  background: rgb(255 255 255 / 0.18);
 }
 
 /* ---------- Precision glow shadow (replaces default shadows) ---------- */
@@ -124,14 +124,6 @@ body {
   background:
     linear-gradient(#0d0d11, #0d0d11) padding-box,
     linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) border-box;
-}
-
-/* Emerald-tinted variant for the featured / primary card */
-.glass-border-emerald {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(#0d0d11, #0d0d11) padding-box,
-    linear-gradient(to right, rgba(52, 211, 153, 0.4), rgba(255, 255, 255, 0.06)) border-box;
 }
 
 /* Subtle hover lift for glass cards */
@@ -225,18 +217,15 @@ body {
   color: #71717a;
 }
 .auth-input:focus {
-  border-color: rgba(52, 211, 153, 0.5);
+  border-color: rgba(255, 255, 255, 0.35);
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* ---------- Run free audit CTA: shimmer + aura + beam ---------- */
+/* ---------- Run free audit CTA: shimmer + aura + beam (landing only) ---------- */
 
-/* Only the primary Run free audit buttons carry animation. */
 .cta-glow {
   isolation: isolate;
 }
-
-/* aura - pulsing emerald halo behind the button */
 .cta-glow .btn-aura {
   position: absolute;
   inset: -12px;
@@ -259,8 +248,6 @@ body {
     transform: scale(1.07);
   }
 }
-
-/* beam - traveling emerald hairline around the perimeter */
 @property --cta-beam-angle {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -293,8 +280,6 @@ body {
     --cta-beam-angle: 360deg;
   }
 }
-
-/* shimmer - light sweep across the button face */
 .cta-glow .btn-shimmer {
   position: absolute;
   inset: 0;
@@ -454,7 +439,7 @@ body {
   transition: border-color 0.12s ease;
 }
 .toolbar-input:focus {
-  border-color: rgba(52, 211, 153, 0.45);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 /* Professional table */
@@ -494,8 +479,8 @@ body {
   background: rgba(255, 255, 255, 0.03);
 }
 .ptable tbody tr.selected {
-  background: rgba(52, 211, 153, 0.07);
-  box-shadow: inset 2px 0 0 rgba(52, 211, 153, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.7);
 }
 .ptable tbody tr.active-row {
   background: rgba(255, 255, 255, 0.05);
@@ -513,7 +498,7 @@ body {
   opacity: 0.5;
 }
 
-/* Chips / badges (flat, dense) */
+/* Chips / badges (flat, dense) - monochrome by default */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -528,12 +513,12 @@ body {
   color: var(--color-muted);
   white-space: nowrap;
 }
-.chip-green { border-color: rgba(52, 211, 153, 0.3); background: rgba(52, 211, 153, 0.09); color: #6ee7b7; }
-.chip-amber { border-color: rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.09); color: #fcd34d; }
-.chip-orange { border-color: rgba(251, 146, 60, 0.3); background: rgba(251, 146, 60, 0.09); color: #fdba74; }
-.chip-red { border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.09); color: #fca5a5; }
-.chip-blue { border-color: rgba(96, 165, 250, 0.3); background: rgba(96, 165, 250, 0.09); color: #93c5fd; }
-.chip-purple { border-color: rgba(167, 139, 250, 0.3); background: rgba(167, 139, 250, 0.09); color: #c4b5fd; }
+.chip-green { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
+.chip-amber { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
+.chip-orange { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
+.chip-red { border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.1); color: #fca5a5; }
+.chip-blue { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
+.chip-purple { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
 .chip-neutral { border-color: var(--color-line); background: rgba(255, 255, 255, 0.04); color: var(--color-muted); }
 
 /* Dot status indicator */
@@ -653,7 +638,7 @@ body {
   color: var(--color-fg);
   font-size: 13px;
 }
-.palette-item.highlight { background: rgba(52, 211, 153, 0.1); }
+.palette-item.highlight { background: rgba(255, 255, 255, 0.08); }
 .palette-item .desc {
   margin-left: auto;
   font-size: 11px;
@@ -704,7 +689,7 @@ body {
 .nav-item.active {
   background: rgba(255, 255, 255, 0.08);
   color: var(--color-fg);
-  box-shadow: inset 2px 0 0 #34d399;
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, 0.9);
 }
 .nav-section {
   padding: 12px 8px 4px 18px;

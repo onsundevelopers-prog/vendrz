@@ -165,7 +165,7 @@ export default function DashboardLayout({
         group: "Actions",
         label: "Run a new audit",
         keywords: "scan upload contract",
-        icon: <Zap size={14} className="text-emerald-400" />,
+        icon: <Zap size={14} className="text-fg" />,
         onSelect: () => router.push("/audit"),
       },
       {
@@ -173,7 +173,7 @@ export default function DashboardLayout({
         group: "Actions",
         label: "Ask the agent",
         keywords: "ai assistant",
-        icon: <Sparkles size={14} className="text-emerald-400" />,
+        icon: <Sparkles size={14} className="text-fg" />,
         onSelect: () => router.push("/dashboard/agent"),
       },
       {
@@ -226,6 +226,11 @@ export default function DashboardLayout({
     });
   };
 
+  const currentLabel =
+    ALL_PAGES.find((p) =>
+      p.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(p.href)
+    )?.label ?? "Overview";
+
   if (!ready) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-canvas">
@@ -254,7 +259,7 @@ export default function DashboardLayout({
       <div className="px-2 pb-2">
         <Link
           href="/audit"
-          className="flex h-8 items-center justify-center gap-1.5 rounded-md bg-white text-[12.5px] font-semibold text-black transition-opacity hover:opacity-90"
+          className="flex h-8 items-center justify-center gap-1.5 rounded-md border border-line bg-white/[0.06] text-[12.5px] font-medium text-fg transition-colors hover:bg-white/[0.1]"
         >
           <Plus size={14} />
           {!collapsed && "Run new audit"}
@@ -297,7 +302,7 @@ export default function DashboardLayout({
 
       <div className="border-t border-line p-2">
         <div className="flex items-center gap-2.5 rounded-lg px-2 py-2">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[12px] font-semibold tracking-tight text-emerald-300">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-line bg-white/[0.06] text-[12px] font-semibold tracking-tight text-fg">
             {initials}
           </div>
           {!collapsed && (
@@ -321,11 +326,6 @@ export default function DashboardLayout({
     </div>
   );
 
-  const currentLabel =
-    ALL_PAGES.find((p) =>
-      p.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(p.href)
-    )?.label ?? "Overview";
-
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-canvas">
       {/* ============================== top bar ============================== */}
@@ -346,24 +346,24 @@ export default function DashboardLayout({
           <Menu size={16} />
         </button>
 
+        {/* breadcrumb / current page */}
+        <span className="hidden items-center gap-1.5 pl-1 text-[12.5px] font-medium text-muted md:flex">
+          <span className="text-muted/60">Vendrz</span>
+          <span className="text-muted/40">/</span>
+          <span className="text-fg">{currentLabel}</span>
+        </span>
+
         {/* workspace selector */}
         <button
           ref={(el) => {
             workspaceRef.current = el;
           }}
           onClick={() => setWorkspaceOpen((o) => !o)}
-          className="ml-1 flex h-8 items-center gap-2 rounded-md px-2 text-[12.5px] font-medium text-fg hover:bg-white/5"
+          className="ml-2 hidden h-8 items-center gap-2 rounded-md px-2 text-[12.5px] font-medium text-muted hover:bg-white/5 hover:text-fg sm:flex"
         >
-          <span className="flex size-5 items-center justify-center rounded bg-emerald-500/20 text-[9px] font-bold text-emerald-300">
-            A
-          </span>
-          <span className="hidden sm:inline">Acme Technologies</span>
-          {isDemo && (
-            <span className="chip chip-green !h-[18px] !text-[9.5px] uppercase tracking-wide">
-              demo
-            </span>
-          )}
-          <ChevronDown size={13} className="text-muted" />
+          <span className="max-w-[160px] truncate">Acme Technologies</span>
+          {isDemo && <span className="text-[10px] uppercase tracking-wide text-muted/60">demo</span>}
+          <ChevronDown size={13} />
         </button>
         <MenuPop
           open={workspaceOpen}
@@ -373,7 +373,7 @@ export default function DashboardLayout({
             { label: "Workspace", kind: "label" },
             {
               label: "Acme Technologies",
-              icon: <Check size={13} className="text-emerald-400" />,
+              icon: <Check size={13} className="text-fg" />,
               onSelect: () => undefined,
             },
             { separator: true },
@@ -389,10 +389,10 @@ export default function DashboardLayout({
 
         <button
           onClick={() => setPaletteOpen(true)}
-          className="hidden h-8 w-72 items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-[12px] text-muted transition-colors hover:border-white/20 hover:text-fg sm:flex"
+          className="hidden h-8 w-56 items-center gap-2 rounded-md border border-line bg-canvas px-2.5 text-[12px] text-muted transition-colors hover:border-white/20 hover:text-fg md:flex"
         >
           <Search size={13} />
-          <span>Search vendors, contracts…</span>
+          <span>Search…</span>
           <span className="kbd ml-auto flex items-center gap-0.5">
             <Command size={10} /> K
           </span>
@@ -436,7 +436,7 @@ export default function DashboardLayout({
           >
             <Bell size={16} />
             {unreadAlerts > 0 && (
-              <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-red-400" />
+              <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-white/80" />
             )}
           </button>
           <MenuPop
@@ -447,15 +447,12 @@ export default function DashboardLayout({
             items={[
               { label: `Notifications · ${unreadAlerts} unread`, kind: "label" },
               ...audit.alerts.slice(0, 6).map((a) => ({
-                label: a.title,
-                icon: (
+                label: a.title,                  icon: (
                   <span
                     className={`status-dot ${
-                      a.severity === "critical" || a.severity === "high"
+                      a.severity === "critical"
                         ? "bg-red-400"
-                        : a.severity === "medium"
-                          ? "bg-amber-400"
-                          : "bg-zinc-500"
+                        : "bg-zinc-400"
                     }`}
                   />
                 ),
@@ -488,7 +485,7 @@ export default function DashboardLayout({
             className="ml-0.5 flex h-8 items-center gap-2 rounded-md px-1.5 hover:bg-white/5"
             aria-label="Account menu"
           >
-            <span className="flex size-6 items-center justify-center rounded-full bg-emerald-500/20 text-[10px] font-semibold text-emerald-300">
+            <span className="flex size-6 items-center justify-center rounded-full border border-line bg-white/[0.06] text-[10px] font-semibold text-fg">
               {initials}
             </span>
             <span className="hidden max-w-[140px] truncate text-[12px] font-medium text-fg xl:inline">
@@ -552,14 +549,10 @@ export default function DashboardLayout({
       </div>
 
       {/* ============================== status bar ============================== */}
-      <footer className="flex h-7 shrink-0 items-center gap-4 border-t border-line bg-surface px-3 text-[10.5px] tracking-tight text-muted/70">
-        <span className="flex items-center gap-1.5">
-          <span className="status-dot bg-emerald-400" />
-          {audit.vendorCount} vendors under watch
-        </span>
+      <footer className="flex h-7 shrink-0 items-center gap-4 border-t border-line bg-surface px-3 text-[10.5px] tracking-tight text-muted/60">
+        <span>{audit.vendorCount} vendors under watch</span>
         <span className="hidden sm:inline">{contracts.length} contracts · {money(audit.totalAnnualSpend)}/yr</span>
-        <span className="ml-auto hidden md:inline">{currentLabel}</span>
-        <span className="text-muted/50">read-only · demo data</span>
+        <span className="ml-auto hidden md:inline">read-only · demo data</span>
       </footer>
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={paletteItems} />

@@ -43,11 +43,11 @@ export default function SettingsPage() {
         className="rounded-2xl border border-line bg-surface p-6"
       >
         <h3 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-fg">
-          <span className="size-1.5 rounded-full bg-emerald-400/70" />
+          <span className="size-1.5 rounded-full bg-zinc-400" />
           Account
         </h3>
         <div className="mt-4 flex items-center gap-3.5">
-          <div className="flex size-11 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-semibold tracking-tight text-emerald-300">
+          <div className="flex size-11 items-center justify-center rounded-full border border-line bg-white/[0.06] text-sm font-semibold tracking-tight text-fg">
             {(auth.name || "U")
               .split(" ")
               .map((p) => p[0])
@@ -76,7 +76,7 @@ export default function SettingsPage() {
         className="rounded-2xl border border-line bg-surface p-6"
       >
         <h3 className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.01em] text-fg">
-          <span className="size-1.5 rounded-full bg-emerald-400/70" />
+          <span className="size-1.5 rounded-full bg-zinc-400" />
           Connected accounts
         </h3>
 
@@ -100,8 +100,8 @@ export default function SettingsPage() {
               </p>
             </div>
             {connection ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-[12px] font-medium text-emerald-300">
-                <span className="size-1.5 rounded-full bg-emerald-400" /> Connected
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-2.5 py-1 text-[12px] font-medium text-fg">
+                <span className="size-1.5 rounded-full bg-zinc-300" /> Connected
               </span>
             ) : (
               <Button href="/dashboard/gmail" size="sm">

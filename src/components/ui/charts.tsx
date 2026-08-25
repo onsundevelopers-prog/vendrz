@@ -11,7 +11,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export function BarChart({
   data,
   height = 180,
-  color = "#34d399",
+  color = "#a1a1aa",
   highlightLast = true,
   format = (v: number) => String(v),
 }: {
@@ -63,7 +63,7 @@ export function BarChart({
 export function AreaChart({
   data,
   height = 200,
-  color = "#34d399",
+  color = "#a1a1aa",
   fillId,
 }: {
   data: { label: string; value: number }[];
@@ -151,7 +151,7 @@ export function Sparkline({
   data,
   width = 96,
   height = 28,
-  color = "#34d399",
+  color = "#a1a1aa",
 }: {
   data: number[];
   width?: number;
@@ -229,7 +229,7 @@ export function DonutChart({
 export function ProgressBar({
   value,
   max = 100,
-  color = "#34d399",
+  color = "#a1a1aa",
   className = "",
 }: {
   value: number;

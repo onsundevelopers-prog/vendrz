@@ -9,8 +9,6 @@ import { DataTable, type Column } from "@/components/ui/DataTable";
 import { Inspector, DetailRow } from "@/components/ui/Inspector";
 import {
   AutoRenewChip,
-  Kpi,
-  KpiStrip,
   PageHeader,
   RiskChip,
   VendorCell,
@@ -57,20 +55,6 @@ export default function RenewalsPage() {
       .sort((a, b) => (a.risk?.daysToRenewal ?? 999) - (b.risk?.daysToRenewal ?? 999));
   }, [atRisk, view]);
 
-  const timeline = useMemo(
-    () =>
-      audit.vendors
-        .filter((v) => v.renewalDate && daysUntil(v.renewalDate) >= 0)
-        .sort((a, b) => daysUntil(a.renewalDate) - daysUntil(b.renewalDate))
-        .slice(0, 8),
-    [audit.vendors]
-  );
-
-  const missed = atRisk.filter((v) => v.risk && v.risk.daysToDeadline < 0).length;
-  const windows = atRisk.filter((v) => v.risk && v.risk.daysToDeadline >= 0 && v.risk.daysToDeadline <= 30).length;
-  const highValue = atRisk.filter((v) => v.annualSpend >= 20000).length;
-  const exposure = atRisk.reduce((a, v) => a + (v.risk?.potentialRenewalCost ?? 0), 0);
-
   const columns: Column<VendorProfile>[] = useMemo(
     () => [
       {
@@ -101,7 +85,7 @@ export default function RenewalsPage() {
           const d = daysUntil(v.renewalDate);
           return (
             <div>
-              <span className={`text-[12.5px] font-medium ${d <= 30 ? "text-red-400" : d <= 60 ? "text-amber-400" : "text-fg"}`}>
+              <span className={`text-[12.5px] font-medium ${d <= 30 ? "text-red-400" : "text-fg"}`}>
                 {formatDateShort(v.renewalDate)}
               </span>
               <span className="ml-1.5 text-[10.5px] text-muted">{d >= 0 ? `in ${d}d` : `${Math.abs(d)}d past`}</span>
@@ -119,7 +103,7 @@ export default function RenewalsPage() {
           if (!v.cancellationDeadline) return <span className="text-[11.5px] text-muted/60">-</span>;
           const d = daysUntil(v.cancellationDeadline);
           return (
-            <span className={`text-[12.5px] font-medium ${d < 0 ? "text-red-400" : d <= 14 ? "text-amber-400" : "text-fg/85"}`}>
+            <span className={`text-[12.5px] font-medium ${d < 0 ? "text-red-400" : "text-fg/85"}`}>
               {formatDateShort(v.cancellationDeadline)}
               <span className="ml-1.5 text-[10.5px] text-muted">
                 {d < 0 ? "missed" : `${d}d`}
@@ -154,7 +138,7 @@ export default function RenewalsPage() {
         sortValue: (v) => v.risk?.expectedIncreasePct ?? 0,
         render: (v) =>
           v.risk && v.risk.expectedIncreasePct > 0 ? (
-            <span className="text-[12.5px] font-medium text-orange-400">{pct(v.risk.expectedIncreasePct)}</span>
+            <span className="text-[12.5px] font-medium text-fg">{pct(v.risk.expectedIncreasePct)}</span>
           ) : (
             <span className="text-[11.5px] text-muted/60">-</span>
           ),
@@ -187,49 +171,6 @@ export default function RenewalsPage() {
           </Link>
         }
       />
-
-      <KpiStrip>
-        <Kpi label="Renewal risk" value={atRisk.length} sub="contracts with terms" />
-        <Kpi label="Requires attention" value={atRisk.filter((v) => v.risk && (v.risk.daysToDeadline <= 14 || v.risk.daysToDeadline < 0)).length} accent="text-red-400" sub="window closing or closed" />
-        <Kpi label="Window open" value={windows} accent="text-amber-400" sub="cancel by date within 30 days" />
-        <Kpi label="Missed deadlines" value={missed} accent="text-red-400" sub="auto-renews unless waived" />
-        <Kpi label="High value" value={highValue} sub="$20k+ annual" />
-        <Kpi label="Exposure at renewal" value={exposure} format={money} accent="text-fg" sub="annualized if all renew" />
-      </KpiStrip>
-
-      {/* timeline strip */}
-      <div className="panel-surface overflow-hidden">
-        <div className="panel-header">
-          <span className="panel-title">Next renewals</span>
-          <span className="panel-sub">next 8 by date</span>
-        </div>
-        <div className="flex divide-x divide-line overflow-x-auto">
-          {timeline.map((v) => {
-            const d = daysUntil(v.renewalDate);
-            return (
-              <Link
-                key={v.id}
-                href={`/dashboard/vendors/${v.id}`}
-                className="group min-w-[130px] flex-1 px-3 py-3 transition-colors hover:bg-white/[0.03]"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className={`status-dot ${d <= 30 ? "bg-red-400" : d <= 60 ? "bg-amber-400" : "bg-emerald-400"}`}
-                  />
-                  <span className="truncate text-[12px] font-medium text-fg group-hover:text-emerald-300">
-                    {v.name}
-                  </span>
-                </div>
-                <p className="mt-1 text-[11px] text-muted">{formatDateShort(v.renewalDate)}</p>
-                <p className={`text-[10.5px] ${d <= 30 ? "text-red-400" : "text-muted"}`}>
-                  {d >= 0 ? `${d} days` : `${Math.abs(d)}d past`}
-                </p>
-                <p className="mt-0.5 text-[10.5px] text-muted/70">{money(v.annualSpend)}/yr</p>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
 
       {/* view tabs */}
       <div className="tabs">
@@ -297,9 +238,7 @@ export default function RenewalsPage() {
               {selected.risk.daysToDeadline < 0 ? (
                 <span className="text-red-400">closed {Math.abs(selected.risk.daysToDeadline)}d ago</span>
               ) : (
-                <span className={selected.risk.daysToDeadline <= 14 ? "text-amber-400" : "text-emerald-400"}>
-                  {selected.risk.daysToDeadline} days left
-                </span>
+                <span>{selected.risk.daysToDeadline} days left</span>
               )}
             </DetailRow>
             <DetailRow label="Notice period">{selected.risk.noticePeriodDays} days</DetailRow>

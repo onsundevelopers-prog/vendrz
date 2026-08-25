@@ -32,10 +32,10 @@ export default function GmailConnectPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.06] p-8"
+          className="rounded-2xl border border-line bg-surface p-8"
         >
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/10">
-            <span aria-hidden="true" className="block h-[11px] w-[17px] rotate-45 border-b-[2.5px] border-r-[2.5px] border-emerald-400" />
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-line bg-white/[0.06]">
+            <span aria-hidden="true" className="block h-[11px] w-[17px] rotate-45 border-b-[2.5px] border-r-[2.5px] border-fg" />
           </div>
           <h2 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-fg">
             Gmail connected
@@ -89,12 +89,12 @@ export default function GmailConnectPage() {
 
           {/* what will happen / what won't */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4">
-              <p className="flex items-center gap-2 text-[13px] font-semibold text-emerald-300">
-                <span aria-hidden="true" className="block h-[8px] w-[12px] rotate-45 border-b-2 border-r-2 border-emerald-400" />
+            <div className="rounded-xl border border-line bg-white/[0.03] p-4">
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-fg">
+                <span aria-hidden="true" className="block h-[8px] w-[12px] rotate-45 border-b-2 border-r-2 border-fg" />
                 What we will do
               </p>
-              <ul className="mt-2.5 space-y-2 text-[13px] text-emerald-300/80">
+              <ul className="mt-2.5 space-y-2 text-[13px] text-muted">
                 <li>Search for contract-signal keywords &amp; PDF/DOCX attachments</li>
                 <li>Read matching messages to detect vendors &amp; document type</li>
                 <li>Show you a reviewable candidate list</li>

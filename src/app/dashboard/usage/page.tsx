@@ -39,9 +39,9 @@ export default function UsagePage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Seats purchased" value={totalSeats} sub={`across ${seatVendors.length} vendors`} />
-        <StatCard label="Active seats" value={totalActive} accent="text-emerald-400" sub={`${Math.round((totalActive / Math.max(1, totalSeats)) * 100)}% utilization`} delay={0.05} />
-        <StatCard label="Inactive seats" value={totalInactive} accent="text-orange-400" sub="no activity in 90 days" delay={0.1} />
-        <StatCard label="Unused-seat cost" value={totalUnusedCost} valueFormat={money} accent="text-red-400" sub="/yr potential savings" delay={0.15} />
+        <StatCard label="Active seats" value={totalActive} sub={`${Math.round((totalActive / Math.max(1, totalSeats)) * 100)}% utilization`} />
+        <StatCard label="Inactive seats" value={totalInactive} sub="no activity in 90 days" />
+        <StatCard label="Unused-seat cost" value={totalUnusedCost} valueFormat={money} accent="text-red-400" sub="/yr potential savings" />
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
@@ -82,7 +82,7 @@ export default function UsagePage() {
 
 function UsageRow({ v, index }: { v: VendorProfile; index: number }) {
   const u = v.usage!;
-  const utilColor = u.utilizationPct >= 80 ? "#34d399" : u.utilizationPct >= 55 ? "#fbbf24" : "#f87171";
+  const utilColor = u.utilizationPct >= 55 ? "#e4e4e7" : "#f87171";
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -96,7 +96,7 @@ function UsageRow({ v, index }: { v: VendorProfile; index: number }) {
               {v.name.slice(0, 2).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <p className="truncate text-[14px] font-medium text-fg hover:text-emerald-300">{v.name}</p>
+              <p className="truncate text-[14px] font-medium text-fg hover:underline">{v.name}</p>
               <p className="text-[10.5px] tracking-tight text-muted">{v.category}</p>
             </div>
           </Link>
@@ -119,7 +119,7 @@ function UsageRow({ v, index }: { v: VendorProfile; index: number }) {
           </div>
 
           <div className="w-32 text-right">
-            <p className="text-[14px] font-semibold text-orange-400">{money(u.unusedSeatCost)}</p>
+            <p className="text-[14px] font-semibold text-red-400">{money(u.unusedSeatCost)}</p>
             <p className="text-[10.5px] tracking-tight text-muted">/yr unused</p>
           </div>
         </div>

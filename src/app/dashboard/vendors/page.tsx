@@ -10,8 +10,6 @@ import { Inspector, DetailRow } from "@/components/ui/Inspector";
 import {
   AmountCell,
   AutoRenewChip,
-  Kpi,
-  KpiStrip,
   PageHeader,
   RiskChip,
   StatusChip,
@@ -63,9 +61,7 @@ export default function VendorsPage() {
         render: (v) => (
           <div className="text-right">
             <AmountCell value={v.annualSpend} />
-            <span className={`ml-1.5 text-[10.5px] ${v.spendTrendPct >= 0 ? "text-red-400/80" : "text-emerald-400/80"}`}>
-              {pct(v.spendTrendPct)}
-            </span>
+            <span className="ml-1.5 text-[10.5px] text-muted">{pct(v.spendTrendPct)}</span>
           </div>
         ),
       },
@@ -79,7 +75,7 @@ export default function VendorsPage() {
           if (!v.renewalDate) return <span className="text-[11.5px] text-muted/60">Rolling</span>;
           const d = daysUntil(v.renewalDate);
           return (
-            <span className={`text-[12.5px] font-medium ${d <= 30 ? "text-red-400" : d <= 60 ? "text-amber-400" : "text-fg"}`}>
+            <span className={`text-[12.5px] font-medium ${d <= 30 ? "text-red-400" : "text-fg"}`}>
               {formatDateShort(v.renewalDate)} <span className="text-[10px] text-muted">{d}d</span>
             </span>
           );
@@ -94,7 +90,7 @@ export default function VendorsPage() {
         sortValue: (v) => v.utilizationPct,
         render: (v) =>
           v.usage ? (
-            <span className={`text-[12.5px] font-medium tabular-nums ${v.utilizationPct < 40 ? "text-red-400" : v.utilizationPct < 70 ? "text-amber-400" : "text-fg"}`}>
+            <span className={`text-[12.5px] font-medium tabular-nums ${v.utilizationPct < 40 ? "text-red-400" : "text-fg"}`}>
               {v.utilizationPct.toFixed(0)}%
             </span>
           ) : (
@@ -118,7 +114,7 @@ export default function VendorsPage() {
         sortValue: (v) => v.potentialSavings,
         render: (v) =>
           v.potentialSavings > 0 ? (
-            <AmountCell value={v.potentialSavings} accent="text-emerald-400" />
+            <AmountCell value={v.potentialSavings} />
           ) : (
             <span className="text-[11.5px] text-muted/60">-</span>
           ),
@@ -150,10 +146,6 @@ export default function VendorsPage() {
     []
   );
 
-  const atRisk = audit.vendors.filter((v) => v.risk && v.risk.level !== "low").length;
-  const lowUtil = audit.vendors.filter((v) => v.usage && v.utilizationPct < 40).length;
-  const totalSavings = audit.vendors.reduce((a, v) => a + v.potentialSavings, 0);
-
   return (
     <div className="space-y-4">
       <PageHeader
@@ -165,13 +157,6 @@ export default function VendorsPage() {
           </Link>
         }
       />
-
-      <KpiStrip>
-        <Kpi label="Vendors" value={audit.vendorCount} sub="under watch" />
-        <Kpi label="At risk" value={atRisk} accent="text-red-400" sub="high or critical" />
-        <Kpi label="Low utilization" value={lowUtil} accent="text-amber-400" sub="below 40% seats active" />
-        <Kpi label="Potential savings" value={totalSavings} format={money} accent="text-emerald-400" sub="estimates, not guaranteed" />
-      </KpiStrip>
 
       <DataTable
         storageKey="vendors"
@@ -233,9 +218,7 @@ export default function VendorsPage() {
             </div>
             <DetailRow label="Annual spend">
               <span className="font-semibold">{money(selected.annualSpend)}</span>
-              <span className={`ml-1.5 text-[11px] ${selected.spendTrendPct >= 0 ? "text-red-400/80" : "text-emerald-400/80"}`}>
-                {pct(selected.spendTrendPct)} YoY
-              </span>
+              <span className="ml-1.5 text-[11px] text-muted">{pct(selected.spendTrendPct)} YoY</span>
             </DetailRow>
             <DetailRow label="Renewal">{selected.renewalDate ? formatDateShort(selected.renewalDate) : "Rolling"}</DetailRow>
             <DetailRow label="Cancel by">{selected.cancellationDeadline ? formatDateShort(selected.cancellationDeadline) : "-"}</DetailRow>
@@ -253,7 +236,7 @@ export default function VendorsPage() {
                   {selected.usage.activeUsers}/{selected.usage.seatsPurchased} active
                 </DetailRow>
                 <DetailRow label="Utilization">
-                  <span className={selected.utilizationPct < 40 ? "text-red-400" : selected.utilizationPct < 70 ? "text-amber-400" : "text-emerald-400"}>
+                  <span className={selected.utilizationPct < 40 ? "text-red-400" : "text-fg"}>
                     {selected.utilizationPct.toFixed(0)}%
                   </span>
                 </DetailRow>
@@ -281,10 +264,10 @@ export default function VendorsPage() {
 
             {selected.potentialSavings > 0 && (
               <>
-                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-emerald-400">
+                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-fg">
                   Potential savings
                 </p>
-                <p className="px-4 py-2 text-[20px] font-semibold tracking-tight text-emerald-400">
+                <p className="px-4 py-2 text-[20px] font-semibold tracking-tight text-fg">
                   {money(selected.potentialSavings)}
                   <span className="ml-1 text-[11px] font-normal text-muted">/yr</span>
                 </p>

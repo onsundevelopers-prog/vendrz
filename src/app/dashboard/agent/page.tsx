@@ -26,9 +26,9 @@ const SUGGESTIONS = [
 ];
 
 const CATEGORY_LABEL: Record<EmailThread["category"], { label: string; cls: string }> = {
-  renewal: { label: "Renewal", cls: "border-amber-500/25 bg-amber-500/10 text-amber-400" },
-  invoice: { label: "Invoice", cls: "border-blue-500/25 bg-blue-500/10 text-blue-400" },
-  negotiation: { label: "Negotiation", cls: "border-emerald-500/25 bg-emerald-500/10 text-emerald-400" },
+  renewal: { label: "Renewal", cls: "border-white/15 bg-white/[0.06] text-fg" },
+  invoice: { label: "Invoice", cls: "border-white/15 bg-white/[0.06] text-fg" },
+  negotiation: { label: "Negotiation", cls: "border-white/15 bg-white/[0.06] text-fg" },
   general: { label: "General", cls: "border-white/10 bg-white/[0.04] text-muted" },
 };
 
@@ -172,7 +172,7 @@ function AgentInner() {
       >
         <div>
           <h2 className="flex items-center gap-2.5 text-xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg">
-            <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-[15px] text-emerald-400">✦</span>
+            <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-xl border border-line bg-white/[0.06] text-[15px] text-fg">✦</span>
             Gemini vendor agent
           </h2>
           <p className="mt-1 text-[12.5px] tracking-tight text-muted">
@@ -181,15 +181,15 @@ function AgentInner() {
         </div>
         <div className="flex items-center gap-2">
           <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] font-medium tracking-tight ${
-            connection ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300" : "border-white/10 bg-white/[0.04] text-muted"
+            connection ? "border-white/15 bg-white/[0.06] text-fg" : "border-white/10 bg-white/[0.04] text-muted"
           }`}>
-            <span className={`size-1.5 rounded-full ${connection ? "bg-emerald-400" : "bg-zinc-500"}`} />
+            <span className={`size-1.5 rounded-full ${connection ? "bg-zinc-300" : "bg-zinc-500"}`} />
             {connection ? "Email connected" : "Email not connected"}
           </span>
           {!connection && (
             <Link
               href="/dashboard/gmail"
-              className="rounded-full border border-line bg-surface px-3 py-1 text-[12px] font-medium tracking-tight text-fg hover:border-emerald-500/30"
+              className="rounded-full border border-line bg-surface px-3 py-1 text-[12px] font-medium tracking-tight text-fg hover:bg-white/[0.06]"
             >
               Connect Gmail
             </Link>
@@ -261,9 +261,9 @@ function AgentInner() {
       {sentLog.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {sentLog.map((s) => (
-            <span key={s.id} className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.07] px-3 py-1 text-[11.5px] tracking-tight text-emerald-300">
+            <span key={s.id} className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-[11.5px] tracking-tight text-fg">
               ✓ {s.action} · {s.vendor}
-              <span className="text-emerald-400/50">{timeAgo(s.time)}</span>
+              <span className="text-muted/60">{timeAgo(s.time)}</span>
             </span>
           ))}
         </div>
@@ -295,7 +295,7 @@ function AgentInner() {
             <div className="flex-1 space-y-4 overflow-y-auto p-5">
               {messages.length === 0 && !thinking && (
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <span className="flex size-14 items-center justify-center rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.07] text-[22px] text-emerald-400">✦</span>
+                  <span className="flex size-14 items-center justify-center rounded-2xl border border-line bg-white/[0.06] text-[22px] text-fg">✦</span>
                   <p className="mt-4 text-[15px] font-semibold text-fg">How can I help with your vendors?</p>
                   <p className="mt-1 max-w-sm text-[13px] leading-relaxed text-muted">
                     I can check vendor status, summarize their emails, draft replies, and execute cancellations - always with your approval before sending.
@@ -305,7 +305,7 @@ function AgentInner() {
                       <button
                         key={s}
                         onClick={() => void send(s)}
-                        className="rounded-md border border-line bg-white/[0.03] px-4 py-2.5 text-left text-[12.5px] tracking-tight text-muted transition-colors hover:border-emerald-500/30 hover:text-fg"
+                        className="rounded-md border border-line bg-white/[0.03] px-4 py-2.5 text-left text-[12.5px] tracking-tight text-muted transition-colors hover:bg-white/[0.06] hover:text-fg"
                       >
                         {s}
                       </button>
@@ -348,7 +348,7 @@ function AgentInner() {
                       {[0, 1, 2].map((i) => (
                         <motion.span
                           key={i}
-                          className="size-1.5 rounded-full bg-emerald-400"
+                          className="size-1.5 rounded-full bg-zinc-400"
                           animate={{ opacity: [0.3, 1, 0.3] }}
                           transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
                         />
@@ -374,7 +374,7 @@ function AgentInner() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask about a vendor, cancel a contract, draft a reply…"
-                  className="h-11 flex-1 rounded-xl border border-line bg-canvas px-4 text-[13.5px] tracking-tight text-fg outline-none transition-colors placeholder:text-muted focus:border-emerald-400/50"
+                  className="h-11 flex-1 rounded-xl border border-line bg-canvas px-4 text-[13.5px] tracking-tight text-fg outline-none transition-colors placeholder:text-muted focus:border-white/30"
                 />
                 <button
                   type="submit"
@@ -405,7 +405,7 @@ function AgentInner() {
               </div>
               <Link
                 href={connection ? "/dashboard/gmail/discovery" : "/dashboard/gmail"}
-                className="text-[11.5px] tracking-tight text-emerald-400 hover:text-emerald-300"
+                className="text-[11.5px] tracking-tight text-muted hover:text-fg"
               >
                 {connection ? "Manage →" : "Connect →"}
               </Link>
@@ -422,7 +422,7 @@ function AgentInner() {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className={`size-1.5 shrink-0 rounded-full ${t.unread ? "bg-emerald-400" : "bg-zinc-600"}`} />
+                          <span className={`size-1.5 shrink-0 rounded-full ${t.unread ? "bg-zinc-200" : "bg-zinc-600"}`} />
                           <p className="truncate text-[12.5px] font-medium text-fg">{t.vendorName}</p>
                           <span className={`ml-auto shrink-0 rounded-full border px-1.5 py-px text-[9px] font-medium uppercase tracking-wide ${cat.cls}`}>
                             {cat.label}
@@ -448,13 +448,13 @@ function AgentInner() {
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link
                   href={`/dashboard/vendors/${selected.vendorId}`}
-                  className="rounded-full border border-line bg-white/[0.03] px-3 py-1.5 text-[11.5px] font-medium tracking-tight text-fg hover:border-emerald-500/30"
+                  className="rounded-full border border-line bg-white/[0.03] px-3 py-1.5 text-[11.5px] font-medium tracking-tight text-fg hover:bg-white/[0.06]"
                 >
                   Open vendor
                 </Link>
                 <button
                   onClick={() => void send(`Draft a reply to ${selected.vendorName}`)}
-                  className="rounded-full border border-emerald-500/25 bg-emerald-500/[0.07] px-3 py-1.5 text-[11.5px] font-medium tracking-tight text-emerald-300 hover:bg-emerald-500/15"
+                  className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[11.5px] font-medium tracking-tight text-fg hover:bg-white/[0.1]"
                 >
                   Draft reply
                 </button>
@@ -482,7 +482,7 @@ function AgentInner() {
               ) : (
                 sentLog.map((s) => (
                   <div key={s.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-emerald-500/25 bg-emerald-500/10 text-[11px] text-emerald-400">✓</span>
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-line bg-white/[0.06] text-[11px] text-fg">✓</span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[12.5px] font-medium text-fg">{s.action} · {s.vendor}</p>
                       <p className="text-[10.5px] tracking-tight text-muted">{timeAgo(s.time)}</p>

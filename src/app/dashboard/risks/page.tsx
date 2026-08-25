@@ -9,8 +9,6 @@ import { DataTable, type Column } from "@/components/ui/DataTable";
 import { Inspector, DetailRow } from "@/components/ui/Inspector";
 import {
   AutoRenewChip,
-  Kpi,
-  KpiStrip,
   PageHeader,
   RiskChip,
   VendorCell,
@@ -44,12 +42,6 @@ export default function RisksPage() {
     return c;
   }, [audit.vendors, risky.length]);
 
-  const exposure = risky.reduce((a, v) => a + (v.risk?.potentialRenewalCost ?? 0), 0);
-  const missed = risky.filter((v) => v.risk && v.risk.daysToDeadline < 0).length;
-  const criticalExposure = risky
-    .filter((v) => v.risk?.level === "critical")
-    .reduce((a, v) => a + (v.risk?.potentialRenewalCost ?? 0), 0);
-
   const columns: Column<VendorProfile>[] = useMemo(
     () => [
       {
@@ -78,7 +70,7 @@ export default function RisksPage() {
         sortable: true,
         sortValue: (v) => v.healthScore,
         render: (v) => (
-          <span className={`text-[12.5px] font-semibold tabular-nums ${v.healthScore >= 70 ? "text-emerald-400" : v.healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}>
+          <span className={`text-[12.5px] font-semibold tabular-nums ${v.healthScore < 50 ? "text-red-400" : "text-fg"}`}>
             {v.healthScore}
           </span>
         ),
@@ -161,14 +153,6 @@ export default function RisksPage() {
         }
       />
 
-      <KpiStrip>
-        <Kpi label="At risk" value={counts.all} sub="contracts with exposure" />
-        <Kpi label="Critical" value={counts.critical} accent="text-red-400" sub="window closed or under 30 days" />
-        <Kpi label="Missed deadlines" value={missed} accent="text-red-400" sub="auto-renews unless waived" />
-        <Kpi label="Critical exposure" value={criticalExposure} format={money} accent="text-amber-400" sub="annualized if renewed" />
-        <Kpi label="Total exposure" value={exposure} format={money} sub="across all risk levels" />
-      </KpiStrip>
-
       <div className="flex items-center gap-1.5">
         {LEVELS.map((l) => (
           <button
@@ -224,7 +208,7 @@ export default function RisksPage() {
             <div className="px-4 py-3">
               <div className="flex items-center gap-2">
                 <RiskChip level={selected.risk?.level} />
-                <span className={`text-[12px] font-semibold ${selected.healthScore >= 70 ? "text-emerald-400" : selected.healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}>
+                <span className={`text-[12px] font-semibold ${selected.healthScore < 50 ? "text-red-400" : "text-fg"}`}>
                   health {selected.healthScore}/100
                 </span>
               </div>
@@ -232,7 +216,7 @@ export default function RisksPage() {
 
             {selected.risk ? (
               <>
-                <p className="px-4 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-amber-400">
+                <p className="px-4 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-fg">
                   Renewal risk
                 </p>
                 <DetailRow label="Renews in">{selected.risk.daysToRenewal} days</DetailRow>

@@ -126,7 +126,7 @@ export default function GmailDiscoveryPage() {
 
       {scanning && (
         <div className="flex items-center justify-center gap-3 rounded-2xl border border-line bg-surface py-16">
-          <span className="size-5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+          <span className="size-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
           <p className="text-[14px] text-muted">Scanning for contract-signal emails…</p>
         </div>
       )}
@@ -157,23 +157,23 @@ export default function GmailDiscoveryPage() {
               onClick={() => toggle(doc.id)}
               className={`flex cursor-pointer items-start gap-4 rounded-2xl border border-line bg-surface p-4 transition-all ${
                 isSel
-                  ? "border-emerald-500/60 ring-1 ring-emerald-500/40"
+                  ? "border-white/60 ring-1 ring-white/40"
                   : "hover:border-white/15"
               }`}
             >
               {/* checkbox */}
               <div
                 className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
-                  isSel ? "border-emerald-400 bg-emerald-500/20 text-emerald-300" : "border-white/15 bg-white/[0.04]"
+                  isSel ? "border-white bg-white text-black" : "border-white/15 bg-white/[0.04]"
                 }`}
               >
-                {isSel && <span aria-hidden="true" className="block h-[7px] w-[10px] rotate-45 border-b-2 border-r-2 border-emerald-300" />}
+                {isSel && <span aria-hidden="true" className="block h-[7px] w-[10px] rotate-45 border-b-2 border-r-2 border-black" />}
               </div>
 
               {/* icon */}
               <div
                 className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
-                  isContract ? "bg-emerald-500/10 text-emerald-400" : "bg-white/[0.05] text-muted"
+                  isContract ? "bg-white/[0.1] text-fg" : "bg-white/[0.05] text-muted"
                 }`}
               >
                 <span className="text-[10px] font-semibold uppercase tracking-wide">
@@ -186,8 +186,8 @@ export default function GmailDiscoveryPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="truncate text-[14px] font-semibold text-fg">{doc.filename}</p>
                   {isContract && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium tracking-tight text-emerald-300">
-                      <span className="size-1 rounded-full bg-emerald-400" /> Contract
+                    <span className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/[0.08] px-2 py-0.5 text-[11px] font-medium tracking-tight text-fg">
+                      <span className="size-1 rounded-full bg-zinc-200" /> Contract
                     </span>
                   )}
                   {!isContract && (

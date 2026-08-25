@@ -46,8 +46,8 @@ export default function SavingsPage() {
 
   const funnel = [
     { label: "Potential savings", value: audit.savings.potential, color: "#e4e4e7" },
-    { label: "Actioned", value: audit.savings.actioned, color: "#38bdf8" },
-    { label: "Confirmed savings", value: audit.savings.confirmed, color: "#34d399" },
+    { label: "Actioned", value: audit.savings.actioned, color: "#a1a1aa" },
+    { label: "Confirmed savings", value: audit.savings.confirmed, color: "#71717a" },
   ];
   const maxFunnel = Math.max(audit.savings.potential, 1);
 
@@ -108,11 +108,11 @@ export default function SavingsPage() {
             <div key={type}>
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-muted">{TYPE_LABELS[type]}</span>
-                <span className="text-[13px] font-medium text-emerald-400">{moneyShort(amount)}</span>
+                <span className="text-[13px] font-medium text-fg">{moneyShort(amount)}</span>
               </div>
               <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/[0.07]">
                 <motion.div
-                  className="h-full rounded-full bg-emerald-400/70"
+                  className="h-full rounded-full bg-zinc-500/80"
                   initial={{ width: 0 }}
                   animate={{ width: `${(amount / audit.savings.potential) * 100}%` }}
                   transition={{ duration: 0.8, delay: 0.2, ease }}
@@ -194,7 +194,7 @@ function OpportunityCard({ o, index }: { o: SavingsOpportunity; index: number })
               <div className="flex flex-wrap items-center gap-2">
                 <Link
                   href={`/dashboard/vendors/${o.vendorId}`}
-                  className="text-[15px] font-semibold tracking-[-0.01em] text-fg hover:text-emerald-300"
+                  className="text-[15px] font-semibold tracking-[-0.01em] text-fg hover:underline"
                 >
                   {o.vendorName}
                 </Link>
@@ -207,7 +207,7 @@ function OpportunityCard({ o, index }: { o: SavingsOpportunity; index: number })
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[22px] font-semibold tracking-tight text-emerald-400">
+            <p className="text-[22px] font-semibold tracking-tight text-fg">
               {money(o.estimatedSavings)}
             </p>
             <p className="text-[10.5px] tracking-tight text-muted">/yr potential</p>
@@ -225,11 +225,11 @@ function OpportunityCard({ o, index }: { o: SavingsOpportunity; index: number })
           </div>
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] px-4 py-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white/[0.03] px-4 py-3">
           <div className="flex items-start gap-2.5">
-            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-emerald-400" />
+            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-zinc-400" />
             <div>
-              <p className="text-[10px] uppercase tracking-[0.12em] text-emerald-300">Recommended action</p>
+              <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Recommended action</p>
               <p className="mt-0.5 text-[13px] leading-relaxed text-fg">{o.recommendedAction}</p>
             </div>
           </div>

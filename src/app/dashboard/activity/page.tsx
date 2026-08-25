@@ -13,18 +13,18 @@ import type { ActivityActor, ActivityRecord, ActivityType } from "@/lib/types";
 
 const TYPE_META: Record<ActivityType, { label: string; cls: string }> = {
   alert: { label: "Alert", cls: "chip-red" },
-  import: { label: "Import", cls: "chip-blue" },
+  import: { label: "Import", cls: "chip-neutral" },
   review: { label: "Review", cls: "chip-neutral" },
-  email_sent: { label: "Email sent", cls: "chip-green" },
-  email_drafted: { label: "Email drafted", cls: "chip-purple" },
-  cancellation: { label: "Cancellation", cls: "chip-amber" },
-  status_change: { label: "Status change", cls: "chip-blue" },
-  savings: { label: "Savings", cls: "chip-green" },
+  email_sent: { label: "Email sent", cls: "chip-neutral" },
+  email_drafted: { label: "Email drafted", cls: "chip-neutral" },
+  cancellation: { label: "Cancellation", cls: "chip-neutral" },
+  status_change: { label: "Status change", cls: "chip-neutral" },
+  savings: { label: "Savings", cls: "chip-neutral" },
 };
 
 const ACTOR_META: Record<ActivityActor, { label: string; dot: string }> = {
-  agent: { label: "Agent", dot: "bg-emerald-400" },
-  user: { label: "User", dot: "bg-zinc-300" },
+  agent: { label: "Agent", dot: "bg-zinc-300" },
+  user: { label: "User", dot: "bg-zinc-400" },
   system: { label: "System", dot: "bg-zinc-600" },
 };
 
@@ -97,7 +97,7 @@ export default function ActivityPage() {
           a.vendorName ? (
             <Link
               href={`/dashboard/vendors/${a.vendorId ?? ""}`}
-              className="text-[12.5px] font-medium text-emerald-400 hover:text-emerald-300"
+              className="text-[12.5px] font-medium text-fg hover:underline"
             >
               {a.vendorName}
             </Link>

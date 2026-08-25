@@ -7,12 +7,12 @@ import { AreaChart, BarChart, DonutChart, Sparkline } from "@/components/ui/char
 import { money, moneyShort } from "@/lib/format";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Software: "#34d399",
-  Cloud: "#38bdf8",
-  Marketing: "#f472b6",
-  Operations: "#fbbf24",
-  Finance: "#a78bfa",
-  HR: "#fb923c",
+  Software: "#e4e4e7",
+  Cloud: "#c8c8cc",
+  Marketing: "#a1a1aa",
+  Operations: "#8a8a92",
+  Finance: "#71717a",
+  HR: "#5c5c64",
   Infrastructure: "#e2e8f0",
   Other: "#71717a",
 };
@@ -46,9 +46,8 @@ export default function SpendPage() {
           label="Quarterly run-rate"
           value={quarterlyDelta}
           valueFormat={money}
-          accent={quarterlyDelta >= 0 ? "text-orange-400" : "text-emerald-400"}
+          accent={quarterlyDelta >= 0 ? "text-red-400" : "text-fg"}
           sub={quarterlyDelta >= 0 ? "up vs prior quarter" : "down vs prior quarter"}
-          delay={0.1}
         />
         <StatCard label="Categories" value={audit.categories.length} sub={`${audit.vendorCount} vendors`} delay={0.15} />
       </div>
@@ -124,10 +123,10 @@ export default function SpendPage() {
               >
                 <span className="w-4 text-[11px] text-muted">{i + 1}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13.5px] font-medium text-fg group-hover:text-emerald-300">{v.name}</p>
+                  <p className="truncate text-[13.5px] font-medium text-fg group-hover:underline">{v.name}</p>
                   <p className="text-[10.5px] tracking-tight text-muted">{v.category}</p>
                 </div>
-                <Sparkline data={v.monthlySeries} width={56} height={20} color={v.spendTrendPct >= 0 ? "#34d399" : "#f87171"} />
+                <Sparkline data={v.monthlySeries} width={56} height={20} color={v.spendTrendPct >= 0 ? "#a1a1aa" : "#f87171"} />
                 <p className="w-20 text-right text-[13px] font-medium text-fg">{moneyShort(v.annualSpend)}</p>
               </Link>
             ))}

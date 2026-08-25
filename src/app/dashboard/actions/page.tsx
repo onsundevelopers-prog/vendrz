@@ -12,10 +12,10 @@ const STATUSES: ActionStatus[] = ["open", "in_review", "actioned", "dismissed", 
 
 const STATUS_STYLE: Record<ActionStatus, { label: string; cls: string }> = {
   open: { label: "Mark in review", cls: "border-white/15 text-fg hover:bg-white/10" },
-  in_review: { label: "Mark actioned", cls: "border-amber-500/30 text-amber-400 hover:bg-amber-500/10" },
-  actioned: { label: "Confirm savings", cls: "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" },
+  in_review: { label: "Mark actioned", cls: "border-white/15 text-fg hover:bg-white/10" },
+  actioned: { label: "Confirm savings", cls: "border-white/15 text-fg hover:bg-white/10" },
   dismissed: { label: "Reopen", cls: "border-white/15 text-muted hover:bg-white/5" },
-  savings_confirmed: { label: "Done", cls: "border-emerald-500/40 text-emerald-400" },
+  savings_confirmed: { label: "Done", cls: "border-white/20 text-fg" },
 };
 
 export default function ActionsPage() {
@@ -80,15 +80,15 @@ export default function ActionsPage() {
 
       {/* pipeline summary */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {STATUSES.map((s, i) => (
-          <Panel key={s} delay={i * 0.05} className={`p-4 ${s === "savings_confirmed" ? "border-emerald-500/30" : ""}`}>
+        {STATUSES.map((s) => (
+          <Panel key={s} className="p-4">
             <p className="text-[10.5px] uppercase tracking-[0.1em] text-muted">
               {s.replace(/_/g, " ")}
             </p>
             <p className="mt-2 text-[24px] font-semibold leading-none tracking-tight text-fg">
               {counts[s]}
             </p>
-            <p className="mt-1.5 text-[11.5px] tracking-tight text-emerald-400">
+            <p className="mt-1.5 text-[11.5px] tracking-tight text-fg">
               {money(totals[s])}
             </p>
             <p className="text-[9.5px] tracking-tight text-muted">/yr</p>
@@ -136,14 +136,14 @@ export default function ActionsPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Link href={`/dashboard/vendors/${o.vendorId}`} className="text-[14px] font-semibold text-fg hover:text-emerald-300">
+                      <Link href={`/dashboard/vendors/${o.vendorId}`} className="text-[14px] font-semibold text-fg hover:underline">
                         {o.vendorName}
                       </Link>
                       <ActionStatusBadge status={o.status} />
                     </div>
                     <p className="mt-0.5 truncate text-[13px] text-muted">{o.title}</p>
                   </div>
-                  <p className="shrink-0 text-[17px] font-semibold tracking-tight text-emerald-400">
+                  <p className="shrink-0 text-[17px] font-semibold tracking-tight text-fg">
                     {money(o.estimatedSavings)}
                     <span className="ml-1 text-xs font-normal text-muted">/yr</span>
                   </p>

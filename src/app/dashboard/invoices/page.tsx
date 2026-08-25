@@ -41,16 +41,13 @@ export default function InvoicesPage() {
           label="Annualized impact"
           value={totalImpact}
           valueFormat={money}
-          accent="text-orange-400"
+          accent="text-red-400"
           sub="if discrepancies persist"
-          delay={0.05}
         />
         <StatCard
           label="Vendors over contract"
           value={audit.vendors.filter((v) => v.billing.variancePct > 5).length}
-          accent="text-amber-400"
           sub="billing above contracted baseline"
-          delay={0.1}
         />
       </div>
 
@@ -90,13 +87,13 @@ function VendorBillingCard({ v, index }: { v: VendorProfile; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: Math.min(0.15, index * 0.04), ease: [0.22, 1, 0.36, 1] }}
     >
-      <Panel className={`overflow-hidden ${anomaly ? "border-orange-500/20" : ""}`}>
+      <Panel className={`overflow-hidden ${anomaly ? "border-red-500/25" : ""}`}>
         <div className="flex flex-wrap items-center gap-3 px-5 py-4">
           <div className="flex size-9 items-center justify-center rounded-lg bg-white/[0.06] text-[11px] font-semibold text-fg">
             {v.name.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <Link href={`/dashboard/vendors/${v.id}`} className="text-[14.5px] font-semibold text-fg hover:text-emerald-300">
+            <Link href={`/dashboard/vendors/${v.id}`} className="text-[14.5px] font-semibold text-fg hover:underline">
               {v.name}
             </Link>
             <p className="text-[11px] tracking-tight text-muted">
@@ -104,26 +101,26 @@ function VendorBillingCard({ v, index }: { v: VendorProfile; index: number }) {
             </p>
           </div>
           <div className="text-right">
-            <p className={`text-[16px] font-semibold tracking-tight ${v.billing.variancePct > 0 ? "text-orange-400" : v.billing.variancePct < 0 ? "text-emerald-400" : "text-muted"}`}>
+            <p className={`text-[16px] font-semibold tracking-tight ${v.billing.variancePct > 0 ? "text-red-400" : "text-fg"}`}>
               {pct(v.billing.variancePct)}
             </p>
             <p className="text-[10.5px] tracking-tight text-muted">variance</p>
           </div>
           {anomaly && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-orange-400">
-              <span className="flex size-3.5 items-center justify-center rounded-full bg-orange-400/20 text-[9px] font-bold leading-none text-orange-400">!</span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-red-400">
+              <span className="flex size-3.5 items-center justify-center rounded-full bg-red-400/20 text-[9px] font-bold leading-none text-red-400">!</span>
               Billing anomaly
             </span>
           )}
         </div>
 
         {v.billing.anomalies.length > 0 && (
-          <div className="space-y-2 border-t border-line bg-orange-500/[0.03] px-5 py-3.5">
+          <div className="space-y-2 border-t border-line bg-red-500/[0.03] px-5 py-3.5">
             {v.billing.anomalies.map((a) => (
               <div key={a.id} className="flex items-start gap-2.5">
-                <span className="mt-px flex size-3.5 shrink-0 items-center justify-center rounded-full bg-orange-400/20 text-[9px] font-bold leading-none text-orange-400">!</span>
+                <span className="mt-px flex size-3.5 shrink-0 items-center justify-center rounded-full bg-red-400/20 text-[9px] font-bold leading-none text-red-400">!</span>
                 <p className="min-w-0 flex-1 text-[12.5px] leading-relaxed text-muted">{a.detail}</p>
-                <span className="shrink-0 text-[12px] font-medium text-orange-400">
+                <span className="shrink-0 text-[12px] font-medium text-red-400">
                   {money(a.impact)}/yr
                 </span>
               </div>
@@ -138,7 +135,7 @@ function VendorBillingCard({ v, index }: { v: VendorProfile; index: number }) {
                 key={inv.id}
                 className={`rounded-lg border px-2.5 py-1 text-[11px] tracking-tight ${
                   inv.amount !== inv.contractedAmount
-                    ? "border-orange-500/25 bg-orange-500/[0.06] text-orange-300"
+                    ? "border-red-500/25 bg-red-500/[0.06] text-red-300"
                     : "border-line bg-white/[0.03] text-muted"
                 }`}
               >

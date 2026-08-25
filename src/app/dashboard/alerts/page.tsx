@@ -37,9 +37,9 @@ export default function AlertsPage() {
 
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard label="Total alerts" value={counts.all} sub="last 30 days" />
-        <StatCard label="Critical" value={counts.critical} accent="text-red-400" sub="act now" delay={0.05} />
-        <StatCard label="High" value={counts.high} accent="text-orange-400" sub="needs attention" delay={0.1} />
-        <StatCard label="Unread" value={audit.alerts.filter((a) => !a.read).length} accent="text-amber-400" sub="since last visit" delay={0.15} />
+        <StatCard label="Critical" value={counts.critical} accent="text-red-400" sub="act now" />
+        <StatCard label="High" value={counts.high} sub="needs attention" />
+        <StatCard label="Unread" value={audit.alerts.filter((a) => !a.read).length} sub="since last visit" />
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
@@ -92,13 +92,13 @@ function AlertRow({ a, index }: { a: AlertRecord; index: number }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-[14px] font-semibold tracking-[-0.01em] text-fg">{a.title}</p>
-            {!a.read && <span className="size-1.5 rounded-full bg-emerald-400" />}
+            {!a.read && <span className="size-1.5 rounded-full bg-zinc-300" />}
           </div>
           <p className="mt-0.5 text-[13px] leading-relaxed text-muted">{a.detail}</p>
           {a.vendorId && (
             <Link
               href={`/dashboard/vendors/${a.vendorId}`}
-              className="mt-1.5 inline-block text-[11.5px] tracking-tight text-emerald-400 hover:text-emerald-300"
+              className="mt-1.5 inline-block text-[11.5px] tracking-tight text-muted hover:text-fg"
             >
               View {a.vendorName} →
             </Link>
@@ -106,7 +106,7 @@ function AlertRow({ a, index }: { a: AlertRecord; index: number }) {
         </div>
         <div className="shrink-0 text-right">
           {a.amount !== undefined && a.amount !== 0 && (
-            <p className="text-[13px] font-semibold text-amber-400">{money(a.amount)}</p>
+            <p className="text-[13px] font-semibold text-red-400">{money(a.amount)}</p>
           )}
           <p className="mt-0.5 text-[10.5px] tracking-tight text-muted">{timeAgo(a.createdAt)}</p>
           <p className="text-[10px] uppercase tracking-wide text-muted/60">{a.type.replace(/_/g, " ")}</p>

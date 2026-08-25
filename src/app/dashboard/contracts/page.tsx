@@ -12,8 +12,6 @@ import {
   AmountCell,
   ArrowLink,
   AutoRenewChip,
-  Kpi,
-  KpiStrip,
   PageHeader,
   RiskChip,
   StatusChip,
@@ -86,7 +84,7 @@ export default function ContractsPage() {
           const d = daysUntil(v.renewalDate);
           return (
             <div>
-              <span className={`text-[12.5px] font-medium ${d <= 30 ? "text-red-400" : d <= 60 ? "text-amber-400" : "text-fg"}`}>
+              <span className={`text-[12.5px] font-medium ${d <= 30 ? "text-red-400" : "text-fg"}`}>
                 {formatDateShort(v.renewalDate)}
               </span>
               <span className="ml-1.5 text-[10px] text-muted">{d}d</span>
@@ -104,7 +102,7 @@ export default function ContractsPage() {
           if (!v.cancellationDeadline) return <span className="text-[11.5px] text-muted/60">-</span>;
           const d = daysUntil(v.cancellationDeadline);
           return (
-            <span className={`text-[12px] font-medium ${d < 0 ? "text-red-400" : d <= 14 ? "text-amber-400" : "text-fg/85"}`}>
+            <span className={`text-[12px] font-medium ${d < 0 ? "text-red-400" : "text-fg/85"}`}>
               {formatDateShort(v.cancellationDeadline)}
             </span>
           );
@@ -127,7 +125,7 @@ export default function ContractsPage() {
         sortValue: (v) => v.priceEscalationRate ?? 0,
         render: (v) =>
           v.priceEscalationRate ? (
-            <span className="text-[12.5px] font-medium text-orange-400">{pct(v.priceEscalationRate)}</span>
+            <span className="text-[12.5px] font-medium text-fg">{pct(v.priceEscalationRate)}</span>
           ) : (
             <span className="text-[11.5px] text-muted/60">-</span>
           ),
@@ -149,7 +147,7 @@ export default function ContractsPage() {
         sortValue: (v) => v.potentialSavings,
         render: (v) =>
           v.potentialSavings > 0 ? (
-            <AmountCell value={v.potentialSavings} accent="text-emerald-400" />
+            <AmountCell value={v.potentialSavings} />
           ) : (
             <span className="text-[11.5px] text-muted/60">-</span>
           ),
@@ -166,11 +164,6 @@ export default function ContractsPage() {
     []
   );
 
-  const riskCount = withTerms.filter((v) => v.risk).length;
-  const urgentCount = withTerms.filter((v) => v.risk && v.risk.daysToRenewal <= 60).length;
-  const escCount = withTerms.filter((v) => (v.priceEscalationRate ?? 0) >= 5).length;
-  const savings = withTerms.reduce((a, v) => a + v.potentialSavings, 0);
-
   return (
     <div className="space-y-4">
       <PageHeader
@@ -185,14 +178,6 @@ export default function ContractsPage() {
           </Link>
         }
       />
-
-      <KpiStrip>
-        <Kpi label="Contracts" value={withTerms.length} sub="with renewal terms" />
-        <Kpi label="Renewal risk" value={riskCount} accent="text-amber-400" sub="within 90 days or window closed" />
-        <Kpi label="Urgent" value={urgentCount} accent="text-red-400" sub="renewal within 60 days" />
-        <Kpi label="Escalating 5%+" value={escCount} accent="text-orange-400" sub="annual price increases" />
-        <Kpi label="Potential savings" value={savings} format={money} accent="text-emerald-400" sub="estimates, not guaranteed" />
-      </KpiStrip>
 
       <DataTable
         storageKey="contracts"
@@ -293,12 +278,13 @@ export default function ContractsPage() {
             <DetailRow label="Price escalation">
               {selected.priceEscalationRate ? pct(selected.priceEscalationRate) : "None stated"}
             </DetailRow>
+
             <DetailRow label="Owner">{selected.owner}</DetailRow>
             <DetailRow label="Last reviewed">{formatDate(selected.lastReviewed)}</DetailRow>
 
             {selected.risk && (
               <>
-                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-amber-400">
+                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-fg">
                   Renewal risk
                 </p>
                 <DetailRow label="Renews in">{selected.risk.daysToRenewal} days</DetailRow>
@@ -310,11 +296,11 @@ export default function ContractsPage() {
 
             {selected.potentialSavings > 0 && (
               <>
-                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-emerald-400">
+                <p className="px-4 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-fg">
                   Savings opportunity
                 </p>
                 <div className="px-4 py-3">
-                  <p className="text-[22px] font-semibold tracking-tight text-emerald-400">
+                  <p className="text-[22px] font-semibold tracking-tight text-fg">
                     {money(selected.potentialSavings)}
                     <span className="ml-1 text-[11px] font-normal text-muted">/yr potential</span>
                   </p>
@@ -348,7 +334,7 @@ function UploadedRow({ c }: { c: ContractRecord }) {
       <VendorCell name={c.vendorName} sub={c.linkedDocument} />
       <span className="ml-auto text-[12.5px] text-muted">{money(c.annualSpend)}/yr</span>
       <RiskChip level={c.riskScore >= 80 ? "critical" : c.riskScore >= 60 ? "high" : c.riskScore >= 35 ? "medium" : "low"} />
-      <span className="text-[12px] text-emerald-400">View →</span>
+      <span className="text-[12px] text-muted">View →</span>
     </Link>
   );
 }

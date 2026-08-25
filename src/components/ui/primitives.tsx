@@ -84,15 +84,15 @@ export function StatCard({
 
 export function SeverityBadge({ severity }: { severity: AlertSeverity }) {
   const styles: Record<AlertSeverity, string> = {
-    critical: "border-red-500/30 bg-red-500/10 text-red-400",
-    high: "border-orange-500/30 bg-orange-500/10 text-orange-400",
-    medium: "border-amber-500/30 bg-amber-500/10 text-amber-400",
-    low: "border-white/10 bg-white/[0.05] text-muted",
+    critical: "border-red-500/35 bg-red-500/10 text-red-400",
+    high: "border-white/15 bg-white/[0.06] text-fg",
+    medium: "border-white/15 bg-white/[0.06] text-fg",
+    low: "border-white/10 bg-white/[0.03] text-muted",
   };
   const dots: Record<AlertSeverity, string> = {
     critical: "bg-red-400",
-    high: "bg-orange-400",
-    medium: "bg-amber-400",
+    high: "bg-zinc-300",
+    medium: "bg-zinc-400",
     low: "bg-zinc-500",
   };
   return (
@@ -106,10 +106,10 @@ export function SeverityBadge({ severity }: { severity: AlertSeverity }) {
 export function ActionStatusBadge({ status }: { status: ActionStatus }) {
   const styles: Record<ActionStatus, string> = {
     open: "border-white/15 bg-white/[0.06] text-fg",
-    in_review: "border-amber-500/30 bg-amber-500/10 text-amber-400",
-    actioned: "border-blue-500/30 bg-blue-500/10 text-blue-400",
+    in_review: "border-white/15 bg-white/[0.06] text-fg",
+    actioned: "border-white/15 bg-white/[0.06] text-fg",
     dismissed: "border-white/10 bg-white/[0.03] text-zinc-500",
-    savings_confirmed: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
+    savings_confirmed: "border-white/15 bg-white/[0.06] text-fg",
   };
   const labels: Record<ActionStatus, string> = {
     open: "Open",
@@ -132,10 +132,8 @@ export function HealthScore({
   score: number;
   size?: "sm" | "md" | "lg";
 }) {
-  const color =
-    score >= 80 ? "text-emerald-400" : score >= 60 ? "text-fg" : score >= 40 ? "text-amber-400" : "text-red-400";
-  const bar =
-    score >= 80 ? "#34d399" : score >= 60 ? "#e4e4e7" : score >= 40 ? "#fbbf24" : "#f87171";
+  const color = score >= 40 ? "text-fg" : "text-red-400";
+  const bar = score >= 40 ? "#e4e4e7" : "#f87171";
   const text = size === "lg" ? "text-3xl" : size === "sm" ? "text-lg" : "text-2xl";
   return (
     <div className="inline-flex items-center gap-3">
