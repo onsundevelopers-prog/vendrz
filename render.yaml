@@ -1,0 +1,41 @@
+# Render Blueprint — deploys noma as a Node Web Service.
+#
+# This is what fixes the earlier failure: the repo was being treated as a
+# static site (Render kept looking for a `dist` publish directory). Declaring
+# it as a `web` service with runtimes means Render starts the Next.js server
+# directly and never looks for `dist`.
+#
+# Deploy: on the Render dashboard go to "New + > Blueprint" and select this
+# repo. Any missing env vars below are surfaced as prompts.
+
+services:
+  - type: web
+    name: noma
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm run start -- -p $PORT
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      # AI inference provider (contract analysis).
+      - key: AI_PROVIDER
+        value: ollama_cloud    # or ollama_local for a self-hosted `ollama serve`
+      - key: OLLAMA_BASE_URL
+        value: https://ollama.com
+      - key: OLLAMA_API_KEY
+        sync: false            # set it in the Render dashboard
+      # Clerk authentication.
+      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      # Clerk route overrides (match .env.example defaults).
+      - key: NEXT_PUBLIC_CLERK_SIGN_IN_URL
+        value: /auth?mode=login
+      - key: NEXT_PUBLIC_CLERK_SIGN_UP_URL
+        value: /auth?mode=signup
+      - key: NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL
+        value: /dashboard
+      - key: NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
+        value: /dashboard

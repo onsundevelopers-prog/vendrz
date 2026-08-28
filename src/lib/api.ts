@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  API contract - Vendrz                                   */
+/*  API contract - Noma                                      */
 /*                                                                     */
 /*  The UI talks to these functions. Today they are backed by a        */
 /*  localStorage store so the entire flow works with zero backend.     */

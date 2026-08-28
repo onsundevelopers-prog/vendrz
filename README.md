@@ -1,11 +1,11 @@
-# Vendrz
+# Noma
 
 > Find the money hiding in your vendor contracts.
 
-Vendrz is an AI SaaS that lets anyone upload a vendor contract with **no
+Noma is a spend-management app that lets anyone upload a vendor contract with **no
 signup**, instantly surfaces renewal dates, cancellation deadlines, auto-renewal terms,
 price escalations, and dollar-quantified savings opportunities **with evidence** - then
-invites the user to create an account to save and monitor it.
+invites the user to create an account to save and track it.
 
 This repo is the **frontend MVP (V1 + V1.5)** - a Next.js (App Router) + TypeScript +
 Tailwind CSS app with Framer Motion and lucide-react. It implements the full user flow
@@ -68,9 +68,9 @@ no middleware - the whole product still works out of the box.
 1. **Push to git** - the repo is initialized already:
    ```bash
    git add .
-   git commit -m "Vendrz"
+   git commit -m "Noma"
    git branch -M main
-   git remote add origin https://github.com/<you>/vendrz.git
+   git remote add origin https://github.com/<you>/noma.git
    git push -u origin main
    ```
 2. **Import on Vercel** - create a new project from the GitHub repo (framework preset:

@@ -10,7 +10,7 @@ const STEPS = [
   },
   {
     num: "02",
-    title: "Vendrz analyzes spend",
+    title: "noma analyzes spend",
     body: "Transactions are normalized, vendors matched, and spend is computed across categories, trends, renewals, usage, and billing anomalies - by rules, not guesses.",
   },
   {
@@ -43,7 +43,7 @@ export function HowItWorks() {
             From data to savings in one pass
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
-            No forms to fill, no account to make. The full audit runs on a staged
+            No forms to fill, no account to make. The full review runs on a staged
             pipeline and finishes in under two minutes.
           </p>
         </motion.div>
@@ -56,7 +56,7 @@ export function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.55, delay: i * 0.08, ease }}
-              className="glass-border glass-glow rounded-2xl p-6"
+              className="rounded-lg border border-line bg-surface p-5"
             >
               <span className="text-[13px] font-medium text-zinc-500">
                 {step.num}

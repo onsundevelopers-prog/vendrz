@@ -2,15 +2,14 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { getAuditSession, enterDemoMode } from "@/lib/store";
+import { useParams } from "next/navigation";
+import { getAuditSession } from "@/lib/store";
 import { generateAnalysis } from "@/lib/pipeline";
 import type { AnalysisResult } from "@/lib/types";
 import { ResultsPreview } from "@/components/results/ResultsPreview";
 
 export default function AuditResultsPage() {
   const params = useParams<{ id: string }>();
-  const router = useRouter();
   const session = useMemo(() => getAuditSession(params.id), [params.id]);
   const audit = session?.result;
 
@@ -29,13 +28,25 @@ export default function AuditResultsPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-canvas px-5">
         <div className="text-center">
-          <p className="text-[14px] text-muted">Analysis not ready yet.</p>
-          <Link
-            href="/audit"
-            className="mt-2 inline-block text-[13px] text-muted underline underline-offset-4 hover:text-fg"
-          >
-            Run a scan
-          </Link>
+          <p className="text-[15px] font-medium text-fg">No data to show yet</p>
+          <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-muted">
+            This review has no connected data source, so there is nothing to
+            analyze yet. Upload a contract to get real results.
+          </p>
+          <div className="mt-5 flex items-center justify-center gap-2">
+            <Link
+              href="/audit"
+              className="inline-block rounded-md bg-white px-3.5 py-2 text-[12.5px] font-medium text-black transition-opacity hover:opacity-90"
+            >
+              Upload a contract
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-block rounded-md border border-line px-3.5 py-2 text-[12.5px] font-medium text-muted transition-colors hover:border-white/25 hover:text-fg"
+            >
+              Open workspace
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -47,17 +58,14 @@ export default function AuditResultsPage() {
       <header className="sticky top-0 z-40 border-b border-line bg-[#08080a]/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 lg:px-8">
           <span className="text-[14px] font-semibold tracking-[-0.02em] text-fg">
-            Vendrz
+            noma
           </span>
-          <button
-            onClick={() => {
-              enterDemoMode();
-              router.push("/dashboard");
-            }}
+          <Link
+            href="/dashboard"
             className="flex h-7 items-center rounded-md bg-white px-3 text-[12.5px] font-medium text-black transition-opacity hover:opacity-90"
           >
-            Open dashboard
-          </button>
+            Open workspace
+          </Link>
         </div>
       </header>
 

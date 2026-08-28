@@ -1,16 +1,21 @@
 "use client";
 
+/* ------------------------------------------------------------------ */
+/*  Analytical SVG charts - axes, gridlines, labels, tooltips.        */
+/*  These are data instruments, not decoration: every mark maps to    */
+/*  a real value from the user's records.                             */
+/*  Motion follows the Apple language: marks grow into place on a     */
+/*  soft ease (bars rise from zero, the area line draws left→right,   */
+/*  donut segments sweep) - restrained, no glow.                      */
+/* ------------------------------------------------------------------ */
+
 import { motion } from "framer-motion";
 
-/* ------------------------------------------------------------------ */
-/*  Lightweight SVG charts - dense, hairline, no chart library.       */
-/* ------------------------------------------------------------------ */
-
-const ease = [0.22, 1, 0.36, 1] as const;
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function BarChart({
   data,
-  height = 180,
+  height = 200,
   color = "#a1a1aa",
   highlightLast = true,
   format = (v: number) => String(v),
@@ -23,33 +28,65 @@ export function BarChart({
 }) {
   const max = Math.max(...data.map((d) => d.value), 1);
   const W = 640;
-  const pad = 4;
-  const bw = (W - pad * 2) / data.length;
+  const H = height;
+  // Left gutter for y-axis tick labels (fits "$1.2M" etc.)
+  const padL = 44;
+  const padR = 6;
+  const padT = 8;
+  const padB = 18;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const bw = plotW / data.length;
+
+  // 4 gridlines: 0%, 33%, 67%, 100% of max.
+  const ticks = [0, 1, 2, 3].map((i) => ({
+    y: padT + plotH - (i / 3) * plotH,
+    value: (max * i) / 3,
+  }));
+
   return (
     <div className="w-full">
-      <svg viewBox={`0 0 ${W} ${height}`} className="w-full" preserveAspectRatio="none" style={{ height }}>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{ height: H }}>
+        {/* gridlines + y-axis tick labels */}
+        {ticks.map((t, i) => (
+          <g key={i}>
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={t.y}
+              y2={t.y}
+              stroke={i === 0 ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}
+              strokeDasharray={i === 0 ? undefined : "3 4"}
+            />
+            <text x={padL - 6} y={t.y + 3} textAnchor="end" fontSize="8.5" fill="rgba(255,255,255,0.4)" fontFamily="var(--font-geist-mono), monospace">
+              {format(t.value)}
+            </text>
+          </g>
+        ))}
+
+        {/* bars - grow up from the baseline, staggered, on a soft ease */}
         {data.map((d, i) => {
-          const h = Math.max(2, (d.value / max) * (height - 28));
-          const x = pad + i * bw + bw * 0.22;
-          const w = bw * 0.56;
+          const h = Math.max(1, (d.value / max) * plotH);
+          const x = padL + i * bw + bw * 0.2;
+          const w = bw * 0.6;
           const last = highlightLast && i === data.length - 1;
           return (
-            <motion.rect
-              key={i}
-              x={x}
-              y={height - h}
-              width={w}
-              height={h}
-              rx={2}
-              fill={last ? color : "rgba(255,255,255,0.16)"}
-              initial={{ height: 0, y: height }}
-              animate={{ height: h, y: height - h }}
-              transition={{ duration: 0.7, delay: 0.04 * i, ease }}
-            />
+            <g key={i}>
+              <motion.rect
+                x={x}
+                width={w}
+                fill={last ? color : "rgba(255,255,255,0.16)"}
+                initial={{ height: 0, y: padT + plotH }}
+                animate={{ height: h, y: padT + plotH - h }}
+                transition={{ duration: 0.65, delay: i * 0.03, ease: EASE }}
+              />
+              <title>{`${d.label}: ${format(d.value)}`}</title>
+            </g>
           );
         })}
       </svg>
-      <div className="mt-1.5 flex justify-between border-t border-line/60 pt-1.5 text-[9.5px] tracking-tight text-muted/80">
+      {/* x-axis labels */}
+      <div className="mt-1 flex justify-between border-t border-line/60 pt-1 text-[9.5px] tracking-tight text-muted/80">
         {data.map((d, i) => (
           <span key={i} title={format(d.value)}>
             {d.label}
@@ -65,86 +102,101 @@ export function AreaChart({
   height = 200,
   color = "#a1a1aa",
   fillId,
+  format = (v: number) => String(v),
 }: {
   data: { label: string; value: number }[];
   height?: number;
   color?: string;
   fillId: string;
+  format?: (v: number) => string;
 }) {
   const W = 640;
   const H = height;
   const max = Math.max(...data.map((d) => d.value), 1);
-  const step = W / (data.length - 1);
-  const pts = data.map((d, i) => [i * step, H - 8 - (d.value / max) * (H - 24)] as const);
-  const line = smoothPath(pts);
-  const area = `${line} L${W},${H} L0,${H} Z`;
+  const min = Math.min(...data.map((d) => d.value), 0);
+  const range = Math.max(max - min, 1);
+  const padL = 44;
+  const padR = 6;
+  const padT = 8;
+  const padB = 18;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const step = plotW / (data.length - 1);
+  const pts = data.map((d, i) => [
+    padL + i * step,
+    padT + plotH - ((d.value - min) / range) * plotH,
+  ] as const);
+  const line = pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const area = `${line} L${padL + plotW},${padT + plotH} L${padL},${padT + plotH} Z`;
   const last = pts[pts.length - 1];
 
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>
-      <defs>
-        <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[0.25, 0.5, 0.75].map((f) => (
-        <line
-          key={f}
-          x1={0}
-          x2={W}
-          y1={H * f}
-          y2={H * f}
-          stroke="rgba(255,255,255,0.05)"
-          strokeDasharray="3 4"
-        />
-      ))}
-      <motion.path
-        d={area}
-        fill={`url(#${fillId})`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
-      />
-      <motion.path
-        d={line}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1.1, ease }}
-      />
-      <motion.circle
-        cx={last[0]}
-        cy={last[1]}
-        r="4"
-        fill={color}
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 1, ease }}
-      />
-    </svg>
-  );
-}
+  const ticks = [0, 1, 2, 3].map((i) => ({
+    y: padT + plotH - (i / 3) * plotH,
+    value: min + (range * i) / 3,
+  }));
 
-/* Catmull-Rom → cubic bezier for a smooth, continuous curve */
-function smoothPath(pts: readonly (readonly [number, number])[]): string {
-  if (pts.length < 2) return "";
-  let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x0, y0] = pts[Math.max(0, i - 1)];
-    const [x1, y1] = pts[i];
-    const [x2, y2] = pts[i + 1];
-    const [x3, y3] = pts[Math.min(pts.length - 1, i + 2)];
-    const c1x = x1 + (x2 - x0) / 6;
-    const c1y = y1 + (y2 - y0) / 6;
-    const c2x = x2 - (x3 - x1) / 6;
-    const c2y = y2 - (y3 - y1) / 6;
-    d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`;
-  }
-  return d;
+  return (
+    <div className="w-full">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>
+        <defs>
+          <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {ticks.map((t, i) => (
+          <g key={i}>
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={t.y}
+              y2={t.y}
+              stroke={i === 0 ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)"}
+              strokeDasharray={i === 0 ? undefined : "3 4"}
+            />
+            <text x={padL - 6} y={t.y + 3} textAnchor="end" fontSize="8.5" fill="rgba(255,255,255,0.4)" fontFamily="var(--font-geist-mono), monospace">
+              {format(t.value)}
+            </text>
+          </g>
+        ))}
+        <motion.path
+          d={area}
+          fill={`url(#${fillId})`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7, delay: 0.25, ease: "easeOut" }}
+        />
+        <motion.path
+          d={line}
+          fill="none"
+          stroke={color}
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
+        />
+        <motion.circle
+          cx={last[0]}
+          cy={last[1]}
+          r="3"
+          fill={color}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.75, type: "spring", stiffness: 500, damping: 28 }}
+        >
+          <title>{`${data[data.length - 1]?.label}: ${format(data[data.length - 1]?.value ?? 0)}`}</title>
+        </motion.circle>
+      </svg>
+      <div className="mt-1 flex justify-between border-t border-line/60 pt-1 text-[9.5px] tracking-tight text-muted/80">
+        {data.map((d, i) => (
+          <span key={i} title={format(d.value)}>
+            {d.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function Sparkline({
@@ -205,12 +257,15 @@ export function DonutChart({
               fill="none"
               stroke={d.color}
               strokeWidth={thickness}
-              strokeDasharray={`${len} ${CIRC - len}`}
-              strokeDashoffset={-offsets[i]}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15 + i * 0.08 }}
-            />
+              initial={{ strokeDasharray: `0 ${CIRC}` }}
+              animate={{
+                strokeDasharray: `${len} ${CIRC - len}`,
+                strokeDashoffset: -offsets[i],
+              }}
+              transition={{ duration: 0.7, delay: i * 0.1, ease: EASE }}
+            >
+              <title>{`${d.name}: ${d.value}`}</title>
+            </motion.circle>
           );
         })}
       </svg>
@@ -239,13 +294,13 @@ export function ProgressBar({
 }) {
   const pctW = Math.max(0, Math.min(100, (value / max) * 100));
   return (
-    <div className={`h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08] ${className}`}>
+    <div className={`h-1 w-full overflow-hidden rounded-sm bg-white/[0.08] ${className}`}>
       <motion.div
-        className="h-full rounded-full"
+        className="h-full"
         style={{ background: color }}
         initial={{ width: 0 }}
         animate={{ width: `${pctW}%` }}
-        transition={{ duration: 0.8, ease }}
+        transition={{ duration: 0.7, ease: EASE }}
       />
     </div>
   );

@@ -20,18 +20,6 @@
   --color-rule-light: rgba(255, 255, 255, 0.08);
   --color-rule-dark: rgba(255, 255, 255, 0.08);
 
-  /* Motion - infinite trust strip scroll */
-  --animate-marquee: marquee 36s linear infinite;
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
   /* Legacy navy scale - kept for compatibility, replaced by surface tokens */
   --color-navy-950: #0a0b0e;
   --color-navy-900: #0d0e12;
@@ -42,6 +30,12 @@
   --color-navy-500: #3d4049;
 
   --color-canvas-light: #f2f4f8; /* unused, kept for compat */
+
+  /* Semantic hover / selection washes - flip with the theme below */
+  --color-hover: rgba(255, 255, 255, 0.05); /* row / menu hover          */
+  --color-active: rgba(255, 255, 255, 0.08); /* pressed / active control */
+  --color-sel: rgba(255, 255, 255, 0.06); /* selected row background   */
+  --color-inset: rgba(255, 255, 255, 0.03); /* subtle inset surface     */
 }
 
 :root {
@@ -63,11 +57,14 @@ body {
   background: rgb(255 255 255 / 0.18);
 }
 
-/* ---------- Precision elevation (monochrome) ---------- */
-.shadow-glow {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 20px 40px -15px rgba(0, 0, 0, 0.7);
+/* ---------- Apple-style press feedback (instant, no glow) ---------- */
+.press-active {
+  transition: transform 0.08s ease, background 0.12s ease, color 0.12s ease,
+    border-color 0.12s ease, opacity 0.12s ease;
+  will-change: transform;
+}
+.press-active:active {
+  transform: scale(0.97);
 }
 
 /* ---------- Hairline dividers ---------- */
@@ -79,65 +76,26 @@ body {
   border-top: 1px solid var(--color-rule-dark);
 }
 
-/* ---------- Textures ---------- */
+/* ---------- Grey border animations (Linear style) ---------- */
 
-/* Fine engineering grid for dark surfaces */
-.bg-grid-dark {
-  background-image:
-    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
-  background-size: 46px 46px;
-}
-
-.bg-grid-light {
-  background-image:
-    linear-gradient(to right, rgb(255 255 255 / 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(255 255 255 / 0.03) 1px, transparent 1px);
-  background-size: 46px 46px;
-}
-
-/* Film grain */
-.noise::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.5;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
-}
-
-/* ---------- Ambient canvas ---------- */
-
-/* Ultra-subtle global film grain (2% overlay blend) */
-.noise-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.02;
-  mix-blend-mode: overlay;
-}
-
-/* ---------- Glass surfaces & gradient borders ---------- */
-
-/* 1px gradient hairline border over a solid panel fill */
+/* Soft gradient hairline border over a solid panel fill. */
 .glass-border {
   border: 1px solid transparent;
   background:
-    linear-gradient(#0d0d11, #0d0d11) padding-box,
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
     linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) border-box;
 }
 
-/* Subtle hover lift for glass cards */
+/* Subtle border brighten on hover - the workhorse grey hover state. */
 .glass-glow {
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 .glass-glow:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* ---------- Cursor spotlight & border beams (Linear style) ---------- */
-
+/* Cursor-following soft spotlight for cards. Set --mouse-x / --mouse-y
+   (0-100%) via JS on the parent for the spotlight to track the cursor. */
 .spotlight-card {
   position: relative;
 }
@@ -154,16 +112,16 @@ body {
   opacity: 0;
   transition: opacity 0.3s ease;
   background: radial-gradient(
-    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.06),
-    transparent 40%
+    480px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.07),
+    transparent 42%
   );
 }
 .spotlight-card:hover .spotlight-glow {
   opacity: 1;
 }
 
-/* Traveling border beam for active / focused cards */
+/* Traveling grey border beam for active / focused cards. */
 @property --beam-angle {
   syntax: "<angle>";
   initial-value: 0deg;
@@ -182,10 +140,10 @@ body {
   background: conic-gradient(
     from var(--beam-angle, 0deg),
     transparent 0%,
-    rgba(255, 255, 255, 0.6) 8%,
-    transparent 18%,
+    rgba(255, 255, 255, 0.55) 9%,
+    transparent 20%,
     transparent 55%,
-    rgba(255, 255, 255, 0.6) 68%,
+    rgba(255, 255, 255, 0.28) 68%,
     transparent 82%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -219,96 +177,6 @@ body {
 .auth-input:focus {
   border-color: rgba(255, 255, 255, 0.35);
   background: rgba(255, 255, 255, 0.06);
-}
-
-/* ---------- Run free audit CTA: shimmer + aura + beam (landing only, monochrome) ---------- */
-
-.cta-glow {
-  isolation: isolate;
-}
-.cta-glow .btn-aura {
-  position: absolute;
-  inset: -12px;
-  z-index: -1;
-  border-radius: 9999px;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.35), transparent 72%);
-  filter: blur(12px);
-  opacity: 0.6;
-  animation: cta-aura-pulse 3.2s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes cta-aura-pulse {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.65;
-    transform: scale(1.07);
-  }
-}
-@property --cta-beam-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-.cta-glow .btn-beam {
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: conic-gradient(
-    from var(--cta-beam-angle, 0deg),
-    transparent 0%,
-    rgba(255, 255, 255, 0.9) 10%,
-    rgba(255, 255, 255, 0.55) 16%,
-    transparent 28%,
-    transparent 62%,
-    rgba(255, 255, 255, 0.55) 72%,
-    transparent 84%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  animation: cta-beam-spin 3.6s linear infinite;
-  pointer-events: none;
-}
-@keyframes cta-beam-spin {
-  to {
-    --cta-beam-angle: 360deg;
-  }
-}
-.cta-glow .btn-shimmer {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  overflow: hidden;
-  pointer-events: none;
-}
-.cta-glow .btn-shimmer::after {
-  content: "";
-  position: absolute;
-  inset: -25%;
-  background: linear-gradient(
-    110deg,
-    transparent 40%,
-    rgba(0, 0, 0, 0.045) 47%,
-    rgba(255, 255, 255, 0.95) 51%,
-    rgba(255, 255, 255, 0.4) 56%,
-    transparent 64%
-  );
-  animation: cta-shimmer-sweep 3s ease-in-out infinite;
-}
-@keyframes cta-shimmer-sweep {
-  0% {
-    transform: translateX(-70%);
-  }
-  55%,
-  100% {
-    transform: translateX(70%);
-  }
 }
 
 /* ---------- Rolling number cells (NumberFlow-style) ---------- */
@@ -398,7 +266,12 @@ body {
   font-weight: 500;
   color: var(--color-muted);
   white-space: nowrap;
-  transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+  transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease,
+    transform 0.08s ease;
+  will-change: transform;
+}
+.toolbar-btn:active {
+  transform: scale(0.97);
 }
 .toolbar-btn:hover {
   color: var(--color-fg);
@@ -440,6 +313,55 @@ body {
 }
 .toolbar-input:focus {
   border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ---------------------------------------------------------------- */
+/*  Sidebar - text-first enterprise navigation (Linear / Figma)     */
+/* ---------------------------------------------------------------- */
+.sidebar-group {
+  padding: 14px 10px 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  opacity: 0.65;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 450;
+  color: var(--color-muted);
+  white-space: nowrap;
+  transition: color 0.12s ease, background 0.12s ease, transform 0.08s ease;
+  will-change: transform;
+}
+.sidebar-item:active {
+  transform: scale(0.97);
+}
+.sidebar-item:hover {
+  color: var(--color-fg);
+  background: rgba(255, 255, 255, 0.05);
+}
+.sidebar-item-active {
+  color: var(--color-fg);
+  background: rgba(255, 255, 255, 0.07);
+}
+.sidebar-item-active:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+.sidebar-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--color-fg);
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 /* Professional table */
@@ -516,7 +438,7 @@ body {
 .chip-green { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
 .chip-amber { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
 .chip-orange { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
-.chip-red { border-color: rgba(248, 113, 113, 0.35); background: rgba(248, 113, 113, 0.1); color: #fca5a5; }
+.chip-red { border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.1); color: #f4f4f5; }
 .chip-blue { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
 .chip-purple { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
 .chip-neutral { border-color: var(--color-line); background: rgba(255, 255, 255, 0.04); color: var(--color-muted); }
@@ -563,8 +485,8 @@ body {
   background: rgba(255, 255, 255, 0.07);
   color: var(--color-fg);
 }
-.menu-item.danger { color: #fca5a5; }
-.menu-item.danger:hover { background: rgba(248, 113, 113, 0.12); color: #fecaca; }
+.menu-item.danger { color: #f4f4f5; }
+.menu-item.danger:hover { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
 .menu-label {
   padding: 6px 8px 4px;
   font-size: 10px;
@@ -671,6 +593,17 @@ body {
   to { transform: none; opacity: 1; }
 }
 
+/* Filter rail label (refine-with-filters panel) */
+.rail-label {
+  padding: 0 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  opacity: 0.6;
+}
+
 /* Sidebar rail */
 .nav-item {
   display: flex;
@@ -710,8 +643,7 @@ body {
   padding: 2px;
   border-radius: 7px;
   background: rgba(255, 255, 255, 0.05);
-}
-.tab {
+}.tab {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -721,9 +653,15 @@ body {
   font-size: 12px;
   font-weight: 500;
   color: var(--color-muted);
-  transition: background 0.12s ease, color 0.12s ease;
+  transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease;
+  will-change: transform;
 }
-.tab:hover { color: var(--color-fg); }
+.tab:hover {
+  color: var(--color-fg);
+}
+.tab:active {
+  transform: scale(0.97);
+}
 .tab.active {
   background: #1d1d23;
   color: var(--color-fg);
@@ -781,3 +719,11 @@ body {
   background-clip: content-box;
   border: 2px solid transparent;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Display modes share the same dark theme.                          */
+/*  Simple and Business differ only in information density, never in  */
+/*  theme - the whole product stays on the dark terminal palette.     */
+/*  (The data-mode attribute still rides on the dashboard root so a   */
+/*  future theme can hook in without touching components.)            */
+/* ------------------------------------------------------------------ */

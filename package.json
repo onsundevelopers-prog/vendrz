@@ -1,5 +1,5 @@
 {
-  "name": "vendor-watchtower",
+  "name": "noma",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -15,6 +15,7 @@
     "lucide-react": "^1.34.0",
     "mammoth": "^1.12.1",
     "next": "16.3.1",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

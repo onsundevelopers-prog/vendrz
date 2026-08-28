@@ -24,14 +24,20 @@
 .DS_Store
 *.pem
 
+# diagnostic / scratch output
+/.tmp-*/
+*.e2e-final.cjs
+.upload-e2e-*.cjs
+
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files - never commit secrets (e.g. OLLAMA_API_KEY, OLLAMA_AWS_SECRET, CLERK_SECRET_KEY)
+.env
+.env.*
 !.env.example
 
 # vercel

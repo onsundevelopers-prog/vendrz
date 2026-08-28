@@ -4,19 +4,26 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createAuditSession, updateAuditSession } from "@/lib/store";
+import type { ContractExtraction } from "@/lib/types";
 import { Navbar } from "@/components/landing/Navbar";
-import { Logo } from "@/components/brand/Logo";
-import { useSpotlight } from "@/components/ui/SpotlightCard";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 export default function AuditPage() {
   const router = useRouter();
-  const { ref: refA, onMouseMove: onMoveA } = useSpotlight<HTMLButtonElement>();
-  const { ref: refB, onMouseMove: onMoveB } = useSpotlight<HTMLButtonElement>();
-  const { ref: refC, onMouseMove: onMoveC } = useSpotlight<HTMLButtonElement>();
+  const [notice, setNotice] = useState<string | null>(null);
 
   const start = (source: "gmail" | "aws" | "manual") => {
+    if (source !== "manual") {
+      // No real Gmail/AWS integration is connected yet - be honest rather
+      // than fabricating an audit from invented data.
+      setNotice(
+        source === "gmail"
+          ? "Gmail isn't connected yet. Upload a contract to get results immediately."
+          : "AWS billing isn't connected yet. Upload a contract to get results immediately."
+      );
+      return;
+    }
     const session = createAuditSession(source);
     router.push(`/audit/processing/${session.id}`);
   };
@@ -32,19 +39,80 @@ export default function AuditPage() {
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/extract", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error ?? "Extraction failed. Try another file.");
+
+      // /api/extract returns a jobId and extracts in the background, so poll
+      // the job status until it completes, then persist the real extraction.
+      // Without this the review would land on an empty result - the exact
+      // dead-end this flow used to hit.
+      let res: Response;
+      try {
+        res = await fetch("/api/extract", { method: "POST", body: fd });
+      } catch {
+        alert("Couldn't reach the extraction service. Check your connection and try again.");
         return;
       }
-      const session = createAuditSession("manual");
-      updateAuditSession(session.id, {
-        extraction: data.extraction,
-        documentName: data.documentName ?? file.name,
-        pipelineStatus: "complete",
-      });
-      router.push(`/audit/results/${session.id}`);
+      const init = (await res.json().catch(() => null)) as {
+        jobId?: string;
+        error?: string;
+      } | null;
+      if (!res.ok || !init?.jobId) {
+        alert(init?.error ?? "Couldn't start extraction. Try another file.");
+        return;
+      }
+
+      const jobId = init.jobId;
+      // The server extracts in the background (local models can take several
+      // minutes for a real contract), so keep polling until the job reaches a
+      // terminal state rather than cutting off after a short fixed timeout.
+      const TERMINAL = new Set(["complete", "failed"]);
+      const MAX_WAIT_MS = 20 * 60 * 1000; // 20 min safety cap
+      const POLL_MS = 2000;
+      const startedAt = Date.now();
+      let consecutiveFailures = 0;
+      while (Date.now() - startedAt < MAX_WAIT_MS) {
+        const statusRes = await fetch(`/api/extract/status/${jobId}`).catch(
+          () => null
+        );
+        const data = (await statusRes?.json().catch(() => null)) as {
+          status?: string;
+          error?: string;
+          result?: { extraction?: ContractExtraction | null };
+        } | null;
+
+        if (data && TERMINAL.has(data.status ?? "")) {
+          if (data.status === "complete") {
+            const extraction = data.result?.extraction;
+            if (!extraction) {
+              alert("Couldn't extract terms from this file. Try another file.");
+              return;
+            }
+            const session = createAuditSession("manual");
+            updateAuditSession(session.id, {
+              extraction,
+              documentName: file.name,
+              pipelineStatus: "complete",
+            });
+            router.push(`/audit/results/${session.id}`);
+            return;
+          }
+          alert(data.error ?? "Couldn't extract terms from this file. Try another file.");
+          return;
+        }
+
+        // A dropped poll is usually transient - only give up after repeated
+        // consecutive failures, never on a single network blip.
+        if (!statusRes || !statusRes.ok || !data) {
+          consecutiveFailures += 1;
+          if (consecutiveFailures >= 3) {
+            alert("Couldn't reach the extraction service. Try again.");
+            return;
+          }
+        } else {
+          consecutiveFailures = 0;
+        }
+        await new Promise((r) => setTimeout(r, POLL_MS));
+      }
+      alert("Extraction is taking longer than expected. The file is still being processed - please try again shortly.");
     } catch {
       alert("Couldn't reach the extraction service.");
     } finally {
@@ -54,31 +122,27 @@ export default function AuditPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-canvas">
-      <div className="bg-grid-dark absolute inset-0 opacity-50" />
       <div className="absolute inset-x-0 top-0 h-px bg-line" />
       <div className="relative">
         <Navbar />
       </div>
 
-      <div className="relative mx-auto flex max-w-5xl flex-col items-center px-5 pb-24 pt-28 lg:px-8 lg:pt-32">
+      <div className="relative mx-auto flex max-w-5xl flex-col items-center px-5 pb-20 pt-24 lg:px-8 lg:pt-28">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease }}
           className="text-center"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#18181B] px-3.5 py-1.5 text-[12px] tracking-tight">
-            <span className="size-1.5 rounded-full bg-zinc-400" />
-            <span className="text-zinc-300">
-              Free audit · no signup · no credit card
-            </span>
+          <span className="inline-flex rounded-md border border-white/10 bg-[#18181B] px-3 py-1.5 text-[12px] tracking-tight text-zinc-300">
+            Free review · no signup · no credit card
           </span>
-          <h1 className="mt-6 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg sm:text-5xl">
-            Run your free vendor spend audit
+          <h1 className="mt-6 text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.03em] text-fg sm:text-4xl">
+            Run your free vendor spend review
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-pretty text-[16px] font-normal leading-[1.55] tracking-[-0.01em] text-muted">
             See where your company&apos;s money is going, and where you can save. We&apos;ll
-            analyze spend, surface renewals, and quantify waste before you create an
+            analyze spend, find renewals, and quantify waste before you create an
             account.
           </p>
         </motion.div>
@@ -91,12 +155,9 @@ export default function AuditPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08, ease }}
             onClick={() => start("gmail")}
-            ref={refA}
-            onMouseMove={onMoveA}
-            className="glass-border glass-glow spotlight-card group flex h-full flex-col justify-between rounded-xl p-6 text-left"
+            className="group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
           >
-            <div className="spotlight-glow" aria-hidden="true" />
-            <div className="flex size-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-[13px] font-semibold tracking-tight text-zinc-300">
+            <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
               01
             </div>
             <div className="flex flex-1 flex-col">
@@ -128,12 +189,9 @@ export default function AuditPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.16, ease }}
             onClick={() => start("aws")}
-            ref={refB}
-            onMouseMove={onMoveB}
-            className="glass-border glass-glow spotlight-card group flex h-full flex-col justify-between rounded-xl p-6 text-left"
+            className="group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
           >
-            <div className="spotlight-glow" aria-hidden="true" />
-            <div className="flex size-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-[13px] font-semibold tracking-tight text-zinc-300">
+            <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
               02
             </div>
             <div className="flex flex-1 flex-col">
@@ -161,12 +219,9 @@ export default function AuditPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.24, ease }}
             onClick={() => fileInputRef.current?.click()}
-            ref={refC}
-            onMouseMove={onMoveC}
-            className="glass-border glass-glow spotlight-card group flex h-full flex-col justify-between rounded-xl p-6 text-left"
+            className="group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
           >
-            <div className="spotlight-glow" aria-hidden="true" />
-            <div className="flex size-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-[13px] font-semibold tracking-tight text-zinc-300">
+            <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
               03
             </div>
             <div className="flex flex-1 flex-col">
@@ -196,6 +251,17 @@ export default function AuditPage() {
           </motion.button>
         </div>
 
+        {/* honest notice for unconnected sources */}
+        {notice && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 flex w-full max-w-xl items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3 text-left"
+          >
+            <p className="text-[13px] leading-relaxed text-muted">{notice}</p>
+          </motion.div>
+        )}
+
         {/* read-only reassurance */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -208,12 +274,6 @@ export default function AuditPage() {
           <span>Results in under 2 minutes</span>
         </motion.div>
 
-        <div className="mt-10 flex items-center gap-2 opacity-70">
-          <Logo className="[&_span:last-child]:text-[13px]" />
-          <span className="text-[11px] tracking-tight text-muted">
-            Analyzing sample data · Acme Technologies
-          </span>
-        </div>
       </div>
 
       {/* hidden file picker for the manual-upload card */}

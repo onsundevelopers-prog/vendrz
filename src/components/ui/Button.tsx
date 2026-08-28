@@ -10,8 +10,6 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
   href?: string;
-  /** Shimmer + aura + beam treatment (used only on the primary Run free audit CTA). */
-  glow?: boolean;
 }
 
 const VARIANTS: Record<Variant, string> = {
@@ -24,7 +22,7 @@ const VARIANTS: Record<Variant, string> = {
   ghost: "text-muted hover:text-fg hover:bg-white/5",
   dark: "bg-white/10 text-fg hover:bg-white/[0.16]",
   danger:
-    "border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20",
+    "border border-zinc-300/30 bg-zinc-400/10 text-zinc-100 hover:bg-zinc-400/20",
 };
 
 const SIZES: Record<Size, string> = {
@@ -34,24 +32,15 @@ const SIZES: Record<Size, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", href, glow = false, className = "", children, ...rest }, ref) => {
+  ({ variant = "primary", size = "md", href, className = "", children, ...rest }, ref) => {
     const classes = [
       "inline-flex items-center justify-center rounded-full font-semibold tracking-[-0.01em] transition-all duration-200 ease-out select-none whitespace-nowrap",
       "disabled:opacity-50 disabled:pointer-events-none",
       "active:scale-[0.98]",
-      glow ? "cta-glow relative" : "",
       VARIANTS[variant],
       SIZES[size],
       className,
     ].join(" ");
-
-    const glowLayers = glow ? (
-      <>
-        <span aria-hidden="true" className="btn-aura" />
-        <span aria-hidden="true" className="btn-beam" />
-        <span aria-hidden="true" className="btn-shimmer" />
-      </>
-    ) : null;
 
     if (href) {
       const onClick = rest.onClick as
@@ -59,14 +48,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         | undefined;
       return (
         <Link href={href} className={classes} onClick={onClick}>
-          {glowLayers}
           {children}
         </Link>
       );
     }
     return (
       <button ref={ref} className={classes} {...rest}>
-        {glowLayers}
         {children}
       </button>
     );

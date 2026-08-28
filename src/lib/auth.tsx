@@ -28,8 +28,6 @@ export interface AuthUser {
   providerLabel: string;
   /** False only while Clerk is still loading its session. */
   isLoaded: boolean;
-  /** True when browsing through the Acme Technologies demo account. */
-  isDemo: boolean;
   /** The raw Clerk user, when signed in via Clerk. */
   user: ReturnType<typeof useUser>["user"];
   legacyAccount: Account | null;
@@ -45,7 +43,6 @@ function fromLegacy(account: Account | null): AuthUser {
     provider: account?.provider ?? "email",
     providerLabel: account?.provider === "google" ? "Google" : "Email & password",
     isLoaded: true,
-    isDemo: account?.email === "demo@acmetech.example",
     ...NO_USER,
     legacyAccount: account,
   };
@@ -64,7 +61,6 @@ function fromClerk(user: NonNullable<ReturnType<typeof useUser>["user"]>): AuthU
     provider: "clerk",
     providerLabel: googleAccount ? "Google" : "Email & password",
     isLoaded: true,
-    isDemo: false,
     user,
     legacyAccount: null,
   };

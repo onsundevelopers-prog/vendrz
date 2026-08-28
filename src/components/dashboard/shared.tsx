@@ -64,49 +64,37 @@ export function KpiStrip({ children }: { children: React.ReactNode }) {
 /* ------------------------------ chips ------------------------------ */
 
 /* Monochrome status language: only destructive states carry red. */
-export const STATUS_META: Record<ContractStatus, { label: string; cls: string; dot: string }> = {
-  active: { label: "Active", cls: "chip-neutral", dot: "bg-zinc-400" },
-  expiring_soon: { label: "Expiring soon", cls: "chip-neutral", dot: "bg-zinc-300" },
-  at_risk: { label: "At risk", cls: "chip-red", dot: "bg-red-400" },
+export const STATUS_META: Record<ContractStatus, { label: string; cls: string }> = {
+  active: { label: "Active", cls: "chip-neutral" },
+  expiring_soon: { label: "Expiring soon", cls: "chip-neutral" },
+  at_risk: { label: "At risk", cls: "chip-red" },
 };
 
-export const RISK_META: Record<AlertSeverity, { label: string; cls: string; dot: string }> = {
-  low: { label: "Low", cls: "chip-neutral", dot: "bg-zinc-500" },
-  medium: { label: "Medium", cls: "chip-neutral", dot: "bg-zinc-400" },
-  high: { label: "High", cls: "chip-neutral", dot: "bg-zinc-300" },
-  critical: { label: "Critical", cls: "chip-red", dot: "bg-red-400" },
+export const RISK_META: Record<AlertSeverity, { label: string; cls: string }> = {
+  low: { label: "Low", cls: "chip-neutral" },
+  medium: { label: "Medium", cls: "chip-neutral" },
+  high: { label: "High", cls: "chip-neutral" },
+  critical: { label: "Critical", cls: "chip-red" },
 };
+
+/** Map a numeric risk score (0-100) to a severity for chips. */
+export function riskLevel(score: number): AlertSeverity {
+  return score >= 80 ? "critical" : score >= 60 ? "high" : score >= 40 ? "medium" : "low";
+}
 
 export function StatusChip({ status }: { status: ContractStatus }) {
   const m = STATUS_META[status];
-  return (
-    <span className={`chip ${m.cls}`}>
-      <span className={`status-dot ${m.dot}`} />
-      {m.label}
-    </span>
-  );
+  return <span className={`chip ${m.cls}`}>{m.label}</span>;
 }
 
 export function RiskChip({ level }: { level: AlertSeverity | null | undefined }) {
   if (!level) return <span className="text-[11.5px] text-muted/60">None</span>;
   const m = RISK_META[level];
-  return (
-    <span className={`chip ${m.cls}`}>
-      <span className={`status-dot ${m.dot}`} />
-      {m.label}
-    </span>
-  );
+  return <span className={`chip ${m.cls}`}>{m.label}</span>;
 }
 
 export function AutoRenewChip({ on }: { on: boolean }) {
-  return on ? (
-    <span className="chip chip-neutral">
-      <span className="status-dot bg-zinc-400" />
-      Auto-renew
-    </span>
-  ) : (
-    <span className="text-[11.5px] text-muted/60">Manual</span>
-  );
+  return on ? <span className="chip chip-neutral">Auto-renew</span> : <span className="text-[11.5px] text-muted/60">Manual</span>;
 }
 
 export function VendorCell({

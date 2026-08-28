@@ -37,6 +37,12 @@ export const daysUntil = (iso: string | null): number => {
   return Math.ceil((new Date(iso + "T00:00:00").getTime() - Date.now()) / 86400000);
 };
 
+export const formatTime = (iso: string): string =>
+  new Date(iso).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
 export const timeAgo = (iso: string): string => {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);

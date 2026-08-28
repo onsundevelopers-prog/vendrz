@@ -2,54 +2,36 @@ const FACTS = [
   "Read-only access, always",
   "Encrypted in transit and at rest",
   "Never shared, never sold, never used for training",
-  "First audit in under two minutes",
+  "First review in under two minutes",
   "We cannot move money or modify accounts",
 ];
 
-const VENDORS = [
-  "Salesforce",
-  "AWS",
-  "Zoom",
-  "Atlassian",
-  "Okta",
-  "Google Workspace",
-  "Microsoft",
-  "DocuSign",
-  "HubSpot",
-  "Snowflake",
+const SOURCES = [
+  "Vendor contracts",
+  "Invoices & order forms",
+  "Renewal notices",
+  "PDF · DOCX",
 ];
-
-function Row({ items }: { items: string[] }) {
-  return (
-    <div className="flex shrink-0 items-center">
-      {items.map((item) => (
-        <span key={item} className="whitespace-nowrap pr-8 text-[13px] tracking-tight text-muted">
-          {item}
-        </span>
-      ))}
-    </div>
-  );
-}
 
 export function TrustStrip() {
   return (
-    <div className="relative overflow-hidden border-y border-line bg-canvas">
-      {/* soft edge fades so the loop is invisible */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-canvas to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-canvas to-transparent" />
-
-      {/* vendor names - flask.do-style marquee, opposite direction */}
-      <div className="border-b border-line/60 py-3.5">
-        <div className="flex w-max animate-marquee" style={{ animationDirection: "reverse" }}>
-          <Row items={VENDORS} />
-          <Row items={VENDORS} />
-        </div>
+    <div className="border-y border-line bg-canvas">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-7 gap-y-1.5 border-b border-line/60 px-5 py-3 lg:px-8">
+        <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted/60">
+          Reads your own
+        </span>
+        {SOURCES.map((v) => (
+          <span key={v} className="text-[12.5px] tracking-tight text-muted">
+            {v}
+          </span>
+        ))}
       </div>
-
-      {/* trust facts */}
-      <div className="flex w-max animate-marquee py-3.5">
-        <Row items={FACTS} />
-        <Row items={FACTS} />
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-7 gap-y-1.5 px-5 py-3 lg:px-8">
+        {FACTS.map((f) => (
+          <span key={f} className="text-[12px] tracking-tight text-muted/70">
+            {f}
+          </span>
+        ))}
       </div>
     </div>
   );

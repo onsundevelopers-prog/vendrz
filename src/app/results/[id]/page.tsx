@@ -23,10 +23,13 @@ export default function ResultsPage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-canvas px-5">
         <div className="text-center">
-          <p className="text-[15px] text-muted">
-            Analysis not ready - it may still be processing or the session expired.
+          <p className="text-[15px] font-medium text-fg">Analysis unavailable</p>
+          <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-muted">
+            We couldn&apos;t extract terms from this document - the extraction service
+            may have been unavailable. Nothing was estimated; upload the file again
+            to retry.
           </p>
-          <Link href="/upload" className="mt-2 inline-block text-[13px] tracking-tight text-muted underline underline-offset-4 hover:text-fg">
+          <Link href="/upload" className="mt-4 inline-block text-[13px] tracking-tight text-muted underline underline-offset-4 hover:text-fg">
             Back to upload
           </Link>
         </div>
@@ -54,7 +57,7 @@ export default function ResultsPage() {
               Scan another
             </Button>
             <Button href="/dashboard" size="sm">
-              Go to dashboard
+              Go to workspace
             </Button>
           </div>
         </div>
@@ -97,7 +100,7 @@ export default function ResultsPage() {
           transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="sticky bottom-4 z-40 mx-auto mb-4 w-[calc(100%-2.5rem)] max-w-2xl"
         >
-          <div className="relative overflow-hidden rounded-2xl border border-line bg-panel p-5 shadow-glow">
+          <div className="relative overflow-hidden rounded-xl border border-line bg-panel p-5">
             <button
               onClick={() => setDismissed(true)}
               aria-label="Dismiss"
@@ -115,7 +118,7 @@ export default function ResultsPage() {
                 </p>
                 <p className="mt-0.5 text-[13px] font-normal leading-relaxed tracking-[-0.01em] text-muted">
                   This report expires in 14 days. Create a free account and we&apos;ll
-                  keep monitoring this contract - renewal deadlines, escalations, and
+                  keep tracking this contract - renewal deadlines, escalations, and
                   new opportunities - then alert you before they slip past.
                 </p>
               </div>
@@ -123,7 +126,7 @@ export default function ResultsPage() {
                 href={`/auth?mode=signup&session=${session.id}`}
                 className="shrink-0"
               >
-                Save & monitor it free
+                Save & track it free
               </Button>
             </div>
           </div>

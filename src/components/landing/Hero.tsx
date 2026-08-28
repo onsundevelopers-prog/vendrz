@@ -36,7 +36,6 @@ function StaggeredWords({ text, delay = 0 }: { text: string; delay?: number }) {
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-canvas">
-      <div className="bg-grid-dark absolute inset-0 opacity-60" />
       <div className="absolute inset-x-0 top-0 h-px bg-line" />
 
       <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-5 pb-24 pt-32 sm:pb-28 lg:px-8 lg:pt-36">
@@ -61,8 +60,8 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.55, ease }}
             className="mt-6 max-w-xl text-pretty text-lg font-normal leading-[1.5] tracking-[-0.01em] text-muted"
           >
-            Vendrz turns your financial transactions, invoices, and contracts
-            into spend intelligence: renewals, waste, billing anomalies, and the savings
+            noma turns your financial transactions, invoices, and contracts
+            into spend analysis: renewals, waste, billing anomalies, and the savings
             hiding inside them.
           </motion.p>
 
@@ -72,8 +71,8 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.68, ease }}
             className="mt-9 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
           >
-            <Button href="/audit" size="lg" glow className="w-full px-7 sm:w-auto">
-              Run your free vendor spend audit
+            <Button href="/audit" size="lg" className="w-full px-7 sm:w-auto">
+              Run your free vendor spend review
             </Button>
             <Button
               href="#how-it-works"
@@ -104,7 +103,7 @@ export function Hero() {
         >
           <span>Renewal warnings</span>
           <span>Waste detection</span>
-          <span>Spend intelligence</span>
+          <span>Spend analysis</span>
           <span>Savings tracking</span>
         </motion.div>
       </div>

@@ -8,7 +8,6 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export function CtaSection() {
   return (
     <section className="relative overflow-hidden border-t border-line bg-canvas py-24 lg:py-32">
-      <div className="bg-grid-dark absolute inset-0 opacity-40" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -20,7 +19,7 @@ export function CtaSection() {
           Know where your money&apos;s going. Find where you can save.
         </h2>
         <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
-          Run a free vendor spend audit and see the renewals, waste, and savings
+          Run a free vendor spend review and see the renewals, waste, and savings
           hiding in your spend - before the deadlines pass, not after.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -29,11 +28,11 @@ export function CtaSection() {
             size="lg"
             className="w-full px-8 sm:w-auto"
           >
-            Run your free vendor spend audit
+            Run your free vendor spend review
           </Button>
         </div>
         <p className="mt-5 text-[12px] tracking-tight text-muted">
-          No signup · No credit card · First audit in under two minutes
+          No signup · No credit card · First review in under two minutes
         </p>
       </motion.div>
     </section>

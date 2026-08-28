@@ -16,11 +16,19 @@ export default function ProcessingPage() {
 
   const session = useMemo(() => getSession(sessionId), [sessionId]);
 
+  // React StrictMode double-invokes effects in dev, mounting → cleanup →
+  // remount. The timer must survive that, so the once-guard and the
+  // runPipeline call live INSIDE the timeout callback, and the cleanup only
+  // clears a timer that is actually re-scheduled on the remount. Without
+  // this the pipeline's timer gets cancelled and never restarts, freezing
+  // the progress meter at 11%.
   useEffect(() => {
-    if (!session || started.current) return;
-    started.current = true;
+    if (!session) return;
 
     const timeout = setTimeout(() => {
+      if (started.current) return;
+      started.current = true;
+
       runPipeline(
         session.documentName,
         session.fileKind,
@@ -34,7 +42,8 @@ export default function ProcessingPage() {
             });
           }
         },
-        session.extraction
+        session.extraction,
+        session.richExtraction
       ).then((result) => {
         updateSession(sessionId, { pipelineStatus: "complete", result });
         router.replace(`/results/${sessionId}`);
@@ -61,8 +70,6 @@ export default function ProcessingPage() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-canvas px-5">
-      <div className="bg-grid-dark absolute inset-0 opacity-50" />
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

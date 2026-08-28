@@ -4,19 +4,19 @@ import type {
   AgentMessage,
   AnalysisResult,
   AnonymousSession,
+  ApprovalAction,
+  ApprovalActionStatus,
   AuditSession,
-  CompanyAudit,
   ContractExtraction,
   ContractRecord,
+  RichContractExtraction,
   DashboardStats,
   DiscoveredDocument,
   EmailThread,
   GmailConnection,
   PipelineStage,
 } from "./types";
-import { SAMPLE_CONTRACTS, daysFromNow } from "./mockData";
-import { generateAnalysis } from "./pipeline";
-import { buildCompanyAudit } from "./services/audit";
+import { daysFromNow } from "./dates";
 
 /* ------------------------------------------------------------------ */
 /*  Client-side persistence.                                          */
@@ -35,6 +35,7 @@ const KEYS = {
   activity: "wt.activity",
   agentMessages: "wt.agentMessages",
   emailThreads: "wt.emailThreads",
+  actions: "wt.actions",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -84,7 +85,8 @@ export function createAnonymousSession(
   fileKind: "pdf" | "docx" | "unknown",
   fileSize: number,
   source: "manual" | "gmail" = "manual",
-  extraction: ContractExtraction | null = null
+  extraction: ContractExtraction | null = null,
+  richExtraction: RichContractExtraction | null = null
 ): AnonymousSession {
   const id = uid("s");
   const session: AnonymousSession = {
@@ -97,6 +99,7 @@ export function createAnonymousSession(
     pipelineStatus: "queued",
     result: null,
     extraction,
+    richExtraction,
     transferredToUserId: null,
     source,
   };
@@ -200,69 +203,11 @@ export function disconnectGmail(userId: string): void {
 
 /* ------------------------------ discovery ------------------------------ */
 
-const CANDIDATES: Array<Omit<DiscoveredDocument, "id" | "gmailConnectionId" | "imported">> = [
-  {
-    filename: "Salesforce_Master_Subscription_Agreement.pdf",
-    emailSubject: "Your Salesforce subscription renews soon",
-    sender: "renewals@salesforce.com",
-    emailDate: "2026-07-02",
-    detectedVendor: "Salesforce",
-    documentType: "MSA / Subscription agreement",
-    confidence: 0.96,
-    appearsToBeContract: true,
-  },
-  {
-    filename: "AWS_Enterprise_Agreement_2025.pdf",
-    emailSubject: "AWS Enterprise Agreement - renewal notice",
-    sender: "aws-agreements@amazon.com",
-    emailDate: "2026-06-18",
-    detectedVendor: "AWS",
-    documentType: "Enterprise agreement",
-    confidence: 0.94,
-    appearsToBeContract: true,
-  },
-  {
-    filename: "Zoom_Business_Services_Agreement.pdf",
-    emailSubject: "Re: Zoom services agreement",
-    sender: "contracts@zoom.us",
-    emailDate: "2026-05-29",
-    detectedVendor: "Zoom",
-    documentType: "Services agreement",
-    confidence: 0.89,
-    appearsToBeContract: true,
-  },
-  {
-    filename: "invoice_q3_2026.pdf",
-    emailSubject: "Invoice #88412 - payment due",
-    sender: "billing@atlassian.com",
-    emailDate: "2026-08-04",
-    detectedVendor: "Atlassian",
-    documentType: "Invoice (not a contract)",
-    confidence: 0.78,
-    appearsToBeContract: false,
-  },
-  {
-    filename: "Okta_Order_Form_2026.pdf",
-    emailSubject: "Okta order form attached",
-    sender: "sales-ops@okta.com",
-    emailDate: "2026-07-21",
-    detectedVendor: "Okta",
-    documentType: "Order form",
-    confidence: 0.83,
-    appearsToBeContract: true,
-  },
-  {
-    filename: "docs_new_pricing_policy.pdf",
-    emailSubject: "Updated pricing - important",
-    sender: "updates@google.com",
-    emailDate: "2026-07-30",
-    detectedVendor: "Google",
-    documentType: "Pricing notice (not a contract)",
-    confidence: 0.61,
-    appearsToBeContract: false,
-  },
-];
-
+/**
+ * Gmail discovery requires a real connected inbox. Until a backend Gmail
+ * integration is wired up, no documents are discovered - the UI shows an
+ * honest empty state instead of fabricated email candidates.
+ */
 export function getDiscovery(userId: string): DiscoveredDocument[] {
   const all = read<Record<string, DiscoveredDocument[]>>(KEYS.discovery, {});
   return all[userId] ?? [];
@@ -271,66 +216,35 @@ export function getDiscovery(userId: string): DiscoveredDocument[] {
 export function runDiscovery(userId: string): DiscoveredDocument[] {
   const connection = getGmailConnection(userId);
   if (!connection) return [];
-  // Preserve prior import state across rescans so a refresh never un-imports
-  // a document the user already sent through the pipeline.
-  const prevByFilename = new Map(
-    getDiscovery(userId).map((d) => [d.filename, d])
-  );
-  const docs: DiscoveredDocument[] = CANDIDATES.map((c) => {
-    const prev = prevByFilename.get(c.filename);
-    return {
-      ...c,
-      id: prev?.id ?? uid("d"),
-      gmailConnectionId: connection.id,
-      imported: prev?.imported ?? false,
-    };
-  });
-  const all = read<Record<string, DiscoveredDocument[]>>(KEYS.discovery, {});
-  all[userId] = docs;
-  write(KEYS.discovery, all);
-  return docs;
+  // No real Gmail backend is connected yet - nothing is discovered.
+  return [];
 }
 
 export function markImported(userId: string, docIds: string[]): string[] {
-  const all = read<Record<string, DiscoveredDocument[]>>(KEYS.discovery, {});
-  const docs = all[userId] ?? [];
-  const createdSessionIds: string[] = [];
-  for (const doc of docs) {
-    if (docIds.includes(doc.id) && !doc.imported) {
-      doc.imported = true;
-      const session = createAnonymousSession(doc.filename, "pdf", 0, "gmail");
-      // Same analysis pipeline as manual uploads. The backend worker would run
-      // the real stages asynchronously; here the deterministic generator runs
-      // immediately so results are ready when the user lands on the dashboard.
-      const result = generateAnalysis(doc.filename, "pdf");
-      updateSession(session.id, {
-        transferredToUserId: userId,
-        pipelineStatus: "complete",
-        result,
-      });
-      createdSessionIds.push(session.id);
-    }
-  }
-  write(KEYS.discovery, all);
-  return createdSessionIds;
+  void userId;
+  void docIds;
+  // No real documents exist to import until a data source is connected.
+  return [];
 }
 
 /* ------------------------------ dashboard ------------------------------ */
 
 export function getContracts(userId: string): ContractRecord[] {
-  // Sample portfolio + anything the user uploaded/imported and transferred.
+  // Only contracts the user actually uploaded/imported. Unknown terms stay
+  // empty ("") and are rendered as unavailable in the UI - never invented.
   const userSessions = Object.values(read<Record<string, AnonymousSession>>(KEYS.sessions, {}))
     .filter((s) => s.transferredToUserId === userId && s.result)
     .map((s) => s.result as AnalysisResult);
 
-  const fromSessions: ContractRecord[] = userSessions.map((r) => ({
+  return userSessions.map((r) => ({
     id: `ct-${r.id}`,
     vendorName: r.vendorName,
     category: r.category,
     annualSpend: r.annualValue ?? 0,
-    renewalDate: r.renewalDate ?? daysFromNow(365),
+    renewalDate: r.renewalDate ?? "",
     cancellationDeadline: r.cancellationDeadline,
-    autoRenew: r.autoRenew ?? true,
+    autoRenew: r.autoRenew ?? false,
+    escalationRate: r.priceEscalation?.rate ?? null,
     riskScore: r.riskScore,
     opportunityLow: r.savings.low,
     opportunityHigh: r.savings.high,
@@ -338,8 +252,6 @@ export function getContracts(userId: string): ContractRecord[] {
     linkedDocument: r.documentName,
     isSample: false,
   }));
-
-  return [...SAMPLE_CONTRACTS, ...fromSessions];
 }
 
 export function getVendorProfile(userId: string, vendorId: string): ContractRecord | null {
@@ -361,72 +273,25 @@ export function getDashboardStats(userId: string): DashboardStats {
     highRiskContracts: contracts.filter((c) => c.riskScore >= 60).length,
     totalOpportunityLow: contracts.reduce((a, c) => a + c.opportunityLow, 0),
     totalOpportunityHigh: contracts.reduce((a, c) => a + c.opportunityHigh, 0),
+    autoRenewals: contracts.filter((c) => c.autoRenew).length,
+    priceEscalations: contracts.filter((c) => c.escalationRate != null).length,
+    // Inside the cancellation window (<30d) and willing to self-renew =>
+    // a real cancellation decision point exists.
+    cancellationOpportunities: contracts.filter((c) => {
+      if (!c.autoRenew || !c.cancellationDeadline) return false;
+      const d = new Date(c.cancellationDeadline + "T00:00:00");
+      const days = Math.ceil((d.getTime() - Date.now()) / 86400000);
+      return days >= 0 && days <= 90;
+    }).length,
   };
 }
 
 /* ------------------------------ activity log ------------------------------ */
 
-/** Seed activity derived from the demo audit so the feed is real, not lorem. */
+/** Real activity only - records written by the app, never seeded. */
 export function getActivity(userId: string): ActivityRecord[] {
-  const audit = getDemoAudit();
   const stored = read<Record<string, ActivityRecord[]>>(KEYS.activity, {});
-  const mine = stored[userId] ?? [];
-
-  if (mine.length > 0) return [...mine].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-
-  // First visit: derive a realistic feed from the audit itself.
-  const seed: ActivityRecord[] = [];
-  const now = Date.now();
-  const daysAgo = (d: number, h = 0) =>
-    new Date(now - d * 86400000 - h * 3600000).toISOString();
-
-  for (const a of audit.alerts.slice(0, 4)) {
-    seed.push({
-      id: `act-alert-${a.id}`,
-      vendorId: a.vendorId,
-      vendorName: a.vendorName,
-      type: "alert",
-      actor: "system",
-      title: a.title,
-      detail: a.detail,
-      createdAt: a.createdAt ?? daysAgo(1),
-    });
-  }
-  const topOpp = [...audit.opportunities]
-    .filter((o) => o.status !== "dismissed")
-    .sort((a, b) => b.estimatedSavings - a.estimatedSavings)[0];
-  if (topOpp) {
-    seed.push({
-      id: "act-opp-1",
-      vendorId: topOpp.vendorId,
-      vendorName: topOpp.vendorName,
-      type: "savings",
-      actor: "system",
-      title: `Savings opportunity surfaced: ${topOpp.title}`,
-      detail: `Estimated ${money(topOpp.estimatedSavings)}/yr potential - ${topOpp.basis}`,
-      createdAt: daysAgo(2),
-    });
-  }
-  seed.push({
-    id: "act-review-1",
-    type: "review",
-    actor: "user",
-    title: "Quarterly vendor review completed",
-    detail: "Reviewed 147 vendors across 8 categories; 12 contracts flagged for renewal action.",
-    createdAt: daysAgo(6),
-  });
-  seed.push({
-    id: "act-import-1",
-    type: "import",
-    actor: "system",
-    title: "Financial data connected",
-    detail: "Corporate card, bank, and Stripe feeds synced - 4,215 transactions imported.",
-    createdAt: daysAgo(9),
-  });
-
-  stored[userId] = seed;
-  write(KEYS.activity, stored);
-  return [...seed].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return [...(stored[userId] ?? [])].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export function logActivity(userId: string, record: Omit<ActivityRecord, "id" | "createdAt">): ActivityRecord {
@@ -442,7 +307,171 @@ export function logActivity(userId: string, record: Omit<ActivityRecord, "id" | 
   return full;
 }
 
+/* ------------------------------ action approval ------------------------------ */
+
+const actionsByUser = (): Record<string, Record<string, ApprovalAction>> =>
+  read<Record<string, Record<string, ApprovalAction>>>(KEYS.actions, {});
+
+const actionsFor = (userId: string): Record<string, ApprovalAction> =>
+  actionsByUser()[userId] ?? {};
+
+/** All recommended actions for a user, newest first. */
+export function getActions(userId: string): ApprovalAction[] {
+  return Object.values(actionsFor(userId)).sort((a, b) =>
+    b.created_at.localeCompare(a.created_at)
+  );
+}
+
+export function getAction(userId: string, actionId: string): ApprovalAction | null {
+  return actionsFor(userId)[actionId] ?? null;
+}
+
+/**
+ * Record a new AI-recommended action. It is ALWAYS created with status
+ * `pending` - nothing executes and nothing is sent until the user approves.
+ */
+export function createAction(
+  userId: string,
+  input: Pick<ApprovalAction, "action_type" | "target" | "reasoning" | "proposed_changes"> &
+    Partial<Pick<ApprovalAction, "vendorId">>
+): ApprovalAction {
+  const action: ApprovalAction = {
+    action_id: uid("act"),
+    action_type: input.action_type,
+    target: input.target,
+    reasoning: input.reasoning,
+    proposed_changes: input.proposed_changes,
+    status: "pending",
+    vendorId: input.vendorId,
+    created_at: new Date().toISOString(),
+    approved_at: null,
+    executed_at: null,
+  };
+  const all = read<Record<string, Record<string, ApprovalAction>>>(KEYS.actions, {});
+  const mine = all[userId] ?? {};
+  mine[action.action_id] = action;
+  all[userId] = mine;
+  write(KEYS.actions, all);
+  return action;
+}
+
+export function updateAction(
+  userId: string,
+  actionId: string,
+  patch: Partial<ApprovalAction>
+): ApprovalAction | null {
+  const all = read<Record<string, Record<string, ApprovalAction>>>(KEYS.actions, {});
+  const mine = all[userId] ?? {};
+  const action = mine[actionId];
+  if (!action) return null;
+  const updated = { ...action, ...patch };
+  mine[actionId] = updated;
+  all[userId] = mine;
+  write(KEYS.actions, all);
+  return updated;
+}
+
+/**
+ * User explicitly approves. Sets status to `approved` and stamps `approved_at`.
+ * A `pending`/`rejected` action may be approved; an already-approved or
+ * executing action is idempotently returned.
+ */
+export function approveAction(userId: string, actionId: string): ApprovalAction | null {
+  const action = getAction(userId, actionId);
+  if (!action) return null;
+  if (action.status === "approved" || action.status === "executing" || action.status === "completed") {
+    return action;
+  }
+  return updateAction(userId, actionId, {
+    status: "approved",
+    approved_at: new Date().toISOString(),
+  });
+}
+
+/** User explicitly rejects or revokes an action. */
+export function rejectAction(userId: string, actionId: string): ApprovalAction | null {
+  const action = getAction(userId, actionId);
+  if (!action) return null;
+  if (action.status === "completed" || action.status === "executing") {
+    // Already past the point of no return - cannot reject.
+    return action;
+  }
+  return updateAction(userId, actionId, {
+    status: "rejected",
+    approved_at: null,
+  });
+}
+
+/**
+ * Progress an action through its lifecycle.
+ *
+ * Safety: `executing` and `completed` may ONLY follow an explicit user
+ * approval. These guards ensure an action can never jump from `pending`
+ * straight into execution/completion - we never auto-cancel, never
+ * auto-send, and never mark an irreversible action done without
+ * authorization. `failed` may be set at any time to reflect a failed run.
+ */
+export function markActionProgress(
+  userId: string,
+  actionId: string,
+  status: Extract<ApprovalActionStatus, "executing" | "completed" | "failed">
+): ApprovalAction | null {
+  const action = getAction(userId, actionId);
+  if (!action) return null;
+  // Guard: execution and completion both require prior explicit approval.
+  if (status === "executing" || status === "completed") {
+    if (action.status !== "approved") {
+      throw new Error(
+        `Action ${actionId} cannot be marked ${status} - it is ${action.status}, not approved.`
+      );
+    }
+  }
+  const executed_at = status === "executing" || status === "completed"
+    ? action.executed_at ?? new Date().toISOString()
+    : null;
+  return updateAction(userId, actionId, { status, executed_at });
+}
+
 /* ------------------------------ agent ------------------------------ */
+
+/**
+ * Real clause-level findings for the user's contracts, keyed by the same
+ * contract id getContracts() produces. Only findings that genuinely exist
+ * in analyzed documents are included - nothing is invented.
+ */
+export function getContractAnalyses(userId: string): Array<{
+  contractId: string;
+  documentName: string;
+  findings: Array<{
+    type: string;
+    severity: "info" | "warning" | "critical";
+    title: string;
+    detail: string;
+    confidence: number;
+    evidence?: { excerpt?: string; section?: string; page?: number } | null;
+  }>;
+}> {
+  const userSessions = Object.values(read<Record<string, AnonymousSession>>(KEYS.sessions, {}))
+    .filter((s) => s.transferredToUserId === userId && s.result)
+    .map((s) => s.result as AnalysisResult);
+
+  return userSessions
+    .filter((r) => r.findings && r.findings.length > 0)
+    .map((r) => ({
+      contractId: `ct-${r.id}`,
+      documentName: r.documentName,
+      findings: r.findings.map((f) => ({
+        type: f.type,
+        severity: f.severity,
+        title: f.title,
+        detail: f.detail,
+        confidence: f.confidence,
+        evidence: f.evidence
+          ? { excerpt: f.evidence.excerpt, section: f.evidence.section, page: f.evidence.page }
+          : null,
+      })),
+    }));
+}
 
 export function getAgentMessages(userId: string): AgentMessage[] {
   return read<Record<string, AgentMessage[]>>(KEYS.agentMessages, {})[userId] ?? [];
@@ -463,123 +492,10 @@ export function clearAgentMessages(userId: string): void {
   write(KEYS.agentMessages, all);
 }
 
-/** Vendor correspondence surfaced from the connected inbox. */
+/** Real correspondence only - nothing is seeded. */
 export function getEmailThreads(userId: string): EmailThread[] {
-  getDemoAudit();
   const stored = read<Record<string, EmailThread[]>>(KEYS.emailThreads, {});
-  const mine = stored[userId];
-  if (mine && mine.length > 0) return mine;
-
-  const threads: EmailThread[] = [
-    {
-      id: "thr-adobe-renewal",
-      vendorId: "v-adobe",
-      vendorName: "Adobe",
-      subject: "Your Adobe Creative Cloud subscription renews in 37 days",
-      snippet: "Your annual plan is set to auto-renew on the current terms. Review your seat count to avoid over-billing…",
-      sender: "renewals@adobe.com",
-      date: daysFromNow(-2),
-      unread: true,
-      category: "renewal",
-    },
-    {
-      id: "thr-aws-billing",
-      vendorId: "v-aws",
-      vendorName: "AWS",
-      subject: "AWS billing alert: spend 27% above baseline",
-      snippet: "Your projected monthly spend exceeds the contracted baseline. No new workloads were detected…",
-      sender: "aws-billing@amazon.com",
-      date: daysFromNow(-4),
-      unread: true,
-      category: "invoice",
-    },
-    {
-      id: "thr-slack-neg",
-      vendorId: "v-slack",
-      vendorName: "Slack",
-      subject: "Re: Your 2026 renewal quote",
-      snippet: "As discussed, we can offer a 12% discount on annual commitment if you sign before the current term ends…",
-      sender: "accountexec@slack.com",
-      date: daysFromNow(-5),
-      unread: false,
-      category: "negotiation",
-    },
-    {
-      id: "thr-docusign-cancel",
-      vendorId: "v-docusign",
-      vendorName: "DocuSign",
-      subject: "Important: cancellation deadline passed",
-      snippet: "The cancellation window for your agreement closed 6 days ago. Your subscription will renew automatically…",
-      sender: "notices@docusign.com",
-      date: daysFromNow(-1),
-      unread: true,
-      category: "renewal",
-    },
-    {
-      id: "thr-notion-seats",
-      vendorId: "v-notion",
-      vendorName: "Notion",
-      subject: "Invoice #4431 - monthly seat billing",
-      snippet: "Attached is your monthly invoice for 120 seats. Please note 16 seats show no activity in the last 90 days…",
-      sender: "billing@notion.so",
-      date: daysFromNow(-3),
-      unread: false,
-      category: "invoice",
-    },
-    {
-      id: "thr-hubspot-price",
-      vendorId: "v-hubspot",
-      vendorName: "HubSpot",
-      subject: "Marketing Hub pricing update effective next renewal",
-      snippet: "Prices for your current tier will increase 12% at your next renewal. Reach out to discuss options…",
-      sender: "renewals@hubspot.com",
-      date: daysFromNow(-7),
-      unread: false,
-      category: "renewal",
-    },
-    {
-      id: "thr-figma-general",
-      vendorId: "v-figma",
-      vendorName: "Figma",
-      subject: "Welcome to Figma Enterprise - admin checklist",
-      snippet: "Get started with SSO, SCIM provisioning, and your admin dashboard…",
-      sender: "success@figma.com",
-      date: daysFromNow(-12),
-      unread: false,
-      category: "general",
-    },
-  ];
-  stored[userId] = threads;
-  write(KEYS.emailThreads, stored);
-  return threads;
-}
-
-function money(n: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Math.round(n));
-}
-
-/* ------------------------------ demo mode ------------------------------ */
-
-let cachedAudit: CompanyAudit | null = null;
-
-/** The Acme Technologies demo company - computed once per session. */
-export function getDemoAudit(): CompanyAudit {
-  if (!cachedAudit) cachedAudit = buildCompanyAudit();
-  return cachedAudit;
-}
-
-/** Log into the demo company so the full product is explorable. */
-export function enterDemoMode(): Account {
-  const account = createAccount(
-    "demo@acmetech.example",
-    "Acme Technologies",
-    "email"
-  );
-  return account;
+  return stored[userId] ?? [];
 }
 
 /* ------------------------------ audit sessions ------------------------------ */
@@ -614,7 +530,7 @@ export function createAuditSession(
     source,
     createdAt: new Date().toISOString(),
     pipelineStatus: "connect",
-    companyName: "Acme Technologies",
+    companyName: "Your company",
     result: null,
     unlockedToUserId: null,
   };

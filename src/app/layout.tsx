@@ -24,11 +24,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Vendrz - Vendor Spend Intelligence Platform",
-    template: "%s · Vendrz",
+    default: "noma - Vendor Spend Analysis",
+    template: "%s · noma",
   },
   description:
-    "Know where your company's money is going - and find where you can save. Vendrz turns transactions, invoices, and contracts into spend intelligence: renewals, waste, billing anomalies, and savings opportunities. Run a free audit, no signup required.",
+    "Know where your company's money is going - and find where you can save. noma turns transactions, invoices, and contracts into spend analysis: renewals, waste, billing anomalies, and savings opportunities. Run a free review, no signup required.",
 };
 
 export default function RootLayout({
@@ -37,10 +37,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable} antialiased`}>
       <body>
-        <div
-          aria-hidden="true"
-          className="noise-grain pointer-events-none fixed inset-0 z-[100]"
-        />
         {isClerkEnabled ? (
           <ClerkProvider
             appearance={{
@@ -55,7 +51,6 @@ export default function RootLayout({
                 borderRadius: "0.75rem",
               },
               elements: {
-                card: "shadow-glow",
                 footerActionLink: "text-zinc-200",
                 formButtonPrimary: "bg-white text-black hover:bg-zinc-200",
                 socialButtonsBlockButton: "border-white/15",

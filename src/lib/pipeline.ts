@@ -5,8 +5,8 @@ import type {
   Opportunity,
   PipelineStage,
   PipelineStageMeta,
+  RichContractExtraction,
 } from "./types";
-import { daysFromNow } from "./mockData";
 
 /* ------------------------------------------------------------------ */
 /*  Pipeline stages - each maps 1:1 to a backend job stage that the   */
@@ -41,131 +41,73 @@ const STAGE_DURATION_MS: Record<PipelineStage, number> = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Deterministic result generation.                                  */
-/*  In production this runs server-side: LLM proposes structured      */
-/*  terms, a validation layer confirms them against the source text,  */
-/*  and the numbers below are produced by rules - the LLM never       */
-/*  outputs the final dollar figure directly.                         */
+/*  Result assembly.                                                  */
+/*  Every figure comes from terms actually extracted from the user's  */
+/*  document (via /api/extract) and deterministic rules applied to    */
+/*  those terms. When no extraction exists, returns null - the app    */
+/*  shows an honest "analysis unavailable" state instead of invented  */
+/*  numbers. Nothing here fabricates contract content.                */
 /* ------------------------------------------------------------------ */
 
-const VENDOR_HINTS: Record<string, { name: string; category: string }> = {
-  slack: { name: "Slack", category: "Communications" },
-  salesforce: { name: "Salesforce", category: "CRM" },
-  aws: { name: "AWS", category: "Cloud Infrastructure" },
-  amazon: { name: "AWS", category: "Cloud Infrastructure" },
-  microsoft: { name: "Microsoft", category: "Productivity" },
-  zoom: { name: "Zoom", category: "Communications" },
-  google: { name: "Google Workspace", category: "Productivity" },
-  docusign: { name: "DocuSign", category: "Productivity" },
-  snowflake: { name: "Snowflake", category: "Data & Analytics" },
-  hubspot: { name: "HubSpot", category: "Marketing" },
-  okta: { name: "Okta", category: "Security" },
-  atlassian: { name: "Atlassian", category: "Developer Tools" },
-  datadog: { name: "Datadog", category: "Monitoring" },
-};
-
-export function detectVendor(filename: string): { name: string; category: string } {
-  const lower = filename.toLowerCase();
-  for (const [key, info] of Object.entries(VENDOR_HINTS)) {
-    if (lower.includes(key)) return info;
-  }
-  return { name: "Unidentified Vendor", category: "Uncategorized" };
-}
-
 interface GenerationOptions {
-  seed?: number;
-  /** Real LLM-extracted terms (from /api/extract) - rules still compute the numbers. */
-  extraction?: ContractExtraction | null;
+  /** Real LLM-extracted terms (from /api/extract). Required. */
+  extraction: ContractExtraction;
+  /** Canonical rich extraction (the AI's full output) - enriches findings
+      and opportunities with the model's structured risks & savings. */
+  rich?: RichContractExtraction | null;
 }
 
-/** Deterministic PRNG so the same document always yields the same result. */
-function seededRandom(seed: number): () => number {
-  let s = seed >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 4294967296;
-  };
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+
+function parseISO(iso: string | null): Date | null {
+  if (!iso) return null;
+  const d = new Date(iso.length <= 10 ? iso + "T00:00:00" : iso);
+  return isNaN(d.getTime()) ? null : d;
 }
 
-function hashString(str: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
+function fmtDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
-
-const pick = <T,>(rand: () => number, arr: T[]): T =>
-  arr[Math.floor(rand() * arr.length)];
 
 export function generateAnalysis(
   documentName: string,
   fileKind: "pdf" | "docx" | "unknown",
-  opts: GenerationOptions = {}
+  opts: GenerationOptions
 ): AnalysisResult {
-  const rand = seededRandom(hashString(documentName) ^ (opts.seed ?? 0));
-  const extraction = opts.extraction ?? null;
-  const detected = detectVendor(documentName);
+  const extraction = opts.extraction;
 
-  const vendor = {
-    name:
-      extraction?.vendorName && extraction.vendorName !== "Unknown vendor"
-        ? extraction.vendorName
-        : detected.name,
-    category: detected.category,
-  };
+  // Only real extracted terms are used. Unknown values stay null / 0 and are
+  // rendered as "—" in the UI; they are never replaced with made-up figures.
+  const annualValue = extraction.annualSpend ?? null;
+  const autoRenew = extraction.autoRenews ?? null;
+  const noticeDays = extraction.autoRenewalNoticeDays ?? null;
+  const escalationRate = extraction.priceEscalationRate ?? null;
+  const renewalDate = extraction.renewalDate ?? null;
 
-  // Structural terms - real LLM-extracted values when available, otherwise
-  // deterministic from the seeded PRNG. The model proposes the terms; the
-  // rules below compute every dollar figure.
-  const annualValue = Math.round(
-    ((extraction?.annualSpend ??
-      pick(rand, [8400, 12600, 24000, 31800, 54000, 61000, 84000, 96000, 142000])) *
-      (extraction?.annualSpend ? 1 : 0.85 + rand() * 0.3)) /
-      100
-  ) * 100;
-  const autoRenew = extraction?.autoRenews ?? rand() > 0.25;
-  const noticeDays = extraction?.autoRenewalNoticeDays ?? pick(rand, [30, 45, 60, 90]);
-  const escalationRate =
-    extraction?.priceEscalationRate ??
-    (rand() > 0.4 ? pick(rand, [3, 4, 5, 7, 9]) : null);
-  const renewalDate =
-    extraction?.renewalDate ?? daysFromNow(Math.round(30 + rand() * 320));
-  const renewalInDays = Math.max(
-    0,
-    Math.ceil(
-      (new Date(renewalDate + "T00:00:00").getTime() - Date.now()) / 86400000
-    )
-  );
-  const deadlineInDays = renewalInDays - noticeDays;
+  const renewal = parseISO(renewalDate);
   const cancellationDeadline =
-    deadlineInDays > -30 ? daysFromNow(deadlineInDays) : null;
-  const missedDeadline = deadlineInDays < 0;
-  const riskBase = autoRenew ? 46 : 30;
-  const riskScore = Math.min(
-    96,
-    Math.max(14, Math.round(
-      riskBase +
-        (escalationRate !== null ? escalationRate * 3.2 : -6) +
-        (missedDeadline ? 26 : 0) +
-        rand() * 14
-    ))
-  );
+    renewal && noticeDays
+      ? new Date(renewal.getTime() - noticeDays * 86400000).toISOString().slice(0, 10)
+      : null;
+
+  // Risk score: deterministic rules over the extracted terms only.
+  let riskScore = autoRenew === true ? 46 : autoRenew === false ? 30 : 38;
+  if (escalationRate !== null) riskScore += escalationRate * 3.2;
+  const deadline = parseISO(cancellationDeadline);
+  if (deadline && deadline.getTime() < Date.now()) riskScore += 26;
+  riskScore = Math.round(clamp(riskScore, 14, 96));
+
   const riskLabel =
     riskScore >= 80 ? "Critical" : riskScore >= 60 ? "High" : riskScore >= 35 ? "Moderate" : "Low";
 
-  const findings: Finding[] = [];
   const contractId = `c-${documentName.replace(/\.[^.]+$/, "").toLowerCase()}`;
-
-  // When the LLM returned real clause quotes, cite them as the evidence.
-  const clause = (fallback: string): string => {
-    const clauses = extraction?.keyClauses;
-    if (clauses && clauses.length > 0) {
-      return clauses[Math.floor(rand() * clauses.length)] ?? fallback;
-    }
-    return fallback;
-  };
+  const findings: Finding[] = [];
+  const opportunities: Opportunity[] = [];
 
   const push = (
     type: Finding["type"],
@@ -173,8 +115,6 @@ export function generateAnalysis(
     title: string,
     detail: string,
     excerpt: string,
-    section: string,
-    page: number,
     confidence: number
   ) =>
     findings.push({
@@ -185,35 +125,36 @@ export function generateAnalysis(
       title,
       detail,
       confidence,
-      evidence: { excerpt, section, page },
+      evidence: { excerpt, section: "Document", page: 1 },
       created_at: new Date().toISOString(),
     });
 
-  push(
-    "renewal",
-    missedDeadline ? "critical" : "warning",
-    missedDeadline
-      ? "Cancellation window has closed - this contract renews automatically"
-      : `Renews ${formatShort(renewalDate)}`,
-    missedDeadline
-      ? `The cancel-by date (${cancellationDeadline ? formatShort(cancellationDeadline) : "already passed"}) has passed. You are locked in for another term unless the vendor grants an exception.`
-      : `You must act by ${formatShort(cancellationDeadline ?? renewalDate)} to avoid automatic renewal into the next term.`,
-    `This Agreement shall renew automatically for successive one (1) year terms unless either party provides written notice of non-renewal not less than ${noticeDays} days prior to the end of the then-current term.`,
-    `§ ${pick(rand, ["6.2", "7.1", "8.3", "4.4"])} - Term & Renewal`,
-    1 + Math.floor(rand() * 3),
-    0.94
-  );
+  // Clause-backed findings are only produced when the extraction returned
+  // real quotes from the document. Without evidence, no finding is invented.
+  const clauses = extraction.keyClauses ?? [];
 
-  if (autoRenew) {
+  if (renewal) {
+    const missed = deadline !== null && deadline.getTime() < Date.now();
+    push(
+      "renewal",
+      missed ? "critical" : "warning",
+      missed ? "Cancellation window has closed" : `Renews ${fmtDate(renewalDate)}`,
+      missed
+        ? `The cancel-by date (${fmtDate(cancellationDeadline)}) has passed. The contract is committed to its next term unless the vendor grants an exception.`
+        : `You must act by ${fmtDate(cancellationDeadline ?? renewalDate)} to avoid renewal into the next term.`,
+      clauses[0] ?? `Renewal date extracted from the document: ${fmtDate(renewalDate)}.`,
+      missed ? 0.92 : 0.88
+    );
+  }
+
+  if (autoRenew === true) {
     push(
       "auto_renewal",
       "warning",
-      `Auto-renews with ${noticeDays}-day notice`,
-      `No action by ${formatShort(cancellationDeadline ?? renewalDate)} commits you to another full term.`,
-      `Unless terminated as provided herein, this Agreement shall automatically renew for additional terms of twelve (12) months.`,
-      `§ 7.1 - Term`,
-      1 + Math.floor(rand() * 2),
-      0.97
+      `Auto-renews${noticeDays ? ` with ${noticeDays}-day notice` : ""}`,
+      `No action by ${fmtDate(cancellationDeadline ?? renewalDate)} commits you to another full term.`,
+      clauses[1] ?? "Auto-renewal term extracted from the document.",
+      noticeDays ? 0.9 : 0.85
     );
   }
 
@@ -222,123 +163,116 @@ export function generateAnalysis(
       "price_escalation",
       escalationRate > 5 ? "critical" : "warning",
       `${escalationRate}% annual price escalation`,
-      `Your contract escalates ${escalationRate}% per year${
-        escalationRate > 5 ? " with no cap - this compounds quickly" : ""
-      }.`,
-      `Pricing shall increase by ${escalationRate}% per annum effective each anniversary of the Effective Date.`,
-      `§ ${pick(rand, ["5.2", "3.4", "9.1"])} - Fees & Payment`,
-      1 + Math.floor(rand() * 3),
-      0.91
+      `The contract escalates ${escalationRate}% per year${escalationRate > 5 ? " with no cap found - this compounds quickly" : ""}.`,
+      clauses[2] ?? "Price escalation rate extracted from the document.",
+      0.88
     );
   }
 
-  const opportunityDrivers: string[] = [];
-  const opportunities: Opportunity[] = [];
+  // Savings opportunities are computed by rules from the extracted annual
+  // value and terms. They are estimates, never guaranteed figures.
   let savingsLow = 0;
   let savingsHigh = 0;
 
-  if (escalationRate !== null) {
-    const low = Math.round((annualValue * escalationRate * 0.55) / 100) * 100;
-    const high = Math.round((annualValue * escalationRate * 0.8) / 100) * 100;
-    savingsLow += low;
-    savingsHigh += high;
-    opportunities.push({
-      id: `o-${opportunities.length + 1}`,
-      contractId,
-      type: "Price escalation cap",
-      estimatedLow: low,
-      estimatedHigh: high,
-      confidence: 0.8,
-      status: "open",
-      basis: `${escalationRate}% escalation × current annual value, negotiating a cap at or below CPI`,
-      drivers: ["escalation_rate", "no_cap_found", "annual_value"],
-    });
-    opportunityDrivers.push(
-      `Escalation at ${escalationRate}%/yr on ${fmt(annualValue)} annual spend ≈ ${fmt(low)}–${fmt(high)}/yr from capping the increase`
-    );
+  if (annualValue && annualValue > 0) {
+    if (escalationRate !== null) {
+      const low = Math.round((annualValue * escalationRate * 0.55) / 100) * 100;
+      const high = Math.round((annualValue * escalationRate * 0.8) / 100) * 100;
+      savingsLow += low;
+      savingsHigh += high;
+      opportunities.push({
+        id: `o-${opportunities.length + 1}`,
+        contractId,
+        type: "Price escalation cap",
+        estimatedLow: low,
+        estimatedHigh: high,
+        confidence: 0.8,
+        status: "open",
+        basis: `${escalationRate}% escalation × current annual value, negotiating a cap at or below CPI`,
+        drivers: ["escalation_rate", "annual_value"],
+      });
+    }
+
+    if (autoRenew === true) {
+      const low = Math.round((annualValue * 0.04) / 100) * 100;
+      const high = Math.round((annualValue * 0.09) / 100) * 100;
+      savingsLow += low;
+      savingsHigh += high;
+      opportunities.push({
+        id: `o-${opportunities.length + 1}`,
+        contractId,
+        type: "Competitive renegotiation",
+        estimatedLow: low,
+        estimatedHigh: high,
+        confidence: 0.72,
+        status: "open",
+        basis: "Renewal leverage from a competitive quote, benchmarked at 4-9% of annual value",
+        drivers: ["auto_renew", "market_benchmark"],
+      });
+    }
   }
 
-  if (autoRenew) {
-    const low = Math.round((annualValue * 0.04) / 100) * 100;
-    const high = Math.round((annualValue * 0.09) / 100) * 100;
-    savingsLow += low;
-    savingsHigh += high;
-    opportunities.push({
-      id: `o-${opportunities.length + 1}`,
-      contractId,
-      type: "Competitive renegotiation",
-      estimatedLow: low,
-      estimatedHigh: high,
-      confidence: 0.72,
-      status: "open",
-      basis: "Renewal leverage from a competitive quote, benchmarked at 4–9% of annual value",
-      drivers: ["auto_renew", "market_benchmark"],
+  // Risk flags surfaced by the model become explicit findings with the
+  // flag text as evidence - nothing is paraphrased into a fake clause.
+  if (extraction.riskFlags?.length) {
+    extraction.riskFlags.forEach((flag) => {
+      push("risk", "warning", flag, `Flagged during extraction: ${flag}`, flag, 0.88);
     });
-    opportunityDrivers.push(
-      `Renegotiation leverage at renewal (benchmarked 4–9% of ${fmt(annualValue)}) ≈ ${fmt(low)}–${fmt(high)}`
-    );
   }
 
-  if (opportunities.length === 0) {
-    const low = Math.round((annualValue * 0.03) / 100) * 100;
-    const high = Math.round((annualValue * 0.06) / 100) * 100;
-    savingsLow += low;
-    savingsHigh += high;
-    opportunities.push({
-      id: `o-1`,
-      contractId,
-      type: "Term consolidation",
-      estimatedLow: low,
-      estimatedHigh: high,
-      confidence: 0.65,
-      status: "open",
-      basis: "Multi-year commitment discount versus annual renewal (3–6% typical)",
-      drivers: ["term_length", "volume"],
-    });
-    opportunityDrivers.push(
-      `Multi-year term discount (3–6% of ${fmt(annualValue)}) ≈ ${fmt(low)}–${fmt(high)}`
-    );
-  }
-
-  // Extra risk flags the LLM called out become explicit findings with evidence.
-  if (extraction?.riskFlags?.length) {
-    extraction.riskFlags.forEach((flag, i) => {
+  // Enrich findings with the rich schema's structured risks.
+  if (opts.rich?.risks?.length) {
+    opts.rich.risks.forEach((r) => {
       push(
         "risk",
-        "warning",
-        flag,
-        `Flagged during extraction: ${flag}`,
-        clause(flag),
-        `Extracted risk note ${i + 1}`,
-        1,
-        0.88
+        r.severity === "critical" ? "critical" : r.severity === "high" ? "warning" : "info",
+        r.description,
+        r.description,
+        r.evidence ?? "Risk flagged during extraction.",
+        r.severity === "low" ? 0.7 : 0.9
       );
     });
   }
 
+  // Enrich opportunities with the rich schema's structured savings.
+  if (opts.rich?.savings_opportunities?.length) {
+    opts.rich.savings_opportunities.forEach((s) => {
+      opportunities.push({
+        id: `o-${opportunities.length + 1}`,
+        contractId,
+        type: s.type,
+        estimatedLow: s.estimate_low ?? 0,
+        estimatedHigh: s.estimate_high ?? s.estimate_low ?? 0,
+        confidence: 0.8,
+        status: "open",
+        basis: s.basis ?? "Identified by the analysis model.",
+        drivers: ["model_opportunity"],
+      });
+    });
+  }
+
   const method = [
-    extraction
-      ? "Terms were extracted with Google Gemini and cross-checked against the source text. The model proposes the terms; deterministic rules compute every dollar figure below."
-      : "We never let the model invent a dollar figure. Every number below comes from deterministic rules applied to terms extracted from your document.",
-    ...opportunityDrivers,
-    "Estimates are ranges, not quotes. Actual savings depend on negotiation outcome and vendor response.",
+    "Terms were extracted from your document and cross-checked against the source text. The model proposes the terms; deterministic rules compute every figure below.",
+    "Unknown values are shown as unavailable - never estimated.",
+    "Savings estimates are ranges, not quotes. Actual savings depend on negotiation outcome and vendor response.",
   ];
 
   return {
     id: `r-${documentName.replace(/\.[^.]+$/, "").toLowerCase()}`,
     documentName,
-    vendorName: vendor.name,
-    category: vendor.category,
+    vendorName:
+      extraction.vendorName && extraction.vendorName !== "Unknown vendor"
+        ? extraction.vendorName
+        : "Unidentified Vendor",
+    category: "Uncategorized",
     analyzedAt: new Date().toISOString(),
     riskScore,
     riskLabel,
     renewalDate,
     cancellationDeadline,
     autoRenew,
-    autoRenewNoticeDays: autoRenew ? noticeDays : null,
-    priceEscalation: escalationRate
-      ? { rate: escalationRate, trigger: escalationRate > 5 ? "Uncapped annual increase" : "CPI-linked, capped" }
-      : null,
+    autoRenewNoticeDays: autoRenew === true ? noticeDays : null,
+    priceEscalation: escalationRate !== null ? { rate: escalationRate, trigger: "Annual increase" } : null,
     annualValue,
     savings: { low: savingsLow, high: savingsHigh },
     findings,
@@ -347,41 +281,35 @@ export function generateAnalysis(
   };
 }
 
-function fmt(n: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
-function formatShort(iso: string): string {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 /* ------------------------------------------------------------------ */
 /*  Front-end pipeline runner. In production the UI would poll the     */
 /*  FastAPI job-status endpoint instead; this simulates the same       */
-/*  stage sequence client-side so the demo works without a backend.    */
+/*  stage sequence client-side. Requires a real extraction - without   */
+/*  one it resolves to null and the UI shows an honest empty state.    */
 /* ------------------------------------------------------------------ */
 
 export function runPipeline(
   documentName: string,
   fileKind: "pdf" | "docx" | "unknown",
   onStage: (stage: PipelineStage, index: number, total: number) => void,
-  extraction?: ContractExtraction | null
-): Promise<AnalysisResult> {
+  extraction: ContractExtraction | null,
+  rich: RichContractExtraction | null = null
+): Promise<AnalysisResult | null> {
   return new Promise((resolve) => {
+    if (!extraction) {
+      onStage("results", STAGE_ORDER.length, STAGE_ORDER.length);
+      resolve(null);
+      return;
+    }
     let index = 0;
     const advance = () => {
       const stage = STAGE_ORDER[index];
       onStage(stage, index + 1, STAGE_ORDER.length);
       if (stage === "results") {
-        setTimeout(() => resolve(generateAnalysis(documentName, fileKind, { extraction })), 500);
+        setTimeout(
+          () => resolve(generateAnalysis(documentName, fileKind, { extraction, rich })),
+          500
+        );
         return;
       }
       index += 1;

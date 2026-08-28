@@ -84,20 +84,13 @@ export function StatCard({
 
 export function SeverityBadge({ severity }: { severity: AlertSeverity }) {
   const styles: Record<AlertSeverity, string> = {
-    critical: "border-red-500/35 bg-red-500/10 text-red-400",
+    critical: "border-zinc-300/35 bg-zinc-400/10 text-zinc-100",
     high: "border-white/15 bg-white/[0.06] text-fg",
     medium: "border-white/15 bg-white/[0.06] text-fg",
     low: "border-white/10 bg-white/[0.03] text-muted",
   };
-  const dots: Record<AlertSeverity, string> = {
-    critical: "bg-red-400",
-    high: "bg-zinc-300",
-    medium: "bg-zinc-400",
-    low: "bg-zinc-500",
-  };
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em] ${styles[severity]}`}>
-      <span className={`size-1.5 rounded-full ${dots[severity]}`} />
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium uppercase tracking-[0.06em] ${styles[severity]}`}>
       {severity}
     </span>
   );
@@ -132,8 +125,8 @@ export function HealthScore({
   score: number;
   size?: "sm" | "md" | "lg";
 }) {
-  const color = score >= 40 ? "text-fg" : "text-red-400";
-  const bar = score >= 40 ? "#e4e4e7" : "#f87171";
+  const color = score >= 40 ? "text-fg" : "text-zinc-100";
+  const bar = score >= 40 ? "#e4e4e7" : "#f4f4f5";
   const text = size === "lg" ? "text-3xl" : size === "sm" ? "text-lg" : "text-2xl";
   return (
     <div className="inline-flex items-center gap-3">

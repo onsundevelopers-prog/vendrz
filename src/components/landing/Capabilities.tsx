@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useSpotlight } from "@/components/ui/SpotlightCard";
 
 const ITEMS: { label: string; body: string }[] = [
   {
@@ -18,7 +17,7 @@ const ITEMS: { label: string; body: string }[] = [
   },
   {
     label: "Renewal alerts",
-    body: "Monitors renewal windows and pings you before deadlines slip.",
+    body: "Tracks renewal windows and alerts you before deadlines slip.",
   },
 ];
 
@@ -31,18 +30,15 @@ function CapabilityCard({
   item: { label: string; body: string };
   index: number;
 }) {
-  const { ref, onMouseMove } = useSpotlight<HTMLDivElement>();
   return (
     <motion.div
-      ref={ref}
-      onMouseMove={onMouseMove}
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.55, delay: index * 0.08, ease }}
-      className="glass-border glass-glow spotlight-card flex aspect-square flex-col items-center justify-center rounded-2xl p-6 text-center"
+      whileHover={{ y: -4 }}
+      className="flex aspect-square flex-col items-center justify-center rounded-lg border border-line bg-surface p-5 text-center transition-colors duration-200 hover:border-white/15"
     >
-      <div className="spotlight-glow" aria-hidden="true" />
       <span className="text-[11px] font-medium tracking-[0.14em] text-zinc-500">
         {String(index + 1).padStart(2, "0")}
       </span>

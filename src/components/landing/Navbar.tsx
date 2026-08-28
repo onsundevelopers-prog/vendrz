@@ -104,7 +104,7 @@ export function Navbar() {
       }`}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">
-        <Link href="/" aria-label="Vendrz home" className="shrink-0">
+        <Link href="/" aria-label="noma home" className="shrink-0">
           <Logo className="[&_span:last-child]:text-[15px]" />
         </Link>
 
@@ -135,8 +135,8 @@ export function Navbar() {
         {/* right actions */}
         <div className="hidden items-center gap-4 md:flex">
           <DesktopAuth />
-          <Button href="/audit" size="sm" glow>
-            Run free audit
+          <Button href="/audit" size="sm">
+            Run free review
           </Button>
         </div>
 
@@ -184,8 +184,8 @@ export function Navbar() {
               ))}
               <div className="flex flex-col gap-2.5 pt-4">
                 <MobileAuth onNavigate={() => setOpen(false)} />
-                <Button href="/audit" className="w-full" glow onClick={() => setOpen(false)}>
-                  Run free audit
+                <Button href="/audit" className="w-full" onClick={() => setOpen(false)}>
+                  Run free review
                 </Button>
               </div>
             </div>

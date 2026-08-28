@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  Vendrz - domain types                                   */
+/*  Noma - domain types                                      */
 /*  Mirrors the PRD data model: User, Organization, Vendor, Contract,  */
 /*  Finding, Opportunity, SavingsOutcome, AnonymousSession,            */
 /*  GmailConnection, DiscoveredDocument.                               */
@@ -130,6 +130,75 @@ export interface ContractExtraction {
   summary: string;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Rich contract extraction - the canonical AI output schema.         */
+/*                                                                     */
+/*  The AI provider returns this richer, more precise shape. It is     */
+/*  stored alongside the analysis and mapped down into                 */
+/*  ContractExtraction / AnalysisResult for the existing pipeline, so  */
+/*  downstream consumers keep working untouched.                       */
+/* ------------------------------------------------------------------ */
+
+export interface ContractObligation {
+  /** Short description of the obligation. */
+  term: string;
+  /** Contract section or clause reference when available. */
+  section: string | null;
+}
+
+export interface ContractRisk {
+  /** What is wrong / the risk described. */
+  description: string;
+  severity: "low" | "medium" | "high" | "critical";
+  /** Clause excerpt backing the finding, when available. */
+  evidence: string | null;
+}
+
+export interface ContractSavingsOpportunity {
+  /** e.g. "Price escalation cap". */
+  type: string;
+  /** Annualized estimated low bound (USD) when determinable. */
+  estimate_low: number | null;
+  /** Annualized estimated high bound (USD) when determinable. */
+  estimate_high: number | null;
+  /** One-line explanation of how the estimate was derived. */
+  basis: string | null;
+  /** Whether this is a confirmed/calculated figure vs a negotiation target. */
+  confirmed: boolean;
+}
+
+/** Canonical, fully-detailed AI contract extraction. */
+export interface RichContractExtraction {
+  vendor_name: string;
+  customer_name: string;
+  /** ISO YYYY-MM-DD. */
+  contract_start_date: string | null;
+  /** ISO YYYY-MM-DD. */
+  contract_end_date: string | null;
+  auto_renewal: boolean | null;
+  /** Term length in months when auto-renewing, if stated. */
+  renewal_term_months: number | null;
+  /** Days of advance notice required to cancel, if stated. */
+  notice_period_days: number | null;
+  /** ISO YYYY-MM-DD derived from end/renewal minus notice period, when determinable. */
+  cancellation_deadline: string | null;
+  /** Contract value, in `currency`, when stated. */
+  contract_value: number | null;
+  currency: string | null;
+  /** e.g. "annual" | "monthly" | "quarterly" when stated. */
+  billing_frequency: string | null;
+  price_escalation: boolean | null;
+  /** Annual escalation percentage, e.g. 4.5; only when price_escalation is true. */
+  price_escalation_percentage: number | null;
+  termination_terms: string | null;
+  payment_terms: string | null;
+  obligations: ContractObligation[];
+  risks: ContractRisk[];
+  savings_opportunities: ContractSavingsOpportunity[];
+  /** 0-1 confidence in the overall extraction. */
+  confidence_score: number | null;
+}
+
 export interface AnonymousSession {
   id: string;
   documentName: string;
@@ -141,6 +210,8 @@ export interface AnonymousSession {
   result: AnalysisResult | null;
   /** Real LLM extraction when the document was analyzed through /api/extract. */
   extraction: ContractExtraction | null;
+  /** Canonical rich extraction (the AI's full output), stored alongside. */
+  richExtraction: RichContractExtraction | null;
   transferredToUserId: string | null;
   source: "manual" | "gmail";
 }
@@ -186,10 +257,12 @@ export interface ContractRecord {
   renewalDate: string;
   cancellationDeadline: string | null;
   autoRenew: boolean;
+  /** Annual price escalation % when extracted from the document. */
+  escalationRate: number | null;
   riskScore: number;
   opportunityLow: number;
   opportunityHigh: number;
-  status: "active" | "expiring_soon" | "at_risk" | "resolved";
+  status: ContractStatus;
   linkedDocument: string;
   isSample: boolean;
 }
@@ -201,10 +274,13 @@ export interface DashboardStats {
   highRiskContracts: number; // risk >= 60
   totalOpportunityLow: number;
   totalOpportunityHigh: number;
+  autoRenewals: number; // contracts with auto-renewal on
+  priceEscalations: number; // contracts with an escalation rate
+  cancellationOpportunities: number; // contracts inside the cancel window with auto-renew
 }
 
 /* ================================================================== */
-/*  Vendor Spend Intelligence Platform - domain                       */
+/*  Noma - domain types                                              */
 /* ================================================================== */
 
 export type AlertSeverity = "low" | "medium" | "high" | "critical";
@@ -484,11 +560,17 @@ export interface AgentMessage {
   role: "user" | "agent";
   content: string;
   createdAt: string;
-  /** Present when the agent needs explicit approval to send. */
+  /** Contract records referenced as evidence - clickable in the agent panel. */
+  evidenceIds?: string[];
+  /** Present when the agent needs explicit approval to act. */
   pendingApproval?: {
-    action: "send_email" | "cancel_contract";
+    /** Links to a persisted ApprovalAction (pending until approved). */
+    action_id: string;
+    action_type: ApprovalActionType;
     vendorId: string;
     vendorName: string;
+    reasoning: string;
+    proposed_changes: string;
     to: string;
     subject: string;
     body: string;
@@ -505,4 +587,49 @@ export interface EmailThread {
   date: string; // ISO
   unread: boolean;
   category: "renewal" | "invoice" | "negotiation" | "general";
+}
+
+/* ------------------------- action approval ------------------------- */
+
+/** Actions the AI may recommend. Only the user may approve execution. */
+export type ApprovalActionType =
+  | "cancellation"
+  | "negotiation"
+  | "renewal"
+  | "follow_up";
+
+export type ApprovalActionStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "executing"
+  | "completed"
+  | "failed";
+
+/**
+ * A human-gated action recommended by the AI.
+ *
+ * The AI always creates an action in `pending`. Destructive or externally
+ * visible actions (cancellation, sending an email) ONLY progress past
+ * `pending` with explicit user approval - they are never executed
+ * automatically. Irreversible actions require explicit authorization.
+ */
+export interface ApprovalAction {
+  /** Stable action identifier. */
+  action_id: string;
+  /** What the AI is recommending. */
+  action_type: ApprovalActionType;
+  /** The subject of the action (e.g. vendor / contract name + id). */
+  target: string;
+  /** Why the AI recommended this - the FACT/ESTIMATE basis. */
+  reasoning: string;
+  /** Exactly what executing the action would do (changes to apply/send). */
+  proposed_changes: string;
+  /** Lifecycle - see ApprovalActionStatus. */
+  status: ApprovalActionStatus;
+  /** Optional vendor/contract reference. */
+  vendorId?: string;
+  created_at: string; // ISO
+  approved_at: string | null; // ISO - set only on user approval
+  executed_at: string | null; // ISO - set only after execution begins/completes
 }

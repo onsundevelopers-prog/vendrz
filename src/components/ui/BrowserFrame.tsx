@@ -21,15 +21,10 @@ export function BrowserFrame({
 
   return (
     <div
-      className={`overflow-hidden rounded-2xl border shadow-glow ${chrome} ${className}`}
+      className={`overflow-hidden rounded-2xl border ${chrome} ${className}`}
     >
       {/* chrome bar */}
       <div className={`flex items-center gap-3 border-b px-4 py-3 ${dark ? "border-line" : "border-line"}`}>
-        <div className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-white/[0.12]" />
-          <span className="size-2.5 rounded-full bg-white/[0.12]" />
-          <span className="size-2.5 rounded-full bg-white/[0.12]" />
-        </div>
         <div className={`flex h-7 min-w-0 flex-1 items-center justify-center rounded-md border px-3 ${urlBar}`}>
           <span className="truncate text-[11.5px] tracking-tight">{url}</span>
         </div>

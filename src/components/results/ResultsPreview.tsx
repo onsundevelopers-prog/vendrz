@@ -23,7 +23,7 @@ function riskTone(score: number): {
   bar: string;
 } {
   if (score >= 75)
-    return { label: "High risk", text: "text-red-400", bar: "#f87171" };
+    return { label: "High risk", text: "text-zinc-100", bar: "#f4f4f5" };
   if (score >= 50)
     return { label: "Moderate risk", text: "text-zinc-300", bar: "#d4d4d8" };
   if (score >= 30)
@@ -47,10 +47,10 @@ export function ResultsPreview({
   const offset = circ * (1 - result.riskScore / 100);
 
   return (
-    <div className="w-full overflow-hidden rounded-xl border border-white/[0.08] bg-[#111113]">
+    <div className="w-full overflow-hidden rounded-lg border border-white/[0.08] bg-[#111113]">
       {/* header - doc name */}
       <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-white/[0.06]">
+        <div className="flex size-8 items-center justify-center rounded-md bg-white/[0.06]">
           <span className="text-[10px] font-semibold uppercase text-zinc-300">
             {result.documentName.toLowerCase().endsWith(".pdf")
               ? "PDF"
@@ -166,7 +166,7 @@ export function ResultsPreview({
         <div className="p-5">
           <div className="mb-3 flex items-center gap-2">
             <h3 className="text-[13px] font-medium text-fg">Key findings</h3>
-            <span className="rounded-full bg-white/[0.08] px-1.5 text-[10.5px] text-zinc-400">
+            <span className="rounded-md bg-white/[0.08] px-1.5 text-[10.5px] text-zinc-400">
               {findings.length}
             </span>
           </div>
@@ -176,7 +176,7 @@ export function ResultsPreview({
                 <span
                   className={`mt-1.5 size-1.5 shrink-0 rounded-full ${
                     f.severity === "critical"
-                      ? "bg-red-400"
+                      ? "bg-zinc-300"
                       : "bg-zinc-600"
                   }`}
                 />

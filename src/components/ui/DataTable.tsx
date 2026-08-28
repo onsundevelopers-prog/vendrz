@@ -329,7 +329,7 @@ export function DataTable<T>({
             {bulkActions?.map((b) => (
               <button
                 key={b.label}
-                className={`toolbar-btn ${b.danger ? "text-red-400 hover:text-red-300" : ""}`}
+                className={`toolbar-btn ${b.danger ? "text-zinc-100 hover:text-zinc-300" : ""}`}
                 onClick={() => b.onSelect(selection)}
               >
                 {b.label}

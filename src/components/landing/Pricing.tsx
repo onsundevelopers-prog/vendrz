@@ -2,37 +2,36 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { useSpotlight } from "@/components/ui/SpotlightCard";
 
 const TIERS = [
   {
-    name: "Audit",
+    name: "Review",
     price: "$0",
     cadence: "forever",
-    blurb: "One-off vendor spend audit, no account needed.",
+    blurb: "One-off vendor spend review, no account needed.",
     features: [
-      "Full spend intelligence report",
+      "Full spend analysis report",
       "Savings opportunities & waste detection",
       "Renewal & billing risk summary",
       "Rule-based methodology, never guesses",
     ],
-    cta: "Run free audit",
+    cta: "Run free review",
     href: "/audit",
     featured: false,
   },
   {
-    name: "Monitor",
+    name: "Track",
     price: "$29",
     cadence: "/mo per org",
-    blurb: "Continuous spend, renewal & savings monitoring.",
+    blurb: "Continuous spend, renewal & savings tracking.",
     features: [
-      "Everything in Audit",
+      "Everything in Review",
       "Renewal & price-increase alerts",
-      "Vendor health scores & usage analysis",
+      "Vendor risk scores & usage analysis",
       "Action Center with savings tracking",
       "Executive reports",
     ],
-    cta: "Start monitoring",
+    cta: "Start tracking",
     href: "/auth?mode=signup&next=/dashboard",
     featured: true,
   },
@@ -42,10 +41,10 @@ const TIERS = [
     cadence: "/mo per org",
     blurb: "Shared oversight for finance & procurement teams.",
     features: [
-      "Everything in Monitor",
+      "Everything in Track",
       "Team seats & roles",
-      "Approval workflows on actions",
-      "Export & audit trail",
+      "Approve actions before they run",
+      "Export & activity trail",
       "Priority support",
     ],
     cta: "Talk to sales",
@@ -63,20 +62,15 @@ function TierCard({
   tier: (typeof TIERS)[number];
   index: number;
 }) {
-  const { ref, onMouseMove } = useSpotlight<HTMLDivElement>();
   return (
     <motion.div
-      ref={ref}
-      onMouseMove={onMouseMove}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay: index * 0.1, ease }}
-      className={`spotlight-card relative flex flex-col rounded-2xl p-7 shadow-glow ${
-        tier.featured ? "glass-border glass-glow" : "glass-border glass-glow"
-      }`}
+      whileHover={{ y: -4 }}
+      className={`relative flex flex-col rounded-lg border border-line bg-surface p-6 transition-colors duration-200 hover:border-white/15`}
     >
-      <div className="spotlight-glow" aria-hidden="true" />
       <div className="relative flex flex-1 flex-col">
         <div className="flex items-baseline justify-between">
           <p className="text-sm font-semibold text-fg">{tier.name}</p>
@@ -136,10 +130,10 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">
-            The audit is free. Monitoring pays for itself.
+            The review is free. Tracking pays for itself.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
-            Every plan includes unlimited audits. No credit card required to see
+            Every plan includes unlimited reviews. No credit card required to see
             your first result - ever.
           </p>
         </motion.div>
@@ -151,7 +145,7 @@ export function Pricing() {
         </div>
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
-          All prices in USD · cancel anytime · first audit free, no account required
+          All prices in USD · cancel anytime · first review free, no account required
         </p>
       </div>
     </section>

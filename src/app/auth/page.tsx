@@ -18,7 +18,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 const TRUST_POINTS = [
   "Read-only access - we can never move money or touch your accounts",
   "Contracts encrypted in transit and at rest, never shared",
-  "Renewal, risk and savings intelligence with receipts for every finding",
+  "Renewal, risk and savings analysis with evidence for every finding",
 ];
 
 /* ------------------------------------------------------------------ */
@@ -30,17 +30,17 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
     <main className="grid min-h-screen bg-canvas lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       {/* brand panel */}
       <div className="relative hidden flex-col justify-between border-r border-line bg-[#0a0a0d] p-12 lg:flex">
-        <Link href="/" aria-label="Vendrz home" className="w-fit">
+        <Link href="/" aria-label="noma home" className="w-fit">
           <Logo />
         </Link>
 
         <div>
           <h1 className="max-w-md text-balance text-4xl font-semibold leading-[1.1] tracking-[-0.03em] text-fg">
-            Vendor intelligence, in one place.
+            Every contract, in one place.
           </h1>
           <p className="mt-4 max-w-sm text-pretty text-[15px] leading-[1.6] tracking-[-0.01em] text-muted">
-            Every contract, renewal deadline, risk and savings opportunity -
-            extracted, monitored and acted on from a single command center.
+            Renewal deadlines, risk, exposure and savings - extracted from real
+            documents and tracked in a single workspace.
           </p>
           <ul className="mt-9 space-y-4">
             {TRUST_POINTS.map((point) => (
@@ -62,7 +62,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
         </div>
 
         <p className="text-[12px] tracking-tight text-muted/50">
-          © {new Date().getFullYear()} Vendrz
+          © {new Date().getFullYear()} noma
         </p>
       </div>
 
@@ -75,7 +75,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
           className="w-full max-w-[420px]"
         >
           <div className="mb-8 flex justify-center lg:hidden">
-            <Link href="/" aria-label="Vendrz home">
+            <Link href="/" aria-label="noma home">
               <Logo />
             </Link>
           </div>
@@ -94,8 +94,8 @@ function AuthHeader({ mode }: { mode: "login" | "signup" }) {
       </h2>
       <p className="mt-2 text-[14px] leading-[1.5] tracking-[-0.01em] text-muted">
         {mode === "signup"
-          ? "Save analyses, monitor renewals, and get alerts before deadlines slip."
-          : "Log in to your vendor intelligence dashboard."}
+          ? "Save analyses, track renewals, and get alerts before deadlines slip."
+          : "Log in to your workspace."}
       </p>
     </div>
   );
@@ -122,12 +122,12 @@ function SessionBanner({ sessionId, mode }: { sessionId: string | null; mode: "l
 }
 
 /* ------------------------------------------------------------------ */
-/*  Clerk mode - hosted components styled to match Vendrz.             */
+/*  Clerk mode - hosted components styled to match Noma.               */
 /* ------------------------------------------------------------------ */
 
 const clerkAppearance = {
   elements: {
-    card: "rounded-2xl border border-line bg-[#0d0d11] p-6 shadow-glow sm:p-7",
+    card: "rounded-xl border border-line bg-[#0d0d11] p-6 sm:p-7",
     header: "hidden",
     formButtonPrimary:
       "h-11 rounded-full bg-white text-sm font-semibold text-black hover:bg-zinc-200 shadow-none",
@@ -145,9 +145,9 @@ const clerkAppearance = {
     footerActionLink: "font-medium text-zinc-300 hover:text-fg",
     footerActionText: "text-[12.5px] text-muted",
     footer: "text-center text-[12.5px] text-muted",
-    formFieldError: "text-[12px] text-red-300",
-    alert: "rounded-lg border border-red-500/25 bg-red-500/[0.08] text-red-300",
-    alertText: "text-red-300",
+    formFieldError: "text-[12px] text-zinc-300",
+    alert: "rounded-lg border border-zinc-300/25 bg-zinc-400/[0.08] text-zinc-300",
+    alertText: "text-zinc-300",
     identityPreviewText: "text-fg",
     identityPreviewEditButton: "text-zinc-300",
   },
@@ -220,7 +220,7 @@ function ClerkAuthPage() {
 /*  Legacy demo mode (no Clerk keys configured)                        */
 /* ------------------------------------------------------------------ */
 
-const CARD = "rounded-2xl border border-line bg-[#0d0d11] p-6 shadow-glow sm:p-7";
+const CARD = "rounded-xl border border-line bg-[#0d0d11] p-6 sm:p-7";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

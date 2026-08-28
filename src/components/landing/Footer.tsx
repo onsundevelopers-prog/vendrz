@@ -6,7 +6,8 @@ const COLUMNS = [
     title: "Product",
     links: [
       { label: "Scan a Contract", href: "/upload" },
-      { label: "Companies", href: "/dashboard" },
+      { label: "Overview", href: "/dashboard" },
+      { label: "Vendors", href: "/dashboard/companies" },
       { label: "Pricing", href: "/#pricing" },
     ],
   },
@@ -28,7 +29,7 @@ export function Footer() {
           <div className="max-w-xs">
             <Logo />
             <p className="mt-4 text-[13px] font-normal leading-relaxed tracking-[-0.01em] text-muted">
-              AI vendor savings intelligence. Find the money hiding in your vendor
+              Vendor spend analysis. Find the money hiding in your vendor
               contracts.
             </p>
           </div>
@@ -55,7 +56,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-[11.5px] tracking-tight text-muted/60 sm:flex-row">
-          <p>© {new Date().getFullYear()} Vendrz. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} noma. All rights reserved.</p>
           <p>Encrypted in transit and at rest · Your contract is never shared or sold</p>
         </div>
       </div>

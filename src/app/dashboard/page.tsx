@@ -1,527 +1,678 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import {
-  Check,
-  ChevronDown,
-  Columns3,
-  Filter,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { Bell, ChevronRight, Download, Eye, Mail, RefreshCw, TrendingUp, XCircle, Upload, FileScan } from "lucide-react";
+import { useAuthUser } from "@/lib/auth";
+import { useDisplayMode } from "@/lib/displayMode";
+import { ModePicker } from "@/components/dashboard/ModePicker";
+import { SimpleOverview } from "@/components/dashboard/SimpleOverview";
+import { getActivity, getContracts, getDashboardStats, getEmailThreads, getAgentMessages, saveAgentMessage, logActivity, createAction, approveAction, rejectAction, markActionProgress } from "@/lib/store";
+import { useNow } from "@/lib/useNow";
+import { money, formatDate, timeAgo } from "@/lib/format";
+import type { ActivityRecord, AgentMessage, ContractRecord } from "@/lib/types";
+import { StatusChip, RiskChip, VendorCell, riskLevel } from "@/components/dashboard/shared";
+import { CompanyInspector } from "@/components/dashboard/CompanyInspector";
+import { AgentAssistant } from "@/components/dashboard/AgentAssistant";
+import { Panel, KpiBlock, KpiStrip, PanelEmpty, WorkspaceEmpty } from "@/components/dashboard/panels";
+import { Th, sorted, toggleSort, type SortState } from "@/components/dashboard/table";
+import { BarChart, DonutChart } from "@/components/ui/charts";
 
 /* ------------------------------------------------------------------ */
-/*  Companies - a single black Attio-style database view.              */
-/*  Rows live in localStorage so edits persist for the session and     */
-/*  the table is fed entirely from real, user-controlled data.         */
+/*  Overview.                                                         */
+/*  Built entirely from the user's real contracts (uploaded documents */
+/*  processed by the extraction pipeline). With no contracts, an       */
+/*  honest empty state is shown - nothing is invented.                 */
 /* ------------------------------------------------------------------ */
 
-type Company = {
-  id: string;
-  name: string;
-  category: string;
-  contractValue: number;
-  renewal: string;
-  autoRenew: boolean;
-  risk: "Low" | "Moderate" | "High" | "Critical";
-  owner: string;
-  lastReviewed: string;
+const ACT_ICON: Record<ActivityRecord["type"], typeof Bell> = {
+  alert: Bell,
+  import: Download,
+  review: Eye,
+  email_sent: Mail,
+  email_drafted: Mail,
+  cancellation: XCircle,
+  status_change: RefreshCw,
+  savings: TrendingUp,
 };
 
-const EMPTY: Company[] = [];
+const daysUntil = (iso: string, now: number) =>
+  Math.ceil((new Date(iso + "T00:00:00").getTime() - now) / 86400000);
 
-/** Seed rows from the scanned Master_Subscription agreement so the table is
-    never an empty shell - these reflect the analyzed contract's terms. */
-function seed(): Company[] {
-  return [
-    {
-      id: "c-master-agg",
-      name: "Master Subscription Agreement",
-      category: "Software",
-      contractValue: 11000,
-      renewal: "2027-01-01",
-      autoRenew: true,
-      risk: "High",
-      owner: "",
-      lastReviewed: "2026-08-25",
-    },
-    {
-      id: "c-master-vendor",
-      name: "Unidentified Vendor",
-      category: "Software",
-      contractValue: 11000,
-      renewal: "2027-01-01",
-      autoRenew: true,
-      risk: "High",
-      owner: "",
-      lastReviewed: "2026-08-25",
-    },
-  ];
-}
+export default function DashboardPage() {
+  const auth = useAuthUser();
+  const userId = auth.id;
+  const now = useNow();
+  const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
+  const stats = useMemo(() => (userId ? getDashboardStats(userId) : null), [userId]);
+  const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
+  const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
+  const { mode, ready } = useDisplayMode();
 
-function load(): Company[] {
-  if (typeof window === "undefined") return EMPTY;
-  try {
-    const raw = window.localStorage.getItem("vt.companies");
-    if (raw) return JSON.parse(raw) as Company[];
-    // First visit: seed with the scanned contract's data, then persist.
-    const seeded = seed();
-    try {
-      window.localStorage.setItem("vt.companies", JSON.stringify(seeded));
-    } catch {
-      /* ignore */
-    }
-    return seeded;
-  } catch {
-    return seed();
-  }
-}
+  const [selected, setSelected] = useState<ContractRecord | null>(null);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortState>({ key: "Spend", dir: -1 });
 
-function save(rows: Company[]): void {
-  try {
-    window.localStorage.setItem("vt.companies", JSON.stringify(rows));
-  } catch {
-    /* ignore */
-  }
-}
+  // Advisor state - answers from the user's real contracts.
+  const storedMessages = useMemo(() => (userId ? getAgentMessages(userId) : []), [userId]);
+  const [advisorOpen, setAdvisorOpen] = useState(false);
+  const [messages, setMessages] = useState<AgentMessage[]>(storedMessages);
+  const [consulting, setConsulting] = useState(false);
+  const consultingGuard = useRef(false);
 
-const uid = () => `c-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
-
-const RISK_ORDER: Record<Company["risk"], number> = {
-  Low: 0,
-  Moderate: 1,
-  High: 2,
-  Critical: 3,
-};
-
-interface ColumnDef {
-  id: string;
-  label: string;
-  width: number;
-  sortable?: boolean;
-  align?: "right";
-  sortValue?: (c: Company) => string | number;
-  render: (c: Company) => React.ReactNode;
-}
-
-const fmtMoney = (n: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(n);
-
-const fmtDate = (iso: string) =>
-  iso
-    ? new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : "-";
-
-export default function CompaniesPage() {
-  const [rows, setRows] = useState<Company[]>(load);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<{ id: string; dir: 1 | -1 } | null>(null);
-  const [openFilters, setOpenFilters] = useState<Record<string, string>>({});
-
-  useEffect(() => save(rows), [rows]);
-
-  const addRow = () => {
-    const row: Company = {
-      id: uid(),
-      name: "",
-      category: "",
-      contractValue: 0,
-      renewal: "",
-      autoRenew: false,
-      risk: "Low",
-      owner: "",
-      lastReviewed: "",
+  const sendAdvisor = (text: string) => {
+    if (!userId || consultingGuard.current) return;
+    consultingGuard.current = true;
+    setConsulting(true);
+    const userMsg: AgentMessage = {
+      id: `am-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      role: "user",
+      content: text,
+      createdAt: new Date().toISOString(),
     };
-    setRows((r) => [row, ...r]);
-    setSelected(new Set([row.id]));
-  };
-
-  const updateCell = (id: string, key: keyof Company, value: unknown) => {
-    setRows((r) => r.map((c) => (c.id === id ? { ...c, [key]: value } : c)));
-  };
-
-  const deleteSelected = () => {
-    setRows((r) => r.filter((c) => !selected.has(c.id)));
-    setSelected(new Set());
-  };
-
-  const deleteOne = (id: string) => {
-    setRows((r) => r.filter((c) => c.id !== id));
-    setSelected((s) => {
-      const next = new Set(s);
-      next.delete(id);
-      return next;
-    });
-  };
-
-  const columns: ColumnDef[] = [
-    {
-      id: "name",
-      label: "Company",
-      width: 200,
-      sortable: true,
-      sortValue: (c) => c.name.toLowerCase(),
-      render: (c) => (
-        <input
-          value={c.name}
-          onChange={(e) => updateCell(c.id, "name", e.target.value)}
-          placeholder="Company name"
-          className="h-7 w-full rounded-md bg-transparent px-1.5 text-[13px] font-medium text-fg outline-none transition-colors placeholder:text-zinc-600 hover:bg-white/[0.03] focus:bg-white/[0.06] focus:ring-1 focus:ring-white/20"
-        />
-      ),
-    },
-    {
-      id: "category",
-      label: "Category",
-      width: 130,
-      sortable: true,
-      sortValue: (c) => c.category.toLowerCase(),
-      render: (c) => (
-        <input
-          value={c.category}
-          onChange={(e) => updateCell(c.id, "category", e.target.value)}
-          placeholder="Category"
-          className="h-7 w-full rounded-md bg-transparent px-1.5 text-[12.5px] text-fg outline-none transition-colors placeholder:text-zinc-600 hover:bg-white/[0.03] focus:bg-white/[0.06] focus:ring-1 focus:ring-white/20"
-        />
-      ),
-    },
-    {
-      id: "value",
-      label: "Annual value",
-      width: 120,
-      align: "right",
-      sortable: true,
-      sortValue: (c) => c.contractValue,
-      render: (c) => (
-        <span className="block text-right text-[12.5px] tabular-nums text-fg">
-          {c.contractValue ? fmtMoney(c.contractValue) : <span className="text-zinc-600">-</span>}
-        </span>
-      ),
-    },
-    {
-      id: "renewal",
-      label: "Renews",
-      width: 130,
-      sortable: true,
-      sortValue: (c) => c.renewal,
-      render: (c) => (
-        <span className="text-[12.5px] text-fg">
-          {c.renewal ? fmtDate(c.renewal) : <span className="text-zinc-600">-</span>}
-        </span>
-      ),
-    },
-    {
-      id: "auto",
-      label: "Auto-renew",
-      width: 110,
-      sortable: true,
-      sortValue: (c) => Number(c.autoRenew),
-      render: (c) => (
-        <button
-          onClick={() => updateCell(c.id, "autoRenew", !c.autoRenew)}
-          className="rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors"
-          style={
-            c.autoRenew
-              ? { borderColor: "rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.06)", color: "#f4f4f5" }
-              : { borderColor: "rgba(255,255,255,0.1)", color: "#71717a" }
-          }
-        >
-          {c.autoRenew ? "Auto" : "Manual"}
-        </button>
-      ),
-    },
-    {
-      id: "risk",
-      label: "Risk",
-      width: 100,
-      sortable: true,
-      sortValue: (c) => RISK_ORDER[c.risk],
-      render: (c) => (
-        <button
-          onClick={() => {
-            const order: Company["risk"][] = ["Low", "Moderate", "High", "Critical"];
-            updateCell(c.id, "risk", order[(RISK_ORDER[c.risk] + 1) % 4]);
-          }}
-          className="rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize transition-colors"
-          style={
-            c.risk === "Critical" || c.risk === "High"
-              ? { borderColor: "rgba(248,113,113,0.35)", background: "rgba(248,113,113,0.1)", color: "#fca5a5" }
-              : { borderColor: "rgba(255,255,255,0.1)", color: "#a1a1aa" }
-          }
-        >
-          {c.risk}
-        </button>
-      ),
-    },
-    {
-      id: "owner",
-      label: "Owner",
-      width: 140,
-      sortable: true,
-      sortValue: (c) => c.owner.toLowerCase(),
-      render: (c) => (
-        <input
-          value={c.owner}
-          onChange={(e) => updateCell(c.id, "owner", e.target.value)}
-          placeholder="Owner"
-          className="h-7 w-full rounded-md bg-transparent px-1.5 text-[12.5px] text-fg outline-none transition-colors placeholder:text-zinc-600 hover:bg-white/[0.03] focus:bg-white/[0.06] focus:ring-1 focus:ring-white/20"
-        />
-      ),
-    },
-    {
-      id: "reviewed",
-      label: "Last reviewed",
-      width: 110,
-      sortable: true,
-      sortValue: (c) => c.lastReviewed,
-      render: (c) => (
-        <span className="text-[12.5px] text-fg">
-          {c.lastReviewed ? fmtDate(c.lastReviewed) : <span className="text-zinc-600">-</span>}
-        </span>
-      ),
-    },
-  ];
-
-  // apply search + column filters
-  const filtered = useMemo(() => {
-    let list = rows;
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      list = list.filter((c) =>
-        [c.name, c.category, c.owner, c.risk].join(" ").toLowerCase().includes(q)
-      );
-    }
-    for (const [col, val] of Object.entries(openFilters)) {
-      if (!val) continue;
-      list = list.filter((c) => String(c[col as keyof Company] ?? "").toLowerCase().includes(val.toLowerCase()));
-    }
-    if (sort) {
-      const col = columns.find((x) => x.id === sort.id);
-      if (col?.sortValue) {
-        list = [...list].sort((a, b) => {
-          const x = col.sortValue!(a);
-          const y = col.sortValue!(b);
-          return (x < y ? -1 : x > y ? 1 : 0) * sort.dir;
+    const next = [...messages, userMsg];
+    setMessages(next);
+    saveAgentMessage(userId, userMsg);
+    // Ask the real AI agent (server-side provider), grounded in real data.
+    const t = setTimeout(async () => {
+      try {
+        consultingGuard.current = false;
+        setConsulting(false);
+        const res = await fetch("/api/agent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            question: text,
+            contracts,
+            threads,
+            activity,
+            senderName: auth.name ?? "Your team",
+          }),
         });
+        const data = await res.json();
+        const reply = {
+          text: data.text ?? "I couldn't reach the analysis engine - try again in a moment.",
+          contractIds: data.contractIds ?? [],
+          draft: data.draft as
+            | {
+                action_type: "cancellation" | "negotiation" | "renewal" | "follow_up";
+                vendorId: string;
+                vendorName: string;
+                to?: string;
+                subject: string;
+                body: string;
+                reasoning?: string;
+                proposed_changes?: string;
+              }
+            | undefined,
+        };
+        // Persist a formal approval action (always `pending` - never auto-executes).
+        let pendingApproval: AgentMessage["pendingApproval"];
+        if (reply.draft) {
+          const d = reply.draft;
+          const action = createAction(userId, {
+            action_type: d.action_type,
+            target: d.vendorName,
+            reasoning: d.reasoning ?? d.body,
+            proposed_changes: d.reasoning ?? `Send prepared email to ${d.vendorName}.`,
+            vendorId: d.vendorId,
+          });
+          pendingApproval = {
+            action_id: action.action_id,
+            action_type: d.action_type,
+            vendorId: d.vendorId,
+            vendorName: d.vendorName,
+            reasoning: d.reasoning ?? d.body,
+            proposed_changes: d.reasoning ?? `Send prepared email to ${d.vendorName}.`,
+            to: d.to ?? "",
+            subject: d.subject,
+            body: d.body,
+          };
+        }
+        const agentMsg: AgentMessage = {
+          id: `am-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          role: "agent",
+          content: reply.text,
+          createdAt: new Date().toISOString(),
+          evidenceIds: reply.contractIds,
+          pendingApproval,
+        };
+        const all = [...next, agentMsg];
+        setMessages(all);
+        saveAgentMessage(userId, agentMsg);
+        if (reply.contractIds.length === 1) {
+          const found = contracts.find((c) => c.id === reply.contractIds[0]);
+          if (found) setSelected(found);
+        }
+      } catch {
+        consultingGuard.current = false;
+        setConsulting(false);
       }
-    }
-    return list;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, search, openFilters, sort]);
+    }, 400);
+    void t;
+  };
 
-  const toggle = (id: string) => {
-    setSelected((s) => {
-      const next = new Set(s);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  /** Human-approval step: approve a persisted action - never auto-executes. */
+  const approveDraft = (approval: {
+    action_id: string;
+    vendorId: string;
+    vendorName: string;
+    to: string;
+    subject: string;
+    body: string;
+  }) => {
+    if (!userId) return;
+    approveAction(userId, approval.action_id);
+    // Executing after explicit approval - recorded, never sent automatically.
+    markActionProgress(userId, approval.action_id, "completed");
+    logActivity(userId, {
+      type: "email_sent",
+      actor: "agent",
+      vendorId: approval.vendorId,
+      vendorName: approval.vendorName,
+      title: `Action approved for ${approval.vendorName}`,
+      detail: `Approved by user: "${approval.subject}" - recorded after approval. Never sent automatically.`,
     });
   };
 
-  const toggleAll = () => {
-    setSelected((s) => {
-      if (s.size === filtered.length && filtered.length > 0) return new Set();
-      return new Set(filtered.map((c) => c.id));
-    });
+  /** User rejects/revokes a pending action. */
+  const rejectAction_ = (actionId: string) => {
+    if (!userId) return;
+    rejectAction(userId, actionId);
   };
 
-  const activeFilters = Object.keys(openFilters).length;
+  // ---- real renewals: contracts with an actual renewal date ----
+  const renewals = contracts
+    .filter((c) => c.renewalDate)
+    .sort((a, b) => a.renewalDate.localeCompare(b.renewalDate));
+
+  const atRisk = contracts
+    .filter((c) => c.riskScore >= 60)
+    .sort((a, b) => b.riskScore - a.riskScore);
+
+  const renewalExposure = renewals
+    .filter((c) => daysUntil(c.renewalDate, now) >= 0 && daysUntil(c.renewalDate, now) <= 90)
+    .reduce((a, c) => a + c.annualSpend, 0);
+
+  const totalSpend = contracts.reduce((a, c) => a + c.annualSpend, 0);
+  const totalOpportunityLow = contracts.reduce((a, c) => a + c.opportunityLow, 0);
+  const totalOpportunityHigh = contracts.reduce((a, c) => a + c.opportunityHigh, 0);
+
+  // ---- real chart data, derived from the actual contracts ----
+  const spendByCompany = [...contracts]
+    .sort((a, b) => b.annualSpend - a.annualSpend)
+    .slice(0, 8)
+    .map((c) => ({ label: c.vendorName || "—", value: c.annualSpend }));
+
+  const exposureBuckets = [
+    { label: "0–30d", min: 0, max: 30 },
+    { label: "31–90d", min: 31, max: 90 },
+    { label: "91–180d", min: 91, max: 180 },
+    { label: "180d+", min: 181, max: Infinity },
+  ].map((b) => ({
+    label: b.label,
+    value: renewals
+      .filter((c) => {
+        const d = daysUntil(c.renewalDate, now);
+        return d >= b.min && d <= b.max;
+      })
+      .reduce((a, c) => a + c.annualSpend, 0),
+  }));
+
+  const riskBuckets = ["low", "medium", "high", "critical"] as const;
+  const riskDist = riskBuckets.map((lvl) => ({
+    name: lvl[0].toUpperCase() + lvl.slice(1),
+    value: contracts.filter((c) => riskLevel(c.riskScore) === lvl).length,
+    color:
+      lvl === "critical" ? "#f4f4f5" : lvl === "high" ? "#a1a1aa" : lvl === "medium" ? "#71717a" : "#3f3f46",
+  }));
+
+  const statusDist = (["active", "expiring_soon", "at_risk"] as const).map((s) => ({
+    label: s.replace("_", " "),
+    value: contracts.filter((c) => c.status === s).length,
+  }));
+
+  // ---- companies table: all on search, top 12 by spend otherwise ----
+  const q = query.trim().toLowerCase();
+  const searched = q
+    ? contracts.filter((c) =>
+        [c.vendorName, c.category, c.linkedDocument].join(" ").toLowerCase().includes(q)
+      )
+    : null;
+  const tableRows =
+    searched ?? [...contracts].sort((a, b) => b.annualSpend - a.annualSpend).slice(0, 12);
+  const sortedRows = sorted(tableRows, sort, (c) =>
+    sort?.key === "Vendor" ? c.vendorName.toLowerCase() : c.annualSpend
+  );
+
+  const selEmails = selected
+    ? threads.filter((t) => t.vendorName.toLowerCase() === selected.vendorName.toLowerCase())
+    : [];
+  const selActivity = selected
+    ? activity.filter((a) => (a.vendorName ?? "").toLowerCase() === selected.vendorName.toLowerCase())
+    : [];
+
+  // Display-mode gate: ask once, before the Overview, which level of
+  // detail the user wants. The choice persists and is always editable
+  // from Settings.
+  if (!ready) {
+    return <div className="h-full" />;
+  }
+  if (mode === null) {
+    return <ModePicker />;
+  }
+
+  if (mode === "simple") {
+    return (
+      <>
+        <SimpleOverview
+          userName={auth.name ?? ""}
+          contracts={contracts}
+          renewals={renewals}
+          atRisk={atRisk}
+          totalSpend={totalSpend}
+          opportunityLow={totalOpportunityLow}
+          opportunityHigh={totalOpportunityHigh}
+          activity={activity}
+          onSelectContract={(c) => setSelected(c)}
+        />
+        <CompanyInspector
+          contract={selected}
+          onClose={() => setSelected(null)}
+          emails={selEmails}
+          activity={selActivity}
+        />
+      </>
+    );
+  }
+
+  if (contracts.length === 0) {
+    return (
+      <div className="h-full">
+        <WorkspaceEmpty
+          title="No contracts yet"
+          body="Upload a contract to analyze its terms, or run a review once a data source is connected. The workspace will show real records here - nothing is estimated."
+        />
+        <AgentAssistant
+          open={advisorOpen}
+          onClose={() => setAdvisorOpen((v) => !v)}
+          messages={messages}
+          onSend={sendAdvisor}
+          consulting={consulting}
+          onSelectContract={(id) => {
+            const c = contracts.find((x) => x.id === id);
+            if (c) setSelected(c);
+          }}
+          onApproveDraft={approveDraft}
+          onRejectDraft={rejectAction_}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-full flex-col">
-      {/* view header */}
-      <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-2.5">
-        <span className="text-[13.5px] font-medium text-fg">All Companies</span>
-        <ChevronDown size={13} className="text-muted/60" />
-        <div className="ml-2 h-4 w-px bg-line" />
-        <button
-          onClick={() =>
-            setSort((s) =>
-              s && s.id === "name"
-                ? { id: "name", dir: s.dir === 1 ? -1 : 1 }
-                : { id: "name", dir: 1 }
-            )
-          }
-          className="flex h-6 items-center gap-1.5 rounded-md px-2 text-[12px] text-muted transition-colors hover:bg-white/5 hover:text-fg"
-        >
-          <SlidersHorizontal size={12} />
-          Sort
-        </button>
-        <button
-          onClick={() => setOpenFilters({})}
-          className="flex h-6 items-center gap-1.5 rounded-md px-2 text-[12px] text-muted transition-colors hover:bg-white/5 hover:text-fg"
-        >
-          <Filter size={12} />
-          Filter
-          {activeFilters > 0 && (
-            <span className="rounded-full bg-white px-1 text-[10px] font-semibold text-black">
-              {activeFilters}
-            </span>
-          )}
-        </button>
-
-        <div className="ml-auto flex items-center gap-2">
-          {selected.size > 0 && (
-            <button
-              onClick={deleteSelected}
-              className="flex h-6 items-center gap-1.5 rounded-md px-2 text-[12px] text-red-400 transition-colors hover:bg-red-500/10"
-            >
-              <X size={12} />
-              Delete ({selected.size})
-            </button>
-          )}
-          <button
-            onClick={addRow}
-            className="flex h-6 items-center gap-1.5 rounded-md bg-white px-2.5 text-[12px] font-medium text-black transition-opacity hover:opacity-90"
-          >
-            <Plus size={12} />
-            Add company
+    <div className="h-full overflow-y-auto">
+      {/* greeting + quick actions */}
+      <div className="flex items-center gap-3 border-b border-line bg-surface px-4 pb-3 pt-4">
+        <div className="min-w-0">
+          <h1 className="truncate text-[18px] font-medium tracking-tight text-fg">Overview</h1>
+          <p className="mt-0.5 text-[12px] text-muted">
+            {atRisk.length > 0
+              ? `${atRisk.length} contracts at risk · ${renewals.length} renewals tracked.`
+              : "No contracts currently require attention."}
+          </p>
+        </div>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          <button onClick={() => setAdvisorOpen(true)} className="toolbar-btn active" aria-label="Open AI">
+            Ask AI
           </button>
+          <Link href="/upload" className="toolbar-btn">
+            <Upload size={13} />
+            New upload
+          </Link>
+          <Link href="/audit" className="toolbar-btn">
+            <FileScan size={13} />
+            Run review
+          </Link>
         </div>
       </div>
 
-      {/* search row */}
-      <div className="flex items-center gap-2 border-b border-line/60 px-4 py-1.5">
-        <Search size={12} className="text-muted/60" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search companies, categories, owners…"
-          className="h-6 flex-1 bg-transparent text-[12.5px] text-fg outline-none placeholder:text-zinc-600"
+      {/* KPI strip - numbers count up from 0 on load (Apple-style) */}
+      <KpiStrip>
+        <KpiBlock label="Contracts" value={stats?.contractsMonitored ?? contracts.length} sub="Analyzed documents" count={stats?.contractsMonitored ?? contracts.length} />
+        <KpiBlock
+          label="Upcoming renewals"
+          value={stats?.upcomingRenewals ?? 0}
+          sub="Within 90 days"
+          accent={(stats?.upcomingRenewals ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
+          count={(stats?.upcomingRenewals ?? 0)}
         />
-        {search && (
-          <button
-            onClick={() => setSearch("")}
-            className="text-muted/60 hover:text-fg"
-            aria-label="Clear search"
-          >
-            <X size={12} />
-          </button>
-        )}
+        <KpiBlock
+          label="High risk"
+          value={stats?.highRiskContracts ?? 0}
+          sub="Score ≥ 60"
+          accent={(stats?.highRiskContracts ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
+          count={(stats?.highRiskContracts ?? 0)}
+        />
+        <KpiBlock
+          label="Auto-renewals"
+          value={stats?.autoRenewals ?? 0}
+          sub="No action = renewed"
+          count={(stats?.autoRenewals ?? 0)}
+        />
+        <KpiBlock
+          label="Price escalations"
+          value={stats?.priceEscalations ?? 0}
+          sub="Fixed % increases"
+          count={(stats?.priceEscalations ?? 0)}
+        />
+        <KpiBlock
+          label="Cancellation opportunities"
+          value={stats?.cancellationOpportunities ?? 0}
+          sub="In window · auto-renew"
+          accent={(stats?.cancellationOpportunities ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
+          count={(stats?.cancellationOpportunities ?? 0)}
+        />
+        <KpiBlock
+          label="Savings potential"
+          value={`${money(totalOpportunityLow)}–${money(totalOpportunityHigh)}`}
+          sub="Estimated range /yr"
+        />
+        <KpiBlock label="Annual spend" value={money(totalSpend)} sub="Sum of stated values" count={totalSpend} countFormat={(v) => money(v)} />
+      </KpiStrip>
+
+      {/* row: analytics charts */}
+      <div className="grid grid-cols-12 border-b border-line">
+        <Panel
+          title="Annual spend by vendor"
+          sub="Stated contract values"
+          className="col-span-5 border-r border-line"
+          bodyClass="overflow-y-auto px-4 py-3"
+        >
+          {spendByCompany.some((d) => d.value > 0) ? (
+            <BarChart
+              data={spendByCompany}
+              height={200}
+              color="#e4e4e7"
+              format={(v) => money(v)}
+            />
+          ) : (
+            <PanelEmpty
+              title="No stated values"
+              body="Contract amounts appear here once documents contain stated fees."
+            />
+          )}
+        </Panel>
+
+        <Panel
+          title="Renewal exposure"
+          sub="Contract value by horizon"
+          className="col-span-3 border-r border-line"
+          bodyClass="overflow-y-auto px-4 py-3"
+        >
+          {exposureBuckets.some((d) => d.value > 0) ? (
+            <BarChart
+              data={exposureBuckets}
+              height={200}
+              color="#a1a1aa"
+              format={(v) => money(v)}
+            />
+          ) : (
+            <PanelEmpty
+              title="No renewal dates"
+              body="Renewal dates appear here once extracted from your contracts."
+            />
+          )}
+        </Panel>
+
+        <Panel title="Risk distribution" sub="By contract count" className="col-span-4" bodyClass="px-4 py-3">
+          <div className="flex items-center gap-5">
+            <DonutChart
+              data={riskDist}
+              size={150}
+              thickness={14}
+              centerValue={String(contracts.length)}
+              centerLabel="contracts"
+            />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              {riskDist.map((r) => (
+                <div key={r.name} className="flex items-center gap-2 text-[11.5px]">
+                  <span className="h-2 w-2 shrink-0" style={{ background: r.color }} />
+                  <span className="text-muted">{r.name}</span>
+                  <span className="ml-auto tabular-nums text-fg">{r.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Panel>
       </div>
 
-      {/* table */}
-      <div className="min-h-0 flex-1 overflow-auto">
-        <table className="w-full border-collapse text-left">
-          <thead className="sticky top-0 z-10" style={{ position: "sticky" }}>
-            <tr className="bg-[#101014]">
-              <th className="w-10 border-b border-white/10 px-3">
-                <input
-                  type="checkbox"
-                  checked={filtered.length > 0 && selected.size === filtered.length}
-                  onChange={toggleAll}
-                  className="size-3.5 accent-white"
-                />
-              </th>
-              {columns.map((col) => (
-                <th
-                  key={col.id}
-                  style={{ width: col.width }}
-                  className={`whitespace-nowrap border-b border-white/10 px-3 py-2 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-zinc-500 ${
-                    col.align === "right" ? "text-right" : ""
+      {/* row: renewals + status + financial exposure */}
+      <div className="grid grid-cols-12 border-b border-line">
+        <Panel
+          title="Upcoming renewals"
+          sub={`${renewals.length} with dates`}
+          className="col-span-4 border-r border-line"
+          bodyClass="overflow-y-auto"
+        >
+          {renewals.slice(0, 7).map((c) => {
+            const days = daysUntil(c.renewalDate, now);
+            return (
+              <button
+                key={c.id}
+                onClick={() => setSelected(c)}
+                className="flex w-full items-center gap-3 border-b border-line/50 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[12.5px] font-medium text-fg">{c.vendorName}</p>
+                  <p className="truncate text-[10.5px] text-muted">
+                    Renews {formatDate(c.renewalDate)} · cancel by {formatDate(c.cancellationDeadline)}
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 text-[12px] font-semibold tabular-nums ${
+                    days < 30 ? "text-zinc-100" : days < 60 ? "text-zinc-300" : "text-muted"
                   }`}
                 >
-                  <button
-                    onClick={() => col.sortable && setSort((s) => ({ id: col.id, dir: s?.id === col.id && s.dir === 1 ? -1 : 1 }))}
-                    className={`inline-flex items-center gap-1 hover:text-zinc-200 ${
-                      sort?.id === col.id ? "!text-zinc-200" : ""
-                    } ${col.align === "right" ? "flex-row-reverse" : ""}`}
-                  >
-                    {col.label}
-                    {sort?.id === col.id && (
-                      <span className="text-[9px]">{sort.dir === 1 ? "▲" : "▼"}</span>
-                    )}
-                  </button>
-                </th>
-              ))}
-              <th className="border-b border-white/10 px-3">
-                <Columns3 size={12} className="text-zinc-600" />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((c) => {
-              const isSel = selected.has(c.id);
-              return (
-                <tr
-                  key={c.id}
-                  className={`border-b border-white/[0.05] transition-colors hover:bg-white/[0.03] ${
-                    isSel ? "bg-white/[0.06]" : ""
-                  }`}
-                >
-                  <td className="px-3 py-1.5">
-                    <input
-                      type="checkbox"
-                      checked={isSel}
-                      onChange={() => toggle(c.id)}
-                      className="size-3.5 accent-white"
-                    />
+                  {days}d
+                </span>
+                <ChevronRight size={12} className="shrink-0 text-zinc-600" />
+              </button>
+            );
+          })}
+          {renewals.length === 0 && <PanelEmpty title="No renewal dates extracted" />}
+        </Panel>
+
+        <Panel
+          title="Contracts by status"
+          sub="Current state"
+          className="col-span-4 border-r border-line"
+          bodyClass="overflow-y-auto px-4 py-3"
+        >
+          {statusDist.some((d) => d.value > 0) ? (
+            <BarChart
+              data={statusDist}
+              height={200}
+              color="#71717a"
+              format={(v) => `${v} contract${v === 1 ? "" : "s"}`}
+            />
+          ) : (
+            <PanelEmpty title="No contracts" />
+          )}
+        </Panel>
+
+        <Panel title="Financial exposure" sub="From stated values" className="col-span-4" bodyClass="px-4 py-1">
+          <div className="grid grid-cols-2">
+            <KpiBlock label="Annual spend" value={money(totalSpend)} sub="All contracts" count={totalSpend} countFormat={(v) => money(v)} />
+            <KpiBlock
+              label="Renewal exposure"
+              value={money(renewalExposure)}
+              sub="Renewing within 90 days"
+              accent={renewalExposure > 0 ? "text-zinc-100" : "text-fg"}
+              count={renewalExposure}
+              countFormat={(v) => money(v)}
+            />
+            <KpiBlock label="High risk" value={atRisk.length} sub="Score ≥ 60" count={atRisk.length} />
+            <KpiBlock
+              label="Savings potential"
+              value={`${money(totalOpportunityLow)}–${money(totalOpportunityHigh)}`}
+              sub="Estimated range /yr"
+            />
+          </div>
+        </Panel>
+      </div>
+
+      {/* row: companies table + risk watch */}
+      <div className="grid grid-cols-12 border-b border-line">
+        <Panel
+          title="Vendors"
+          sub={`${contracts.length} tracked · by annual spend`}
+          className="col-span-8 border-r border-line"
+          right={
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search…"
+              className="toolbar-input h-7 w-44"
+            />
+          }
+          bodyClass="overflow-auto"
+        >
+          <table className="ptable">
+            <thead>
+              <tr>
+                <Th label="Vendor" sort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />
+                <Th label="Category" />
+                <Th label="Spend" align="right" sort={sort} onSort={(k) => setSort(toggleSort(sort, k))} />
+                <Th label="Next renewal" />
+                <Th label="Risk" />
+                <Th label="Status" />
+              </tr>
+            </thead>
+            <tbody>
+              {sortedRows.map((c) => (
+                <tr key={c.id} onClick={() => setSelected(c)} className="cursor-pointer">
+                  <td>
+                    <VendorCell name={c.vendorName} sub={c.linkedDocument} />
                   </td>
-                  {columns.map((col) => (
-                    <td key={col.id} style={{ width: col.width }} className="px-3 py-1.5">
-                      {col.render(c)}
-                    </td>
-                  ))}
-                  <td className="px-3 py-1.5 text-right">
-                    <button
-                      onClick={() => deleteOne(c.id)}
-                      aria-label="Delete"
-                      className={`text-zinc-600 transition-colors hover:text-red-400 ${isSel ? "opacity-100" : "opacity-0"}`}
-                    >
-                      <X size={13} />
-                    </button>
+                  <td className="text-muted">{c.category}</td>
+                  <td className="text-right font-medium tabular-nums">
+                    {c.annualSpend > 0 ? money(c.annualSpend) : <span className="text-zinc-600">—</span>}
+                  </td>
+                  <td className="text-fg">{formatDate(c.renewalDate || null)}</td>
+                  <td>
+                    <RiskChip level={riskLevel(c.riskScore)} />
+                  </td>
+                  <td>
+                    <StatusChip status={c.status} />
                   </td>
                 </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={columns.length + 2} className="px-4 py-14 text-center">
-                  {rows.length === 0 ? (
-                    <>
-                      <p className="text-[14px] font-medium text-zinc-400">No companies yet</p>
-                      <p className="mt-1 text-[12.5px] text-zinc-600">
-                        Add your first company to start tracking contracts and renewals.
-                      </p>
-                      <button
-                        onClick={addRow}
-                        className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-[12.5px] font-medium text-black transition-opacity hover:opacity-90"
-                      >
-                        <Plus size={13} /> Add company
-                      </button>
-                    </>
-                  ) : (
-                    <p className="text-[13px] text-zinc-500">No results match your search or filters.</p>
-                  )}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              ))}
+              {sortedRows.length === 0 && (
+                <tr>
+                  <td colSpan={6}>
+                    <PanelEmpty title="No vendors match" />
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </Panel>
+
+        <Panel
+          title="Risk watch"
+          sub={`${atRisk.length} elevated`}
+          className="col-span-4"
+          bodyClass="overflow-y-auto"
+        >
+          {atRisk.slice(0, 8).map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setSelected(c)}
+              className="flex w-full items-center gap-3 border-b border-line/50 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[12.5px] font-medium text-fg">{c.vendorName}</p>
+                <p className="truncate text-[10.5px] text-muted">
+                  {c.autoRenew ? "Auto-renews" : "Manual renewal"}
+                  {c.cancellationDeadline
+                    ? ` · cancel by ${formatDate(c.cancellationDeadline)}`
+                    : ""}
+                </p>
+              </div>
+              <span className="shrink-0 text-[11px] font-semibold tabular-nums text-zinc-100">
+                {c.riskScore}
+              </span>
+            </button>
+          ))}
+          {atRisk.length === 0 && <PanelEmpty title="No elevated risks" />}
+        </Panel>
       </div>
 
-      {/* footer row */}
-      <div className="flex h-8 shrink-0 items-center gap-4 border-t border-line bg-surface px-4 text-[11px] text-zinc-500">
-        <span className="flex items-center gap-1.5">
-          <Check size={11} className="text-zinc-400" />
-          {filtered.length} company{filtered.length === 1 ? "" : "ies"} · {rows.length} total
-        </span>
-        {selected.size > 0 && (
-          <span className="text-zinc-400">{selected.size} selected</span>
-        )}
-        <span className="ml-auto text-zinc-600">editable · saved to this browser</span>
+      {/* row: activity + correspondence */}
+      <div className="grid grid-cols-12">
+        <Panel title="Recent activity" className="col-span-6 border-r border-line" bodyClass="overflow-y-auto">
+          {activity.slice(0, 7).map((a) => {
+            const Icon = ACT_ICON[a.type] ?? Bell;
+            return (
+              <div key={a.id} className="flex items-start gap-3 border-b border-line/50 px-4 py-2.5">
+                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-zinc-400">
+                  <Icon size={12} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[12.5px] font-medium text-fg">{a.title}</p>
+                  <p className="line-clamp-1 text-[11.5px] text-muted">{a.detail}</p>
+                </div>
+                <span className="shrink-0 text-[10.5px] text-muted/60">{timeAgo(a.createdAt)}</span>
+              </div>
+            );
+          })}
+          {activity.length === 0 && (
+            <PanelEmpty title="No activity yet" body="Actions you take in the workspace will appear here." />
+          )}
+        </Panel>
+
+        <Panel title="Correspondence" sub={`${threads.length} vendor threads`} className="col-span-6" bodyClass="overflow-y-auto">
+          {threads.slice(0, 7).map((t) => (
+            <div key={t.id} className="flex items-start gap-3 border-b border-line/50 px-4 py-2.5">
+              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-zinc-400">
+                <Mail size={12} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[12.5px] font-medium text-fg">{t.subject}</p>
+                <p className="line-clamp-1 text-[11.5px] text-muted">
+                  {t.sender} · {t.vendorName}
+                </p>
+              </div>
+              <span className="shrink-0 text-[10.5px] text-muted/60">{timeAgo(t.date)}</span>
+            </div>
+          ))}
+          {threads.length === 0 && (
+            <PanelEmpty title="No correspondence yet" body="Vendor email threads will appear once a mailbox is connected." />
+          )}
+        </Panel>
       </div>
+
+      <CompanyInspector
+        contract={selected}
+        onClose={() => setSelected(null)}
+        emails={selEmails}
+        activity={selActivity}
+      />
+
+      <AgentAssistant
+        open={advisorOpen}
+        onClose={() => setAdvisorOpen((v) => !v)}
+        messages={messages}
+        onSend={sendAdvisor}
+        consulting={consulting}
+        onSelectContract={(id) => {
+          const c = contracts.find((x) => x.id === id);
+          if (c) setSelected(c);
+        }}
+        onApproveDraft={approveDraft}
+        onRejectDraft={rejectAction_}
+      />
     </div>
   );
 }
