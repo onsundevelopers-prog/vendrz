@@ -6,7 +6,7 @@
 /*                                                                     */
 /*  Env:                                                               */
 /*    GEMINI_API_KEY - create one at https://aistudio.google.com/apikey */
-/*    GEMINI_MODEL   - optional model override (default gemini-2.5-flash) */
+/*    GEMINI_MODEL   - optional model override (default gemini-3.6-flash) */
 /*    GOOGLE_API_KEY - secondary fallback key, tried when GEMINI_API_KEY */
 /*                     is unset (some Google Cloud keys work with Gemini) */
 /* ------------------------------------------------------------------ */
@@ -41,7 +41,7 @@ export class GeminiProvider extends BaseAIProvider {
         "No Gemini API key is set - add GEMINI_API_KEY to your environment (create one at https://aistudio.google.com/apikey)."
       );
     }
-    this.model = opts.model ?? process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+    this.model = opts.model ?? process.env.GEMINI_MODEL ?? "gemini-3.6-flash";
     this.client = new OpenAICompatClient({
       baseUrl: opts.baseUrl ?? process.env.GEMINI_BASE_URL ?? GEMINI_BASE_URL,
       apiKey,

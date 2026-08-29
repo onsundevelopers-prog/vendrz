@@ -22,7 +22,7 @@ services:
       - key: AI_PROVIDER
         value: ollama_cloud    # or ollama_local for a self-hosted `ollama serve`
       - key: OLLAMA_BASE_URL
-        value: https://ollama.com
+        value: https://ollama.com/v1
       - key: OLLAMA_API_KEY
         sync: false            # set it in the Render dashboard
       # Google Gemini - automatic fallback when Ollama is unavailable/errors.
@@ -50,9 +50,9 @@ services:
       # cancellation/expiry - create the webhook in the PayPal dashboard
       # (URL: https://<this-app>/api/paypal/webhook) and paste its ID.
       - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
-        value: BAAjyAyhnMTDiBOTtiavA40HQ7ObZlJ1SQkvhwYk8OTWkBd_Jdmlkk-QR0GMA_ds9YGun_QzJGJIf7p8eY
+        sync: false          # set in the hosting dashboard (public client id)
       - key: NEXT_PUBLIC_PAYPAL_PLAN_ID
-        value: P-6JW433095T554031YNKJDN3I
+        sync: false          # Business plan id, set in the hosting dashboard
       # Team ($20/mo) subscription plan - create it in PayPal Billing > Plans
       # and paste the id here.
       - key: NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID

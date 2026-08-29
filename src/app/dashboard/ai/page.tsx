@@ -50,7 +50,9 @@ function AIWorkbench() {
   const searchParams = useSearchParams();
   const idParam = searchParams.get("id");
   const auth = useAuthUser();
-  const userId = auth.id ?? "demo";
+  // Data is strictly scoped to the real Clerk user. There is no synthetic
+  // "demo" account bucket - an unauthenticated visitor gets no data.
+  const userId = auth.id ?? "";
   const { plan, aiMessageLimit, requestUpgrade } = useDisplayMode();
 
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
