@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Bell, ChevronRight, Download, Eye, Mail, RefreshCw, TrendingUp, XCircle, Upload, FileScan } from "lucide-react";
 import { useAuthUser } from "@/lib/auth";
 import { planDef, useDisplayMode } from "@/lib/displayMode";
@@ -42,11 +43,24 @@ export default function DashboardPage() {
   const auth = useAuthUser();
   const userId = auth.id;
   const now = useNow();
+  const searchParams = useSearchParams();
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
   const stats = useMemo(() => (userId ? getDashboardStats(userId) : null), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
   const { mode, ready, plan, requestUpgrade, aiMessageLimit } = useDisplayMode();
+
+  // Landed from a pricing card (e.g. /dashboard?upgrade=team): open the
+  // upgrade screen for that plan so the next step is payment, then clean
+  // the query param off the URL.
+  useEffect(() => {
+    const target = searchParams.get("upgrade");
+    if (target === "team" || target === "business" || target === "enterprise") {
+      requestUpgrade(target);
+      window.history.replaceState({}, "", "/dashboard");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount
+  }, []);
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
   const [query, setQuery] = useState("");

@@ -90,7 +90,7 @@ async function loadFromDisk(): Promise<void> {
   const file = tokenFilePath();
   if (!file) return;
   try {
-    const raw = await fs.promises.readFile(file, "utf8");
+    const raw = await fs.promises.readFile(/* turbopackIgnore: true */ file, "utf8");
     const parsed = JSON.parse(raw) as Record<string, string>;
     for (const [userId, payload] of Object.entries(parsed)) {
       try {
@@ -112,8 +112,8 @@ async function persist(): Promise<void> {
   for (const [userId, tokens] of memory) {
     payload[userId] = encrypt(JSON.stringify(tokens));
   }
-  await fs.promises.mkdir(path.dirname(file), { recursive: true });
-  await fs.promises.writeFile(file, JSON.stringify(payload, null, 2), "utf8");
+  await fs.promises.mkdir(path.dirname(/* turbopackIgnore: true */ file), { recursive: true });
+  await fs.promises.writeFile(/* turbopackIgnore: true */ file, JSON.stringify(payload, null, 2), "utf8");
 }
 
 /* ------------------------- public API ------------------------- */

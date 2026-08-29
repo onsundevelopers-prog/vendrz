@@ -66,8 +66,8 @@ let persistTimer: ReturnType<typeof setTimeout> | null = null;
 function flushPersist(): void {
   persistTimer = null;
   try {
-    mkdirSync(dirname(JOB_FILE), { recursive: true });
-    writeFileSync(JOB_FILE, JSON.stringify([...jobs.values()]));
+    mkdirSync(dirname(/* turbopackIgnore: true */ JOB_FILE), { recursive: true });
+    writeFileSync(/* turbopackIgnore: true */ JOB_FILE, JSON.stringify([...jobs.values()]));
   } catch {
     // Disk unavailable (e.g. read-only serverless filesystem) - the store
     // keeps working in memory; jobs just won't survive a restart.
@@ -81,7 +81,7 @@ function schedulePersist(): void {
 
 function loadJobs(): void {
   try {
-    const raw = readFileSync(JOB_FILE, "utf8");
+    const raw = readFileSync(/* turbopackIgnore: true */ JOB_FILE, "utf8");
     const stored = JSON.parse(raw) as ExtractionJob[];
     const cutoff = Date.now() - JOB_TTL_MS;
     for (const job of stored) {

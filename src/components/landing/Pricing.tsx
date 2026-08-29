@@ -33,7 +33,7 @@ const CARDS: {
     id: "team",
     group: "Everything in Free, plus:",
     cta: "Start with Team",
-    href: "/auth?mode=signup&next=/dashboard",
+    href: signupHref("team"),
     featured: true,
     buttonNote: "or purchase now",
   },
@@ -41,7 +41,7 @@ const CARDS: {
     id: "business",
     group: "Everything in Team, plus:",
     cta: "Get started",
-    href: "/auth?mode=signup&next=/dashboard",
+    href: signupHref("business"),
     featured: false,
     buttonNote: "or contact sales",
   },
@@ -53,6 +53,15 @@ const CARDS: {
     featured: false,
   },
 ];
+
+/**
+ * Sign-up link that lands the user on the dashboard with the upgrade
+ * screen pre-opened for the chosen plan, so the next step is payment
+ * (not a bare redirect to the dashboard).
+ */
+function signupHref(plan: Plan): string {
+  return `/auth?mode=signup&next=${encodeURIComponent(`/dashboard?upgrade=${plan}`)}`;
+}
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
