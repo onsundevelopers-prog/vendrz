@@ -30,12 +30,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: message }, { status: 502 });
     }
 
-    // The plan must match the configured Business plan. The client-sent
-    // plan is never used as the source of truth.
-    const configuredPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID ?? process.env.PAYPAL_PLAN_ID ?? "";
-    if (configuredPlan && sub.planId && sub.planId !== configuredPlan) {
+    // Map the PayPal plan the subscription actually belongs to onto one of
+    // our tiers. The client-sent plan is never used as the source of truth.
+    const planIdToTier: Record<string, string> = {};
+    const businessPlan =
+      process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID ?? process.env.PAYPAL_PLAN_ID ?? "";
+    if (businessPlan) planIdToTier[businessPlan] = "business";
+    const proPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_PRO_ID ?? "";
+    if (proPlan) planIdToTier[proPlan] = "pro";
+    const growthPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_GROWTH_ID ?? "";
+    if (growthPlan) planIdToTier[growthPlan] = "growth";
+
+    const tier = sub.planId ? planIdToTier[sub.planId] : undefined;
+    if (!tier) {
       return NextResponse.json(
-        { active: false, error: "This subscription isn't for the Business plan." },
+        { active: false, error: "This subscription isn't for one of our plans." },
         { status: 200 }
       );
     }
@@ -43,7 +52,7 @@ export async function POST(req: NextRequest) {
     const active = sub.status === "ACTIVE";
     upsertSubscription({
       subscriptionId,
-      planId: sub.planId || configuredPlan,
+      planId: sub.planId || businessPlan,
       status: active ? "ACTIVE" : "PAYMENT_PENDING",
     });
 
@@ -61,6 +70,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       active: true,
+      plan: tier,
       subscription: { id: sub.id, status: sub.status },
     });
   } catch (err) {

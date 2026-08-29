@@ -122,7 +122,7 @@ export default function ResultsPage() {
                 </p>
               </div>
               <Button
-                href={`/auth?mode=signup&session=${session.id}`}
+                href={`/auth?mode=signup&session=${session.id}&next=${encodeURIComponent("/dashboard")}`}
                 className="shrink-0"
               >
                 Save & track it free

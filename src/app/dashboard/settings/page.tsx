@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { isClerkEnabled, useAuthUser } from "@/lib/auth";
-import { BUSINESS_PRICE, useDisplayMode } from "@/lib/displayMode";
-import { getContracts } from "@/lib/store";
+import { PLANS, planDef, useDisplayMode } from "@/lib/displayMode";
+import { getContracts, getAiUsage } from "@/lib/store";
 import { money } from "@/lib/format";
 import { DetailRow } from "@/components/ui/Inspector";
 import { TableFooter } from "@/components/dashboard/table";
@@ -60,7 +60,9 @@ export default function SettingsPage() {
 
   const [section, setSection] = useState<SectionId>("general");
   const [ai, setAi] = useState<AiStatus>({ provider: null, model: null });
-  const { mode, plan, requestUpgrade, switchToFree } = useDisplayMode();
+  const { mode, plan, requestUpgrade, switchToFree, aiMessageLimit, canUseGmail } = useDisplayMode();
+  const aiUsage = useMemo(() => (userId ? getAiUsage(userId).used : 0), [userId]);
+  const planInfo = planDef(plan);
 
   // Real Gmail connection state from the server (Clerk mode only - the
   // demo fallback has no server session and stays honestly disconnected).
@@ -180,29 +182,14 @@ export default function SettingsPage() {
           {section === "dashboard" && (
             <Section
               title="Plan"
-              sub="How you use Noma. Business is part of the paid plan - Simple is free."
+              sub="Your plan decides the workspace and limits. Free includes Simple mode, the Savings page, and 5 AI messages."
             >
               <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
-                {(
-                  [
-                    {
-                      id: "simple" as const,
-                      title: "Simple",
-                      price: "Free",
-                      desc: "The essentials - contracts, renewals, risks, savings, and AI, easy to scan.",
-                    },
-                    {
-                      id: "business" as const,
-                      title: "Business",
-                      price: BUSINESS_PRICE,
-                      desc: "The full workspace - dense tables, sorting, filters, schema view, and the complete activity log.",
-                    },
-                  ]
-                ).map((opt) => {
-                  const active = opt.id === "business" ? plan === "business" : plan === "free";
+                {PLANS.map((opt) => {
+                  const active = plan === opt.id;
                   const onChoose = () => {
-                    if (opt.id === "business") requestUpgrade();
-                    else switchToFree();
+                    if (opt.id === "free") switchToFree();
+                    else requestUpgrade(opt.id);
                   };
                   return (
                     <button
@@ -217,7 +204,7 @@ export default function SettingsPage() {
                     >
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2 text-[13.5px] font-semibold text-fg">
-                          {opt.title}
+                          {opt.name}
                           {active && (
                             <span className="flex size-4 items-center justify-center rounded-full bg-fg text-black">
                               <Check size={10} strokeWidth={3} />
@@ -226,22 +213,18 @@ export default function SettingsPage() {
                         </span>
                         <span className="mt-0.5 block text-[11px] font-medium tracking-tight text-zinc-400">
                           {opt.price}
+                          {opt.cadence !== "forever" ? ` ${opt.cadence}` : " · forever"}
                         </span>
-                        <span className="mt-1 block text-[12px] leading-relaxed text-muted">{opt.desc}</span>
+                        <span className="mt-1 block text-[12px] leading-relaxed text-muted">
+                          {opt.features.slice(0, 2).join(" · ")}
+                        </span>
                       </span>
                     </button>
                   );
                 })}
               </div>
-              {plan === "free" && (
-                <p className="px-4 pb-4 text-[11.5px] leading-relaxed text-muted">
-                  You&apos;re on the free plan. Business unlocks the full operational
-                  workspace for {BUSINESS_PRICE} - subscribing via PayPal activates it
-                  for this workspace.
-                </p>
-              )}
               <p className="px-4 pb-4 text-[11px] leading-relaxed text-zinc-600">
-                The active mode is {mode ?? "simple"} - Business accounts always open in Business mode.
+                The active mode is {mode ?? "simple"} - {planInfo.name} accounts open in {planInfo.mode} mode.
               </p>
             </Section>
           )}
@@ -293,19 +276,28 @@ export default function SettingsPage() {
               <Row
                 title="Gmail"
                 desc={
-                  gmail?.connected
-                    ? `Connected${gmail.email ? ` as ${gmail.email}` : ""}${gmail.connectedAt ? ` · ${new Date(gmail.connectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}. Vendor correspondence is read with read-only access.`
-                    : gmail?.reconnectRequired
-                      ? "Connection expired or was revoked. Reconnect to keep reading vendor email."
-                      : isClerkEnabled && gmail?.configured === false
-                        ? "Gmail OAuth isn't configured on this deployment yet."
-                        : isClerkEnabled
-                          ? "Not connected. Vendor correspondence will not be read until it is connected."
-                          : "Sign in with Clerk to connect your Gmail account."
+                  !canUseGmail
+                    ? "Gmail requires a paid plan (Pro or higher)."
+                    : gmail?.connected
+                      ? `Connected${gmail.email ? ` as ${gmail.email}` : ""}${gmail.connectedAt ? ` · ${new Date(gmail.connectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}. Vendor correspondence is read with read-only access.`
+                      : gmail?.reconnectRequired
+                        ? "Connection expired or was revoked. Reconnect to keep reading vendor email."
+                        : isClerkEnabled && gmail?.configured === false
+                          ? "Gmail OAuth isn't configured on this deployment yet."
+                          : isClerkEnabled
+                            ? "Not connected. Vendor correspondence will not be read until it is connected."
+                            : "Sign in with Clerk to connect your Gmail account."
                 }
                 state={gmail?.connected ? "connected" : "not connected"}
                 action={
-                  isClerkEnabled && gmail?.connected ? (
+                  !canUseGmail ? (
+                    <button
+                      onClick={() => requestUpgrade("pro")}
+                      className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
+                    >
+                      Upgrade for Gmail
+                    </button>
+                  ) : isClerkEnabled && gmail?.connected ? (
                     <button
                       onClick={handleDisconnect}
                       disabled={gmailBusy}
@@ -381,20 +373,26 @@ export default function SettingsPage() {
           {section === "billing" && (
             <Section title="Billing" sub="Plan and usage.">
               <DetailRow label="Plan">
-                {plan === "business" ? `Business · ${BUSINESS_PRICE}` : "Simple · Free"}
+                {planInfo.name} · {planInfo.price}
+                {planInfo.cadence !== "forever" ? planInfo.cadence : ""}
               </DetailRow>
               <DetailRow label="Status">
-                {plan === "business" ? "Active" : "Free plan"}
+                {plan === "free" ? "Free plan" : "Active"}
               </DetailRow>
               <DetailRow label="Payment method">
-                {plan === "business" ? "PayPal subscription" : "Not connected"}
+                {plan === "free" ? "Not connected" : "PayPal subscription"}
+              </DetailRow>
+              <DetailRow label="AI messages this month">
+                {aiMessageLimit === Infinity
+                  ? `${aiUsage} used · unlimited`
+                  : `${aiUsage} / ${aiMessageLimit}`}
               </DetailRow>
               <DetailRow label="Invoices">No invoices on file</DetailRow>
               <div className="px-4 py-3">
                 <p className="text-[11.5px] leading-relaxed text-muted">
-                  {plan === "business"
-                    ? `Business is active for this workspace (${BUSINESS_PRICE}). Your PayPal subscription keeps it unlocked, and once enabled it stays active indefinitely - it is never revoked automatically.`
-                    : "You're on the free Simple plan. Upgrade to Business for the full operational workspace."}
+                  {plan === "free"
+                    ? "You're on the free plan: Simple workspace, Savings page, and 5 AI messages per month. Upgrade to unlock Gmail, alerts, and the full workspace."
+                    : `${planInfo.name} is active for this workspace (${planInfo.price}${planInfo.cadence.startsWith("/") ? planInfo.cadence : ""}). Your PayPal subscription keeps it unlocked, and once enabled it stays active indefinitely - it is never revoked automatically.`}
                 </p>
               </div>
             </Section>

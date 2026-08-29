@@ -3,15 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 
 /* ------------------------------------------------------------------ */
-/*  PayPal subscription button (Business plan).                        */
+/*  PayPal subscription button.                                       */
 /*                                                                     */
 /*  Loads the PayPal JS SDK with `vault=true&intent=subscription`,     */
-/*  renders the subscribe button for the Business plan id, and calls   */
+/*  renders the subscribe button for the given plan id, and calls      */
 /*  `onSuccess` once the buyer approves the subscription.              */
 /*                                                                     */
 /*  Env:                                                                */
 /*    NEXT_PUBLIC_PAYPAL_CLIENT_ID - PayPal app client id (public)     */
-/*    NEXT_PUBLIC_PAYPAL_PLAN_ID    - the subscription plan id         */
+/*                                                                     */
+/*  Props:                                                              */
+/*    planId - the subscription plan id for the selected tier          */
 /* ------------------------------------------------------------------ */
 
 interface PayPalActions {
@@ -42,22 +44,28 @@ declare global {
   }
 }
 
-export function PayPalSubscribe({ onSuccess }: { onSuccess: (subscriptionId: string) => void }) {
+export function PayPalSubscribe({
+  planId,
+  onSuccess,
+}: {
+  planId: string;
+  onSuccess: (subscriptionId: string) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const renderedRef = useRef(false);
+  const renderedRef = useRef<string | null>(null);
   // SDK state changes only from async script callbacks, never synchronously
   // inside an effect body.
   const [sdkLoaded, setSdkLoaded] = useState(false);
   const [sdkError, setSdkError] = useState<string | null>(null);
 
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-  const planId = process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID;
   const configured = !!(clientId && planId);
   const ready =
     configured && (typeof window !== "undefined" ? !!window.paypal || sdkLoaded : false);
 
   // Load the SDK once (skipped when PayPal isn't configured or already on
-  // the page - both states are derived at render time).
+  // the page - both states are derived at render time). Re-loads when the
+  // plan changes by re-rendering the button.
   useEffect(() => {
     if (!configured || window.paypal) return;
     const script = document.createElement("script");
@@ -74,10 +82,15 @@ export function PayPalSubscribe({ onSuccess }: { onSuccess: (subscriptionId: str
     };
   }, [configured, clientId, planId]);
 
-  // Render the button once the SDK is ready.
+  // Render the button once the SDK is ready. If the plan changes, force a
+  // re-render so the button points at the newly selected plan.
   useEffect(() => {
-    if (!ready || !containerRef.current || renderedRef.current) return;
-    renderedRef.current = true;
+    if (!ready || !containerRef.current) return;
+    if (renderedRef.current === planId) return;
+    renderedRef.current = planId;
+    // Clear any stale button before re-rendering.
+    const host = containerRef.current;
+    host.replaceChildren();
     window.paypal
       ?.Buttons({
         style: { shape: "rect", color: "gold", layout: "vertical", label: "subscribe" },
@@ -88,7 +101,7 @@ export function PayPalSubscribe({ onSuccess }: { onSuccess: (subscriptionId: str
           setSdkError("Payment didn't complete. You can try again.");
         },
       })
-      .render(containerRef.current)
+      .render(host)
       .catch(() => {
         setSdkError("Couldn't render the PayPal button.");
       });

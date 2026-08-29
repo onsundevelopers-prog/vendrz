@@ -3,12 +3,15 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthUser } from "@/lib/auth";
+import { planDef, useDisplayMode } from "@/lib/displayMode";
 import {
   getActivity,
   getContracts,
   getContractAnalyses,
   getEmailThreads,
   getGmailConnection,
+  getAiUsage,
+  incrementAiUsage,
   logActivity,
 } from "@/lib/store";
 import type { AgentApprovalRequest, AgentEvent, AgentTask } from "@/lib/agentTask";
@@ -48,6 +51,7 @@ function AIWorkbench() {
   const idParam = searchParams.get("id");
   const auth = useAuthUser();
   const userId = auth.id ?? "demo";
+  const { plan, aiMessageLimit, requestUpgrade } = useDisplayMode();
 
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
@@ -57,6 +61,7 @@ function AIWorkbench() {
 
   const [tasks, setTasks] = useState<AgentTask[]>(() => readAgentTasks().map((r) => r.task));
   const [notice, setNotice] = useState<string | null>(null);
+  const [limitHit, setLimitHit] = useState(false);
   // Every running agent lives in its own slot, keyed by task id.
   const [liveMap, setLiveMap] = useState<Record<string, AgentTask>>({});
   const liveMapRef = useRef<Record<string, AgentTask>>({});
@@ -146,6 +151,17 @@ function AIWorkbench() {
       );
       return;
     }
+    // Free / Pro plan AI allowance - counted per calendar month.
+    const { used } = getAiUsage(userId);
+    if (used >= aiMessageLimit) {
+      setLimitHit(true);
+      setNotice(
+        `You've used all ${aiMessageLimit} AI ${aiMessageLimit === 1 ? "message" : "messages"} this month on the ${planDef(plan).name} plan.`
+      );
+      return;
+    }
+    setLimitHit(false);
+    incrementAiUsage(userId);
     const title = titleForPrompt(prompt);
     const taskId = taskUid();
     const seed = hydrateTask({ id: taskId, title, request: prompt, createdAt: new Date().toISOString() });
@@ -380,7 +396,18 @@ function AIWorkbench() {
         <div className="absolute left-1/2 top-3 z-30 w-full max-w-md -translate-x-1/2">
           <div className="flex items-center gap-2 rounded-lg border border-zinc-300/25 bg-zinc-400/[0.08] px-3 py-2 text-[12px] text-zinc-300">
             <span>{notice}</span>
-            <button onClick={() => setNotice(null)} className="ml-auto shrink-0 font-medium hover:opacity-80">
+            {limitHit && (
+              <button
+                onClick={() => {
+                  setNotice(null);
+                  requestUpgrade();
+                }}
+                className="ml-auto shrink-0 rounded-md bg-white px-2.5 py-1 text-[11px] font-semibold text-black hover:opacity-90"
+              >
+                Upgrade
+              </button>
+            )}
+            <button onClick={() => setNotice(null)} className="shrink-0 font-medium hover:opacity-80">
               Dismiss
             </button>
           </div>

@@ -36,6 +36,7 @@ const KEYS = {
   agentMessages: "wt.agentMessages",
   emailThreads: "wt.emailThreads",
   actions: "wt.actions",
+  aiUsage: "wt.aiUsage",
 } as const;
 
 function read<T>(key: string, fallback: T): T {
@@ -536,6 +537,29 @@ export function createAuditSession(
   };
   saveAuditSession(session);
   return session;
+}
+
+/* ------------------------------ AI usage ------------------------------ */
+
+/**
+ * Monthly AI message usage for a user. Messages are counted per calendar
+ * month (key includes the YYYY-MM), so the allowance resets naturally.
+ * Used to gate the free tier's 5 messages and Pro's 100.
+ */
+export function getAiUsage(userId: string): { month: string; used: number } {
+  const month = new Date().toISOString().slice(0, 7);
+  const all = read<Record<string, number>>(KEYS.aiUsage, {});
+  return { month, used: all[`${userId}:${month}`] ?? 0 };
+}
+
+export function incrementAiUsage(userId: string): number {
+  const all = read<Record<string, number>>(KEYS.aiUsage, {});
+  const month = new Date().toISOString().slice(0, 7);
+  const key = `${userId}:${month}`;
+  const next = (all[key] ?? 0) + 1;
+  all[key] = next;
+  write(KEYS.aiUsage, all);
+  return next;
 }
 
 /* ------------------------------ misc ------------------------------ */

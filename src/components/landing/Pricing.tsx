@@ -2,62 +2,24 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { BUSINESS_PRICE } from "@/lib/displayMode";
+import { PLANS } from "@/lib/displayMode";
 
-const TIERS = [
-  {
-    name: "Simple",
-    price: "$0",
-    cadence: "forever",
-    blurb: "A clean, free workspace for one person to see where money is going.",
-    features: [
-      "What needs attention, at a glance",
-      "Upcoming renewals",
-      "Risks and savings",
-      "AI assistant",
-    ],
-    cta: "Run free review",
-    href: "/audit",
-    featured: false,
-  },
-  {
-    name: "Business",
-    price: BUSINESS_PRICE,
-    cadence: "/mo per org",
-    blurb: "The full operational workspace for companies that need everything.",
-    features: [
-      "Unlimited contracts & vendors",
-      "Full AI vendor analysis & negotiation insights",
-      "Renewal monitoring & cancellation-deadline alerts",
-      "Price-increase detection & savings opportunities",
-      "Vendor risk scoring & spend analytics",
-      "Company/vendor relationship graph",
-      "Gmail integration & AI email analysis",
-      "AI actions — draft, reply, request cancellation, negotiate",
-      "Advanced Excel-style tables & Business dashboard",
-      "Team members, roles & permissions",
-      "Export to CSV/PDF · Priority AI processing · Advanced automations",
-    ],
-    cta: "Start Business plan",
-    href: "/auth?mode=signup&next=/dashboard",
-    featured: true,
-  },
-  {
-    name: "Team",
-    price: "$999",
-    cadence: "one-time",
-    blurb: "Everything, paid once. For a team that wants it all, no subscription.",
-    features: [
-      "Everything in Business",
-      "Full workspace for every member",
-      "All AI features & automations",
-      "No recurring fee — one payment",
-    ],
-    cta: "Talk to sales",
-    href: "/auth?mode=signup&next=/dashboard",
-    featured: false,
-  },
-];
+const TIERS = PLANS.map((p) => ({
+  name: p.name,
+  price: p.price,
+  cadence: p.cadence === "forever" ? "forever" : p.cadence === "one-time" ? "one-time" : "/mo per org",
+  blurb: p.blurb,
+  features: p.features,
+  cta:
+    p.id === "free"
+      ? "Run free review"
+      : p.id === "team"
+        ? "Talk to sales"
+        : `Start ${p.name} plan`,
+  href:
+    p.id === "free" ? "/audit" : "/auth?mode=signup&next=/dashboard",
+  featured: p.id === "growth",
+}));
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -144,7 +106,7 @@ export function Pricing() {
           </p>
         </motion.div>
 
-        <div className="mx-auto mt-16 grid max-w-5xl items-stretch gap-4 lg:grid-cols-3">
+        <div className="mx-auto mt-16 grid max-w-6xl items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TIERS.map((tier, i) => (
             <TierCard key={tier.name} tier={tier} index={i} />
           ))}
@@ -152,6 +114,9 @@ export function Pricing() {
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
           All prices in USD · cancel anytime · Team is a one-time payment, not a subscription
+        </p>
+        <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
+          Free includes the Simple workspace, the Savings page, and 5 AI messages per month.
         </p>
       </div>
     </section>

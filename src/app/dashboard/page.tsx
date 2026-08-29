@@ -4,10 +4,9 @@ import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, ChevronRight, Download, Eye, Mail, RefreshCw, TrendingUp, XCircle, Upload, FileScan } from "lucide-react";
 import { useAuthUser } from "@/lib/auth";
-import { useDisplayMode } from "@/lib/displayMode";
-import { ModePicker } from "@/components/dashboard/ModePicker";
+import { planDef, useDisplayMode } from "@/lib/displayMode";
 import { SimpleOverview } from "@/components/dashboard/SimpleOverview";
-import { getActivity, getContracts, getDashboardStats, getEmailThreads, getAgentMessages, saveAgentMessage, logActivity, createAction, approveAction, rejectAction, markActionProgress } from "@/lib/store";
+import { getActivity, getContracts, getDashboardStats, getEmailThreads, getAgentMessages, saveAgentMessage, logActivity, createAction, approveAction, rejectAction, markActionProgress, getAiUsage, incrementAiUsage } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import { money, formatDate, timeAgo } from "@/lib/format";
 import type { ActivityRecord, AgentMessage, ContractRecord } from "@/lib/types";
@@ -47,11 +46,12 @@ export default function DashboardPage() {
   const stats = useMemo(() => (userId ? getDashboardStats(userId) : null), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
-  const { mode, ready } = useDisplayMode();
+  const { mode, ready, plan, requestUpgrade, aiMessageLimit } = useDisplayMode();
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortState>({ key: "Spend", dir: -1 });
+  const [aiNotice, setAiNotice] = useState<string | null>(null);
 
   // Advisor state - answers from the user's real contracts.
   const storedMessages = useMemo(() => (userId ? getAgentMessages(userId) : []), [userId]);
@@ -62,6 +62,15 @@ export default function DashboardPage() {
 
   const sendAdvisor = (text: string) => {
     if (!userId || consultingGuard.current) return;
+    // Free / Pro plan AI allowance - counted per calendar month.
+    const { used } = getAiUsage(userId);
+    if (used >= aiMessageLimit) {
+      setAiNotice(
+        `You've used all ${aiMessageLimit} AI ${aiMessageLimit === 1 ? "message" : "messages"} this month on the ${planDef(plan).name} plan.`
+      );
+      return;
+    }
+    incrementAiUsage(userId);
     consultingGuard.current = true;
     setConsulting(true);
     const userMsg: AgentMessage = {
@@ -258,9 +267,6 @@ export default function DashboardPage() {
   if (!ready) {
     return <div className="h-full" />;
   }
-  if (mode === null) {
-    return <ModePicker />;
-  }
 
   if (mode === "simple") {
     return (
@@ -289,6 +295,13 @@ export default function DashboardPage() {
   if (contracts.length === 0) {
     return (
       <div className="h-full">
+        {aiNotice && (
+          <AiLimitBanner
+            text={aiNotice}
+            onUpgrade={() => requestUpgrade()}
+            onClose={() => setAiNotice(null)}
+          />
+        )}
         <WorkspaceEmpty
           title="No contracts yet"
           body="Upload a contract to analyze its terms, or run a review once a data source is connected. The workspace will show real records here - nothing is estimated."
@@ -312,6 +325,13 @@ export default function DashboardPage() {
 
   return (
     <div className="h-full overflow-y-auto">
+      {aiNotice && (
+        <AiLimitBanner
+          text={aiNotice}
+          onUpgrade={() => requestUpgrade()}
+          onClose={() => setAiNotice(null)}
+        />
+      )}
       {/* greeting + quick actions */}
       <div className="flex items-center gap-3 border-b border-line bg-surface px-4 pb-3 pt-4">
         <div className="min-w-0">
@@ -673,6 +693,35 @@ export default function DashboardPage() {
         onApproveDraft={approveDraft}
         onRejectDraft={rejectAction_}
       />
+    </div>
+  );
+}
+
+function AiLimitBanner({
+  text,
+  onUpgrade,
+  onClose,
+}: {
+  text: string;
+  onUpgrade: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5">
+      <p className="min-w-0 flex-1 text-[12.5px] leading-relaxed text-muted">{text}</p>
+      <button
+        onClick={onUpgrade}
+        className="shrink-0 rounded-md bg-white px-3 py-1.5 text-[11.5px] font-semibold text-black transition-opacity hover:opacity-90"
+      >
+        Upgrade
+      </button>
+      <button
+        onClick={onClose}
+        aria-label="Dismiss"
+        className="shrink-0 text-[14px] text-muted hover:text-fg"
+      >
+        ×
+      </button>
     </div>
   );
 }
