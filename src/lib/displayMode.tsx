@@ -5,7 +5,7 @@
 /*                                                                     */
 /*  noma has two tiers:                                              */
 /*    - Simple (free)    - the essentials, at a glance                */
-/*    - Business ($250/mo) - the full operational workspace            */
+/*    - Business ($200/mo) - the full operational workspace            */
 /*                                                                     */
 /*  The plan is the gate. Business mode is only reachable on the       */
 /*  Business plan; a free user who asks for Business gets the upgrade  */
@@ -23,7 +23,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 export type DashboardMode = "simple" | "business";
 export type Plan = "free" | "business";
 
-export const BUSINESS_PRICE = "$250/month";
+export const BUSINESS_PRICE = "$200/month";
 
 const MODE_KEY = "vendrz.displayMode";
 const PLAN_KEY = "vendrz.plan";

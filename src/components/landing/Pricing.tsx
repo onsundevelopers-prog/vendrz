@@ -2,50 +2,56 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { BUSINESS_PRICE } from "@/lib/displayMode";
 
 const TIERS = [
   {
-    name: "Review",
+    name: "Simple",
     price: "$0",
     cadence: "forever",
-    blurb: "One-off vendor spend review, no account needed.",
+    blurb: "A clean, free workspace for one person to see where money is going.",
     features: [
-      "Full spend analysis report",
-      "Savings opportunities & waste detection",
-      "Renewal & billing risk summary",
-      "Rule-based methodology, never guesses",
+      "What needs attention, at a glance",
+      "Upcoming renewals",
+      "Risks and savings",
+      "AI assistant",
     ],
     cta: "Run free review",
     href: "/audit",
     featured: false,
   },
   {
-    name: "Track",
-    price: "$29",
+    name: "Business",
+    price: BUSINESS_PRICE,
     cadence: "/mo per org",
-    blurb: "Continuous spend, renewal & savings tracking.",
+    blurb: "The full operational workspace for companies that need everything.",
     features: [
-      "Everything in Review",
-      "Renewal & price-increase alerts",
-      "Vendor risk scores & usage analysis",
-      "Action Center with savings tracking",
-      "Executive reports",
+      "Unlimited contracts & vendors",
+      "Full AI vendor analysis & negotiation insights",
+      "Renewal monitoring & cancellation-deadline alerts",
+      "Price-increase detection & savings opportunities",
+      "Vendor risk scoring & spend analytics",
+      "Company/vendor relationship graph",
+      "Gmail integration & AI email analysis",
+      "AI actions — draft, reply, request cancellation, negotiate",
+      "Advanced Excel-style tables & Business dashboard",
+      "Team members, roles & permissions",
+      "Export to CSV/PDF · Priority AI processing · Advanced automations",
     ],
-    cta: "Start tracking",
+    cta: "Start Business plan",
     href: "/auth?mode=signup&next=/dashboard",
     featured: true,
   },
   {
     name: "Team",
-    price: "$99",
-    cadence: "/mo per org",
-    blurb: "Shared oversight for finance & procurement teams.",
+    price: "$1,000",
+    cadence: "one-time",
+    blurb: "Everything, paid once. For a team that wants it all, no subscription.",
     features: [
-      "Everything in Track",
-      "Team seats & roles",
-      "Approve actions before they run",
-      "Export & activity trail",
-      "Priority support",
+      "Everything in Business",
+      "Full workspace for every member",
+      "All AI features & automations",
+      "No recurring fee — one payment",
     ],
     cta: "Talk to sales",
     href: "/auth?mode=signup&next=/dashboard",
@@ -130,7 +136,7 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">
-            The review is free. Tracking pays for itself.
+            Start free. Upgrade when you need the full workspace.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
             Every plan includes unlimited reviews. No credit card required to see
@@ -138,14 +144,14 @@ export function Pricing() {
           </p>
         </motion.div>
 
-        <div className="mx-auto mt-16 grid max-w-5xl gap-4 lg:grid-cols-3">
+        <div className="mx-auto mt-16 grid max-w-5xl items-stretch gap-4 lg:grid-cols-3">
           {TIERS.map((tier, i) => (
             <TierCard key={tier.name} tier={tier} index={i} />
           ))}
         </div>
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
-          All prices in USD · cancel anytime · first review free, no account required
+          All prices in USD · cancel anytime · Team is a one-time payment, not a subscription
         </p>
       </div>
     </section>
