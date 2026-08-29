@@ -1,5 +1,4 @@
 import type {
-  Account,
   ActivityRecord,
   AgentMessage,
   AnalysisResult,
@@ -27,8 +26,6 @@ import { daysFromNow } from "./dates";
 
 export const KEYS = {
   sessions: "wt.sessions",
-  accounts: "wt.accounts",
-  currentAccount: "wt.currentAccount",
   gmail: "wt.gmail",
   discovery: "wt.discovery",
   auditSessions: "wt.auditSessions",
@@ -114,55 +111,6 @@ export function transferSessionToAccount(sessionId: string, userId: string): Ano
   if (!session) return null;
   const updated = updateSession(sessionId, { transferredToUserId: userId });
   return updated;
-}
-
-/* ------------------------------ accounts ------------------------------ */
-
-export function getAccount(id: string): Account | null {
-  const accounts = read<Record<string, Account>>(KEYS.accounts, {});
-  return accounts[id] ?? null;
-}
-
-export function getAccountByEmail(email: string): Account | null {
-  const accounts = read<Record<string, Account>>(KEYS.accounts, {});
-  return Object.values(accounts).find((a) => a.email.toLowerCase() === email.toLowerCase()) ?? null;
-}
-
-export function createAccount(
-  email: string,
-  name: string,
-  provider: "google" | "email"
-): Account {
-  const existing = getAccountByEmail(email);
-  if (existing) {
-    setCurrentAccount(existing.id);
-    return existing;
-  }
-  const account: Account = {
-    id: uid("u"),
-    email,
-    name,
-    provider,
-    createdAt: new Date().toISOString(),
-  };
-  const accounts = read<Record<string, Account>>(KEYS.accounts, {});
-  accounts[account.id] = account;
-  write(KEYS.accounts, accounts);
-  setCurrentAccount(account.id);
-  return account;
-}
-
-export function getCurrentAccount(): Account | null {
-  const id = read<string | null>(KEYS.currentAccount, null);
-  return id ? getAccount(id) : null;
-}
-
-export function setCurrentAccount(id: string | null): void {
-  write(KEYS.currentAccount, id);
-}
-
-export function logout(): void {
-  setCurrentAccount(null);
 }
 
 /* ------------------------------ gmail ------------------------------ */

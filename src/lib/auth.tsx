@@ -1,20 +1,15 @@
 "use client";
 
 /* ------------------------------------------------------------------ */
-/*  Auth abstraction.                                                  */
+/*  Auth abstraction - Clerk only.                                    */
 /*                                                                     */
-/*  When Clerk keys are present (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`), */
-/*  the app is fully authenticated through Clerk. Without keys it      */
-/*  falls back to the localStorage demo accounts so the whole product  */
-/*  still runs with zero configuration (and the build stays green).    */
-/*  The flag is read from the build-time env, so the branch taken is   */
-/*  identical on server and client for a given build.                  */
+/*  Identity comes exclusively from Clerk. There is no fallback to     */
+/*  localStorage demo accounts: without Clerk keys the app reports an  */
+/*  unauthenticated state instead of fabricating a session.            */
 /* ------------------------------------------------------------------ */
 
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import type { Account } from "./types";
-import { getCurrentAccount, logout as legacyLogout } from "./store";
 
 export const isClerkEnabled =
   typeof process !== "undefined" &&
@@ -24,27 +19,25 @@ export interface AuthUser {
   id: string | null;
   name: string;
   email: string;
-  provider: "google" | "email" | "clerk";
+  provider: "clerk";
   providerLabel: string;
   /** False only while Clerk is still loading its session. */
   isLoaded: boolean;
-  /** The raw Clerk user, when signed in via Clerk. */
+  /** The raw Clerk user, when signed in. */
   user: ReturnType<typeof useUser>["user"];
-  legacyAccount: Account | null;
 }
 
 const NO_USER: Pick<AuthUser, "user"> = { user: null };
 
-function fromLegacy(account: Account | null): AuthUser {
+function anon(isLoaded: boolean): AuthUser {
   return {
-    id: account?.id ?? null,
-    name: account?.name ?? "",
-    email: account?.email ?? "",
-    provider: account?.provider ?? "email",
-    providerLabel: account?.provider === "google" ? "Google" : "Email & password",
-    isLoaded: true,
+    id: null,
+    name: "",
+    email: "",
+    provider: "clerk",
+    providerLabel: "",
+    isLoaded,
     ...NO_USER,
-    legacyAccount: account,
   };
 }
 
@@ -62,29 +55,27 @@ function fromClerk(user: NonNullable<ReturnType<typeof useUser>["user"]>): AuthU
     providerLabel: googleAccount ? "Google" : "Email & password",
     isLoaded: true,
     user,
-    legacyAccount: null,
   };
 }
 
 /**
- * Current user, either from Clerk or the legacy localStorage account.
- * `isLoaded` flips to true once the auth state is known; callers gate
- * their UI on it so there is never a hydration mismatch.
+ * Current user from Clerk. `isLoaded` flips to true once the auth state
+ * is known; callers gate their UI on it so there is never a hydration
+ * mismatch. When Clerk isn't configured (no publishable key) this returns
+ * an unauthenticated user rather than a fabricated demo account.
  */
 export function useAuthUser(): AuthUser {
   /* eslint-disable react-hooks/rules-of-hooks -- isClerkEnabled is a static per-build flag, so the hook call order is identical on every render */
   if (isClerkEnabled) {
     const { user, isLoaded } = useUser();
-    if (!isLoaded) {
-      return { ...fromLegacy(getCurrentAccount()), isLoaded: false };
-    }
-    return user ? fromClerk(user) : fromLegacy(getCurrentAccount());
+    if (!isLoaded) return anon(false);
+    return user ? fromClerk(user) : anon(true);
   }
-  return fromLegacy(getCurrentAccount());
+  return anon(true);
   /* eslint-enable react-hooks/rules-of-hooks */
 }
 
-/** Sign out of Clerk (or clear the demo account in fallback mode). */
+/** Sign out of Clerk (no-op navigation when Clerk isn't configured). */
 export function useAuthSignOut(): () => void {
   const router = useRouter();
   /* eslint-disable react-hooks/rules-of-hooks -- static per-build flag, see useAuthUser */
@@ -94,7 +85,6 @@ export function useAuthSignOut(): () => void {
     if (clerk) {
       void clerk.signOut({ redirectUrl: "/" });
     } else {
-      legacyLogout();
       router.push("/");
     }
   };

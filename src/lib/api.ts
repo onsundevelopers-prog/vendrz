@@ -9,10 +9,7 @@
 /*  POST   /api/v1/contracts/upload        → createAnonymousSession    */
 /*  GET    /api/v1/jobs/{job_id}           → session.pipelineStatus    */
 /*  GET    /api/v1/results/{session_id}    → session.result            */
-/*  Auth is handled by Clerk (@clerk/nextjs) when configured; without     */
-/*  keys the app falls back to localStorage demo accounts.                */
-/*  POST   /api/v1/auth/signup             → createAccount (legacy)      */
-/*  POST   /api/v1/auth/login              → setCurrentAccount (legacy)  */
+/*  Auth is handled by Clerk (@clerk/nextjs) - there is no fallback auth. */
 /*  POST   /api/v1/sessions/{id}/transfer  → transferSessionToAccount    */
 /*  POST   /api/v1/gmail/connect           → connectGmail              */
 /*  POST   /api/v1/gmail/disconnect        → disconnectGmail           */
@@ -28,12 +25,6 @@ export {
   updateSession,
   createAnonymousSession,
   transferSessionToAccount,
-  getAccount,
-  getAccountByEmail,
-  createAccount,
-  getCurrentAccount,
-  setCurrentAccount,
-  logout,
   getGmailConnection,
   connectGmail,
   disconnectGmail,

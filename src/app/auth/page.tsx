@@ -1,17 +1,14 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Lock, Mail, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { SignIn, SignUp, useUser } from "@clerk/nextjs";
-import { GoogleIcon } from "@/components/brand/GoogleIcon";
 import { getSession, transferSessionToAccount } from "@/lib/store";
-import { createAccount } from "@/lib/store";
 import { isClerkEnabled } from "@/lib/auth";
 import { Logo } from "@/components/brand/Logo";
-import { Button } from "@/components/ui/Button";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -218,150 +215,20 @@ function ClerkAuthPage() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Legacy demo mode (no Clerk keys configured)                        */
+/*  No Clerk keys configured - show a clear state instead of a fake    */
+/*  login form. Auth is Clerk-only; nothing fabricates a session.      */
 /* ------------------------------------------------------------------ */
 
-const CARD = "rounded-xl border border-line bg-[#0d0d11] p-6 sm:p-7";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[12px] font-medium text-muted">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-function Divider() {
-  return (
-    <div className="my-5 flex items-center gap-3">
-      <span className="h-px flex-1 bg-white/10" />
-      <span className="text-[11px] uppercase tracking-[0.1em] text-muted">or with email</span>
-      <span className="h-px flex-1 bg-white/10" />
-    </div>
-  );
-}
-
-function LegacyAuthPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const mode = searchParams.get("mode") === "login" ? "login" : "signup";
-  const sessionId = searchParams.get("session");
-  const next = searchParams.get("next") ?? "/dashboard";
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [busy, setBusy] = useState<"google" | "email" | null>(null);
-
-  const finish = (accountId: string) => {
-    if (sessionId) transferSessionToAccount(sessionId, accountId);
-    router.push(next);
-  };
-
-  const googleSignIn = () => {
-    setBusy("google");
-    setTimeout(() => {
-      const account = createAccount("you@example.com", "You", "google");
-      finish(account.id);
-    }, 900);
-  };
-
-  const emailSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.includes("@")) return;
-    setBusy("email");
-    setTimeout(() => {
-      const account = createAccount(email, name.trim() || email.split("@")[0], "email");
-      finish(account.id);
-    }, 700);
-  };
-
+function UnconfiguredPage() {
   return (
     <AuthSplit>
-      <SessionBanner sessionId={sessionId} mode={mode} />
-      <AuthHeader mode={mode} />
-      <div className="mt-6">
-        <div className={CARD}>
-          <Button
-            variant="outline"
-            className="mt-1 w-full"
-            onClick={googleSignIn}
-            disabled={busy !== null}
-          >
-            {busy === "google" ? (
-              <span className="size-4 animate-spin rounded-full border-2 border-muted border-t-fg" />
-            ) : (
-              <GoogleIcon className="size-4" />
-            )}
-            {mode === "signup" ? "Continue with Google" : "Log in with Google"}
-          </Button>
-
-          <Divider />
-
-          <form onSubmit={emailSignIn} className="space-y-4">
-            {mode === "signup" && (
-              <Field label="Name">
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Alex Smith"
-                  className="auth-input"
-                />
-              </Field>
-            )}
-            <Field label="Email">
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  className="auth-input pl-9"
-                />
-              </div>
-            </Field>
-            <Field label="Password">
-              <div className="relative">
-                <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
-                  className="auth-input pl-9"
-                />
-              </div>
-            </Field>
-            <button
-              type="submit"
-              disabled={busy !== null || !email.includes("@")}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
-            >
-              {busy === "email" ? (
-                <span className="size-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
-              ) : mode === "signup" ? (
-                "Create account"
-              ) : (
-                "Log in"
-              )}
-            </button>
-          </form>
-
-          <p className="mt-5 text-center text-[12.5px] text-muted">
-            {mode === "signup" ? "Already have an account?" : "New here?"}{" "}
-            <Link
-              href={`/auth?mode=${mode === "signup" ? "login" : "signup"}${sessionId ? `&session=${sessionId}` : ""}`}
-              className="font-medium text-zinc-300 hover:text-fg"
-            >
-              {mode === "signup" ? "Log in" : "Create an account"}
-            </Link>
-          </p>
-        </div>
+      <div className="rounded-xl border border-line bg-[#0d0d11] p-6 text-center sm:p-7">
+        <p className="text-[14px] font-medium text-fg">Sign-in isn&apos;t configured yet</p>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+          Add <span className="font-mono text-zinc-300">NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</span>{" "}
+          and <span className="font-mono text-zinc-300">CLERK_SECRET_KEY</span> to your
+          environment and restart, then sign-in will work here.
+        </p>
       </div>
     </AuthSplit>
   );
@@ -372,7 +239,7 @@ function LegacyAuthPage() {
 export default function AuthPage() {
   return (
     <Suspense>
-      {isClerkEnabled ? <ClerkAuthPage /> : <LegacyAuthPage />}
+      {isClerkEnabled ? <ClerkAuthPage /> : <UnconfiguredPage />}
     </Suspense>
   );
 }
