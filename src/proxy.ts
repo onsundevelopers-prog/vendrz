@@ -27,6 +27,10 @@ export default hasClerkKeys
 
 export const config = {
   matcher: [
+    // Clerk app-origin proxy: with the instance frontend API proxied at
+    // https://<host>/__clerk, these requests must reach clerkMiddleware so
+    // it can forward them to Clerk's backend.
+    "/__clerk/:path*",
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
