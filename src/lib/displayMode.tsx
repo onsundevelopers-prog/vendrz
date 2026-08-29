@@ -3,18 +3,17 @@
 /* ------------------------------------------------------------------ */
 /*  Dashboard plan + display mode.                                    */
 /*                                                                     */
-/*  noma has five tiers:                                              */
+/*  noma has four tiers:                                              */
 /*    - Free ($0)      - Simple workspace, savings page, 5 AI msgs/mo  */
-/*    - Pro ($11/mo)   - + Gmail, alerts, risk scoring, 100 AI msgs/mo */
-/*    - Growth ($20/mo)- Business workspace, unlimited AI, exports     */
-/*    - Business ($200/mo) - + team, automations, priority processing  */
-/*    - Team ($999 one-time) - everything, one payment                 */
+/*    - Team ($20/mo)  - Business workspace, Gmail, unlimited AI       */
+/*    - Business ($200/mo) - + team/roles, automations, support        */
+/*    - Enterprise (custom) - everything, contact sales                */
 /*                                                                     */
 /*  The plan gates features:                                           */
-/*    - display mode: Free/Pro use the Simple workspace; Growth,       */
-/*      Business and Team unlock the dense Business workspace.         */
-/*    - AI messages: Free 5 / Pro 100 / paid-above unlimited, counted  */
-/*      per calendar month (see store.getAiUsage / incrementAiUsage).  */
+/*    - display mode: Free uses the Simple workspace; Team, Business   */
+/*      and Enterprise unlock the dense Business workspace.            */
+/*    - AI messages: Free 5 / paid tiers unlimited, counted per        */
+/*      calendar month (see store.getAiUsage / incrementAiUsage).      */
 /*    - Gmail: Free is excluded; every paid tier can connect.          */
 /*                                                                     */
 /*  Paid plans unlock through a verified PayPal subscription (Plan     */
@@ -28,7 +27,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { PayPalSubscribe } from "@/components/dashboard/PayPalSubscribe";
 
 export type DashboardMode = "simple" | "business";
-export type Plan = "free" | "pro" | "growth" | "business" | "team";
+export type Plan = "free" | "team" | "business" | "enterprise";
 
 export interface PlanDef {
   id: Plan;
@@ -53,7 +52,7 @@ export const PLANS: PlanDef[] = [
     name: "Free",
     price: "$0",
     cadence: "forever",
-    blurb: "A clean, free workspace to see where your money is going.",
+    blurb: "For individuals just getting started with Noma.",
     features: [
       "What needs attention, at a glance",
       "Upcoming renewals, risks & savings",
@@ -65,36 +64,19 @@ export const PLANS: PlanDef[] = [
     gmail: false,
   },
   {
-    id: "pro",
-    name: "Pro",
-    price: "$11",
-    cadence: "/month",
-    blurb: "For people who want vendor email and alerts on top of the essentials.",
-    features: [
-      "Everything in Free",
-      "Gmail integration - read vendor correspondence",
-      "Renewal & cancellation-deadline alerts",
-      "Price-increase detection & savings opportunities",
-      "Vendor risk scoring",
-      "100 AI messages per month",
-    ],
-    mode: "simple",
-    aiMessages: 100,
-    gmail: true,
-  },
-  {
-    id: "growth",
-    name: "Growth",
+    id: "team",
+    name: "Team",
     price: "$20",
     cadence: "/month",
-    blurb: "The full operational workspace for companies that need everything.",
+    blurb: "For teams building a shared view of every contract and vendor.",
     features: [
-      "Everything in Pro",
+      "Gmail integration - read vendor correspondence",
+      "Renewal & cancellation-deadline alerts",
+      "Price-increase detection & risk scoring",
       "Business workspace - dense tables, filters, schema view",
       "Complete activity log & Business dashboard",
       "Unlimited AI messages",
       "Export to CSV / PDF",
-      "Priority AI processing",
     ],
     mode: "business",
     aiMessages: Infinity,
@@ -105,11 +87,11 @@ export const PLANS: PlanDef[] = [
     name: "Business",
     price: "$200",
     cadence: "/month",
-    blurb: "Growth, plus team collaboration and advanced automations.",
+    blurb: "For companies that need advanced features and administration.",
     features: [
-      "Everything in Growth",
       "Team members, roles & permissions",
       "Advanced automations",
+      "Priority AI processing",
       "Dedicated support",
     ],
     mode: "business",
@@ -117,16 +99,16 @@ export const PLANS: PlanDef[] = [
     gmail: true,
   },
   {
-    id: "team",
-    name: "Team",
-    price: "$999",
-    cadence: "one-time",
-    blurb: "Everything, paid once. For a team that wants it all, no subscription.",
+    id: "enterprise",
+    name: "Enterprise Scale",
+    price: "Custom",
+    cadence: "pricing",
+    blurb: "For organizations building scalable, flexible workflows with powerful governance.",
     features: [
-      "Everything in Business",
-      "Full workspace for every member",
-      "All AI features & automations",
-      "No recurring fee - one payment",
+      "Custom onboarding & migration",
+      "Dedicated success manager",
+      "Custom contracts & SLA",
+      "Advanced governance & audit",
     ],
     mode: "business",
     aiMessages: Infinity,
@@ -147,17 +129,15 @@ export function planDef(plan: Plan): PlanDef {
 export const BUSINESS_PRICE = "$200/month";
 
 /** Plans that unlock the dense Business workspace. */
-const BUSINESS_PLANS: readonly Plan[] = ["growth", "business", "team"];
-/** Plans shown in the upgrade picker (all paid tiers; Team is one-time/sales). */
-const UPGRADE_PLANS: readonly Plan[] = ["pro", "growth", "business", "team"];
+const BUSINESS_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
+/** Plans shown in the upgrade picker (all paid tiers; Enterprise is sales). */
+const UPGRADE_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
 
 /** The PayPal plan id configured for a tier (undefined = not wired yet). */
 export function paypalPlanId(plan: Plan): string | undefined {
   switch (plan) {
-    case "pro":
-      return process.env.NEXT_PUBLIC_PAYPAL_PLAN_PRO_ID?.trim() || undefined;
-    case "growth":
-      return process.env.NEXT_PUBLIC_PAYPAL_PLAN_GROWTH_ID?.trim() || undefined;
+    case "team":
+      return process.env.NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID?.trim() || undefined;
     case "business":
       return (
         process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID?.trim() ||
@@ -210,7 +190,7 @@ const DisplayModeContext = createContext<DisplayModeContextValue>({
   upgradeOpen: false,
   requestUpgrade: () => {},
   closeUpgrade: () => {},
-  upgradeTarget: "growth",
+  upgradeTarget: "team",
   activatePlan: () => {},
   switchToFree: () => {},
   aiMessageLimit: PLANS[0].aiMessages,
@@ -233,7 +213,7 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
   const [plan, setPlanState] = useState<Plan>("free");
   const [ready, setReady] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [upgradeTarget, setUpgradeTarget] = useState<Plan>("growth");
+  const [upgradeTarget, setUpgradeTarget] = useState<Plan>("team");
 
   useEffect(() => {
     // One-time read on mount; both updates are render-gated so there is no
@@ -258,7 +238,7 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
       if (m === "business") {
         if (!plan || !BUSINESS_PLANS.includes(plan)) {
           // Plan without Business access - gate it behind the upgrade.
-          setUpgradeTarget("growth");
+          setUpgradeTarget("team");
           setUpgradeOpen(true);
           return;
         }
@@ -274,7 +254,7 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
   );
 
   const requestUpgrade = useCallback((planId?: Plan) => {
-    setUpgradeTarget(planId ?? "growth");
+    setUpgradeTarget(planId ?? "team");
     setUpgradeOpen(true);
   }, []);
   const closeUpgrade = useCallback(() => setUpgradeOpen(false), []);
@@ -440,12 +420,12 @@ function UpgradeOverlay() {
           ))}
         </ul>
 
-        {selected === "team" ? (
+        {selected === "enterprise" ? (
           <a
-            href="mailto:sales@noma.app?subject=Team%20plan"
+            href="mailto:sales@noma.app?subject=Enterprise%20plan"
             className="mt-5 flex h-10 w-full items-center justify-center rounded-md bg-white text-[13px] font-semibold text-black transition-opacity hover:opacity-90"
           >
-            Talk to sales
+            Contact sales
           </a>
         ) : canPay ? (
           <PayPalSubscribe planId={selectedPlanId as string} onSuccess={handlePayPalSuccess} />

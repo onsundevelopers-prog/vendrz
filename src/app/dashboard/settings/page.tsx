@@ -277,7 +277,7 @@ export default function SettingsPage() {
                 title="Gmail"
                 desc={
                   !canUseGmail
-                    ? "Gmail requires a paid plan (Pro or higher)."
+                    ? "Gmail requires a paid plan (Team or higher)."
                     : gmail?.connected
                       ? `Connected${gmail.email ? ` as ${gmail.email}` : ""}${gmail.connectedAt ? ` · ${new Date(gmail.connectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}. Vendor correspondence is read with read-only access.`
                       : gmail?.reconnectRequired
@@ -292,7 +292,7 @@ export default function SettingsPage() {
                 action={
                   !canUseGmail ? (
                     <button
-                      onClick={() => requestUpgrade("pro")}
+                      onClick={() => requestUpgrade("team")}
                       className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
                     >
                       Upgrade for Gmail

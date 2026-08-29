@@ -36,10 +36,8 @@ export async function POST(req: NextRequest) {
     const businessPlan =
       process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID ?? process.env.PAYPAL_PLAN_ID ?? "";
     if (businessPlan) planIdToTier[businessPlan] = "business";
-    const proPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_PRO_ID ?? "";
-    if (proPlan) planIdToTier[proPlan] = "pro";
-    const growthPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_GROWTH_ID ?? "";
-    if (growthPlan) planIdToTier[growthPlan] = "growth";
+    const teamPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID ?? "";
+    if (teamPlan) planIdToTier[teamPlan] = "team";
 
     const tier = sub.planId ? planIdToTier[sub.planId] : undefined;
     if (!tier) {

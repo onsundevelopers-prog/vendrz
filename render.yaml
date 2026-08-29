@@ -48,11 +48,9 @@ services:
         value: BAAjyAyhnMTDiBOTtiavA40HQ7ObZlJ1SQkvhwYk8OTWkBd_Jdmlkk-QR0GMA_ds9YGun_QzJGJIf7p8eY
       - key: NEXT_PUBLIC_PAYPAL_PLAN_ID
         value: P-6JW433095T554031YNKJDN3I
-      # Pro ($11/mo) and Growth ($20/mo) subscription plans - create them in
-      # PayPal Billing > Plans and paste the ids here.
-      - key: NEXT_PUBLIC_PAYPAL_PLAN_PRO_ID
-        sync: false
-      - key: NEXT_PUBLIC_PAYPAL_PLAN_GROWTH_ID
+      # Team ($20/mo) subscription plan - create it in PayPal Billing > Plans
+      # and paste the id here.
+      - key: NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID
         sync: false
       - key: PAYPAL_CLIENT_ID
         sync: false
