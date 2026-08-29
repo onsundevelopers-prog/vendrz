@@ -25,6 +25,11 @@ services:
         value: https://ollama.com
       - key: OLLAMA_API_KEY
         sync: false            # set it in the Render dashboard
+      # Google Gemini - automatic fallback when Ollama is unavailable/errors.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        sync: false
       # Clerk authentication.
       - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
         sync: false

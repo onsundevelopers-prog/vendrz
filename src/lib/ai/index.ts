@@ -7,10 +7,15 @@
 /*                                                                     */
 /*  AI_PROVIDER=ollama_cloud  (default) - hosted models on ollama.com  */
 /*  AI_PROVIDER=ollama_local            - local `ollama serve`         */
-/*  AI_PROVIDER=gemini | vllm           - planned, not implemented     */
+/*  AI_PROVIDER=gemini                 - Google Gemini directly        */
+/*                                                                     */
+/*  Ollama providers transparently fall back to Gemini when they are   */
+/*  unreachable or error (as long as a Gemini key is configured), so   */
+/*  an Ollama outage never takes down the analysis pipeline.           */
 /* ------------------------------------------------------------------ */
 
 import { LocalOllamaWithCloudFallback, OllamaCloudProvider } from "./ollama";
+import { GeminiProvider, geminiApiKey, WithGeminiFallback } from "./gemini";
 import type { AIProvider, AIProviderId } from "./provider";
 
 export type { AIProvider, AIProviderId };
@@ -28,10 +33,27 @@ export type {
   ToolDefinition,
 } from "./provider";
 
-const SUPPORTED: AIProviderId[] = ["ollama_cloud", "ollama_local"];
-const KNOWN: AIProviderId[] = [...SUPPORTED, "gemini", "vllm"];
+const SUPPORTED: AIProviderId[] = ["ollama_cloud", "ollama_local", "gemini"];
+const KNOWN: AIProviderId[] = [...SUPPORTED, "vllm"];
 
 let cached: AIProvider | null = null;
+
+/** Ollama Cloud, wrapped so a failure retries against Gemini. */
+function buildOllamaCloud(): AIProvider {
+  try {
+    return new WithGeminiFallback(new OllamaCloudProvider());
+  } catch (err) {
+    // No OLLAMA_API_KEY at all - if Gemini is configured, use it instead
+    // of failing the whole app.
+    if (geminiApiKey()) {
+      console.warn(
+        "[ai] OLLAMA_API_KEY is not set; using Gemini as the primary provider."
+      );
+      return new GeminiProvider();
+    }
+    throw err;
+  }
+}
 
 /**
  * The active AI provider for this process.
@@ -48,7 +70,7 @@ export function getAIProvider(): AIProvider {
   const id = KNOWN.includes(raw as AIProviderId) ? (raw as AIProviderId) : null;
   if (!id) {
     throw new Error(
-      `Unknown AI_PROVIDER "${raw}". Supported now: ${SUPPORTED.join(", ")}. Planned: gemini, vllm.`
+      `Unknown AI_PROVIDER "${raw}". Supported now: ${SUPPORTED.join(", ")}.`
     );
   }
   if (!SUPPORTED.includes(id)) {
@@ -57,10 +79,13 @@ export function getAIProvider(): AIProvider {
 
   cached =
     id === "ollama_cloud"
-      ? new OllamaCloudProvider()
-      : // Local with a transparent cloud fallback: scanning keeps working
-        // even when the local daemon is down, as long as a cloud key exists.
-        new LocalOllamaWithCloudFallback();
+      ? buildOllamaCloud()
+      : id === "gemini"
+        ? new GeminiProvider()
+        : // Local with a transparent cloud fallback: scanning keeps working
+          // even when the local daemon is down, as long as a cloud key
+          // exists. The chain ends at Gemini if Ollama is fully down.
+          new WithGeminiFallback(new LocalOllamaWithCloudFallback());
   return cached;
 }
 

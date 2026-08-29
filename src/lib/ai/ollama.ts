@@ -40,7 +40,7 @@ export class OllamaCloudProvider extends BaseAIProvider {
     });
   }
 
-  protected complete(params: CompleteParams): Promise<CompleteResult> {
+  public complete(params: CompleteParams): Promise<CompleteResult> {
     return this.client.complete(params);
   }
 }
@@ -67,7 +67,7 @@ export class LocalOllamaProvider extends BaseAIProvider {
     });
   }
 
-  protected complete(params: CompleteParams): Promise<CompleteResult> {
+  public complete(params: CompleteParams): Promise<CompleteResult> {
     return this.client.complete(params);
   }
 }
@@ -105,7 +105,7 @@ export class LocalOllamaWithCloudFallback extends LocalOllamaProvider {
       : null;
   }
 
-  protected async complete(params: CompleteParams): Promise<CompleteResult> {
+  public async complete(params: CompleteParams): Promise<CompleteResult> {
     if (!(await this.localReachable())) {
       if (!this.fallback) {
         throw new Error(

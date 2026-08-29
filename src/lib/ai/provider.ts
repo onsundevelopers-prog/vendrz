@@ -6,13 +6,14 @@
 /*  getAIProvider() in src/lib/ai/index.ts - the app never imports a   */
 /*  concrete provider.                                                 */
 /*                                                                     */
-/*  Supported today: ollama_cloud, ollama_local.                       */
-/*  Future values: gemini, vllm.                                       */
+/*  Supported today: ollama_cloud, ollama_local, gemini.               */
+/*  Future values: vllm.                                               */
 /* ------------------------------------------------------------------ */
 
 import type { ContractExtraction, RichContractExtraction } from "@/lib/types";
 
 export type AIProviderId = "ollama_cloud" | "ollama_local" | "gemini" | "vllm";
+
 
 /** Loose JSON Schema object - documented shape, passed to the model. */
 export type JsonSchema = Record<string, unknown>;

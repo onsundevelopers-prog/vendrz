@@ -307,7 +307,7 @@ export abstract class BaseAIProvider implements AIProvider {
   abstract readonly model: string;
 
   /** The only method a provider must implement: talk to the model. */
-  protected abstract complete(params: CompleteParams): Promise<CompleteResult>;
+  public abstract complete(params: CompleteParams): Promise<CompleteResult>;
 
   /* ------------------------------ transport ------------------------------ */
 
