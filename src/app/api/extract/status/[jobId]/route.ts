@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getJob } from "@/lib/jobs";
+import { triggerJobResume } from "@/lib/extractResume";
 
 /**
  * GET /api/extract/status/[jobId]
@@ -10,6 +11,10 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
+  // If the server restarted mid-analysis, kick off a resume so the client
+  // keeps polling the same job instead of hitting a dead 404.
+  triggerJobResume();
+
   const { jobId } = await params;
   const job = getJob(jobId);
 

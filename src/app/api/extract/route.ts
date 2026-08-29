@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
-import { richToExtraction } from "@/lib/ai/base";
-import { runExtractionPipeline } from "@/lib/ai/extractPipeline";
-import { createJob, setJobStage, completeJob, failJob } from "@/lib/jobs";
+import { createJob, failJob, saveJobText, setJobStage } from "@/lib/jobs";
+import { extractFileText, finishAnalysis, triggerJobResume } from "@/lib/extractResume";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -17,6 +16,10 @@ const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
  */
 export async function POST(req: NextRequest) {
   try {
+    // After a restart, resume any analysis that was interrupted mid-run so
+    // the polling client keeps seeing progress instead of a dead 404.
+    triggerJobResume();
+
     const form = await req.formData();
     const file = form.get("file");
     if (!(file instanceof File)) {
@@ -71,7 +74,8 @@ export async function POST(req: NextRequest) {
 
 /**
  * Background extraction processor.
- * Extracts text, runs the staged pipeline, and persists results.
+ * Extracts text, saves it (so the job can resume after a restart), then
+ * runs the staged pipeline and persists results.
  */
 async function processExtraction(jobId: string, file: File, name: string) {
   const startTime = Date.now();
@@ -82,27 +86,8 @@ async function processExtraction(jobId: string, file: File, name: string) {
 
     // Stage 2: Text extraction
     setJobStage(jobId, "extracting_text", 0);
-    let text: string;
     const textStart = Date.now();
-
-    if (name.endsWith(".pdf")) {
-      const { PDFParse } = await import("pdf-parse");
-      const parser = new PDFParse({ data: Buffer.from(await file.arrayBuffer()) });
-      try {
-        const result = await parser.getText();
-        text = result.text ?? "";
-      } finally {
-        await parser.destroy();
-      }
-    } else if (name.endsWith(".docx")) {
-      const mammoth = await import("mammoth");
-      const buf = Buffer.from(await file.arrayBuffer());
-      const parsed = await mammoth.extractRawText({ buffer: buf });
-      text = parsed.value;
-    } else {
-      text = await file.text();
-    }
-
+    const text = await extractFileText(file, name);
     const textMs = Date.now() - textStart;
     setJobStage(jobId, "extracting_text", 100);
 
@@ -111,97 +96,14 @@ async function processExtraction(jobId: string, file: File, name: string) {
       return;
     }
 
-    // Stage 3: Preprocessing
-    setJobStage(jobId, "preprocessing", 50);
+    // Persist the extracted text so an interrupted analysis can resume
+    // after a server restart without the original file.
+    saveJobText(jobId, text);
 
-    // Stage 4: Staged LLM extraction (parallel chunked calls)
-    setJobStage(jobId, "analyzing", 0);
+    // Stage 3-5: preprocessing, staged LLM extraction, validation
+    await finishAnalysis(jobId, text, file.name);
 
-    const provider = getAIProvider();
-    const pipelineResult = await runExtractionPipeline(
-      provider,
-      text,
-      file.name,
-      (stage, progress) => {
-        setJobStage(jobId, "analyzing", progress);
-      }
-    );
-
-    setJobStage(jobId, "validating", 50);
-
-    // Distinguish a reachable-but-empty document from an unreachable model.
-    // When the LLM tasks all failed, the job should fail loudly with a real
-    // reason instead of silently "completing" with a hollow extraction.
-    if (pipelineResult.taskErrors.length >= 3) {
-      failJob(
-        jobId,
-        "The AI analysis service isn't reachable right now. Start Ollama locally (ollama serve) or check your OLLAMA_API_KEY, then try again."
-      );
-      console.error(
-        `[extract] Job ${jobId}: LLM unreachable - ${pipelineResult.taskErrors.join("; ")}`
-      );
-      return;
-    }
-
-    const rich = pipelineResult.extraction;
-    const hasRealTerms =
-      !!rich.contract_start_date ||
-      !!rich.contract_end_date ||
-      !!rich.cancellation_deadline ||
-      rich.auto_renewal !== null ||
-      rich.contract_value !== null ||
-      rich.price_escalation !== null ||
-      rich.obligations.length > 0 ||
-      rich.risks.length > 0 ||
-      rich.savings_opportunities.length > 0;
-    if (!hasRealTerms) {
-      failJob(
-        jobId,
-        "Couldn't find any contract terms in this file. Try another file."
-      );
-      return;
-    }
-
-    // Stage 5: Map to legacy extraction + result
-    const extraction = richToExtraction(rich);
-    const analysis = {
-      id: `r-${file.name.replace(/\.[^.]+$/, "").toLowerCase()}`,
-      documentName: file.name,
-      vendorName: rich.vendor_name || "Unidentified Vendor",
-      category: "Uncategorized",
-      analyzedAt: new Date().toISOString(),
-      riskScore: 0,
-      riskLabel: "Pending",
-      renewalDate: rich.contract_end_date,
-      cancellationDeadline: rich.cancellation_deadline,
-      autoRenew: rich.auto_renewal,
-      autoRenewNoticeDays: rich.notice_period_days,
-      priceEscalation: rich.price_escalation
-        ? { rate: rich.price_escalation_percentage, trigger: "Annual increase" }
-        : null,
-      annualValue: rich.contract_value,
-      savings: {
-        low: rich.savings_opportunities.reduce((s, o) => s + (o.estimate_low ?? 0), 0),
-        high: rich.savings_opportunities.reduce((s, o) => s + (o.estimate_high ?? 0), 0),
-      },
-      findings: [],
-      opportunities: [],
-      method: ["Staged extraction with parallel LLM calls", `Text extracted in ${textMs}ms`, `Total pipeline: ${Date.now() - startTime}ms`],
-    };
-
-    setJobStage(jobId, "persisting", 80);
-
-    // Complete the job
-    completeJob(jobId, {
-      extraction,
-      analysis,
-      documentName: file.name,
-    });
-
-    console.log(
-      `[extract] Job ${jobId} complete in ${Date.now() - startTime}ms ` +
-      `(${pipelineResult.timings.llmCalls} LLM calls, ~${pipelineResult.timings.tokensEstimate} tokens)`
-    );
+    console.log(`[extract] Job ${jobId} pipeline finished in ${Date.now() - startTime}ms (text extraction ${textMs}ms)`);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     failJob(jobId, message);
