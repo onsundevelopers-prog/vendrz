@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# local encrypted-at-rest data (Gmail tokens etc.)
+/.data/
+
 # diagnostic / scratch output
 /.tmp-*/
 *.e2e-final.cjs

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useAuthUser } from "@/lib/auth";
+import { isClerkEnabled, useAuthUser } from "@/lib/auth";
 import { BUSINESS_PRICE, useDisplayMode } from "@/lib/displayMode";
-import { getContracts, getGmailConnection } from "@/lib/store";
+import { getContracts } from "@/lib/store";
 import { money } from "@/lib/format";
 import { DetailRow } from "@/components/ui/Inspector";
 import { TableFooter } from "@/components/dashboard/table";
@@ -45,15 +45,33 @@ interface AiStatus {
   model: string | null;
 }
 
+interface GmailStatus {
+  connected: boolean;
+  configured?: boolean;
+  email?: string | null;
+  connectedAt?: string;
+  reconnectRequired?: boolean;
+}
+
 export default function SettingsPage() {
   const auth = useAuthUser();
   const userId = auth.id;
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
-  const gmail = useMemo(() => (userId ? getGmailConnection(userId) : null), [userId]);
 
   const [section, setSection] = useState<SectionId>("general");
   const [ai, setAi] = useState<AiStatus>({ provider: null, model: null });
   const { mode, plan, requestUpgrade, switchToFree } = useDisplayMode();
+
+  // Real Gmail connection state from the server (Clerk mode only - the
+  // demo fallback has no server session and stays honestly disconnected).
+  const [gmail, setGmail] = useState<GmailStatus | null>(
+    isClerkEnabled ? null : { connected: false, configured: false }
+  );
+  const [gmailBusy, setGmailBusy] = useState(false);
+  const [gmailMsg, setGmailMsg] = useState<{
+    kind: "ok" | "err";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -62,12 +80,62 @@ export default function SettingsPage() {
       .catch(() => setAi({ provider: null, model: null }));
   }, []);
 
+  useEffect(() => {
+    if (!isClerkEnabled) return;
+    let alive = true;
+    fetch("/api/gmail/status")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive) setGmail(d ?? { connected: false, configured: false });
+      })
+      .catch(() => {
+        if (alive) setGmail({ connected: false, configured: false });
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Surface the result of the OAuth round-trip the callback redirected back with.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time OAuth result surfacing, mirrors the displayMode pattern */
+    const p = new URLSearchParams(window.location.search);
+    const g = p.get("gmail");
+    if (g === "connected") {
+      setGmailMsg({ kind: "ok", text: "Gmail connected. Vendor correspondence can now be read." });
+    } else if (g === "denied") {
+      setGmailMsg({ kind: "err", text: "Gmail access was denied. No mailbox data was shared." });
+    } else if (g === "error") {
+      setGmailMsg({ kind: "err", text: "Couldn't connect Gmail. Please try again." });
+    }
+    if (g) window.history.replaceState({}, "", "/dashboard/settings");
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  const handleDisconnect = async () => {
+    setGmailBusy(true);
+    setGmailMsg(null);
+    try {
+      const res = await fetch("/api/gmail/disconnect", { method: "POST" });
+      if (res.ok) {
+        setGmail({ connected: false, configured: gmail?.configured });
+        setGmailMsg({ kind: "ok", text: "Gmail disconnected. No further mailbox access." });
+      } else {
+        setGmailMsg({ kind: "err", text: "Couldn't disconnect Gmail right now. Try again." });
+      }
+    } catch {
+      setGmailMsg({ kind: "err", text: "Couldn't reach the server. Check your connection." });
+    } finally {
+      setGmailBusy(false);
+    }
+  };
+
   const totalSpend = contracts.reduce((a, c) => a + c.annualSpend, 0);
   const categories = [...new Set(contracts.map((c) => c.category))];
   const autoRenew = contracts.filter((c) => c.autoRenew).length;
   const escalating = contracts.filter((c) => c.escalationRate != null).length;
 
-  const connectedCount = gmail ? 1 : 0;
+  const connectedCount = gmail?.connected ? 1 : 0;
 
   return (
     <div className="flex h-full">
@@ -225,11 +293,35 @@ export default function SettingsPage() {
               <Row
                 title="Gmail"
                 desc={
-                  gmail
-                    ? `Connected ${new Date(gmail.connectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-                    : "Not connected. Vendor correspondence will not be read until it is connected."
+                  gmail?.connected
+                    ? `Connected${gmail.email ? ` as ${gmail.email}` : ""}${gmail.connectedAt ? ` · ${new Date(gmail.connectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}. Vendor correspondence is read with read-only access.`
+                    : gmail?.reconnectRequired
+                      ? "Connection expired or was revoked. Reconnect to keep reading vendor email."
+                      : isClerkEnabled && gmail?.configured === false
+                        ? "Gmail OAuth isn't configured on this deployment yet."
+                        : isClerkEnabled
+                          ? "Not connected. Vendor correspondence will not be read until it is connected."
+                          : "Sign in with Clerk to connect your Gmail account."
                 }
-                state={gmail ? "connected" : "not connected"}
+                state={gmail?.connected ? "connected" : "not connected"}
+                action={
+                  isClerkEnabled && gmail?.connected ? (
+                    <button
+                      onClick={handleDisconnect}
+                      disabled={gmailBusy}
+                      className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-50"
+                    >
+                      {gmailBusy ? "Disconnecting…" : "Disconnect"}
+                    </button>
+                  ) : isClerkEnabled && gmail?.configured !== false ? (
+                    <a
+                      href="/api/gmail/auth"
+                      className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
+                    >
+                      Connect Gmail
+                    </a>
+                  ) : undefined
+                }
               />
               <Row
                 title="Bank / billing"
@@ -241,6 +333,15 @@ export default function SettingsPage() {
                 desc={`${connectedCount} connected`}
                 state={connectedCount > 0 ? "connected" : "not connected"}
               />
+              {gmailMsg && (
+                <p
+                  className={`px-4 py-3 text-[12px] leading-relaxed ${
+                    gmailMsg.kind === "ok" ? "text-zinc-300" : "text-zinc-400"
+                  }`}
+                >
+                  {gmailMsg.text}
+                </p>
+              )}
             </Section>
           )}
 
@@ -344,10 +445,12 @@ function Row({
   title,
   desc,
   state,
+  action,
 }: {
   title: string;
   desc: string;
   state: "connected" | "not connected";
+  action?: React.ReactNode;
 }) {
   return (
     <div className="flex items-start gap-3 border-b border-line/60 px-4 py-3">
@@ -355,13 +458,16 @@ function Row({
         <p className="text-[12.5px] font-medium text-fg">{title}</p>
         <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted">{desc}</p>
       </div>
-      <span className="shrink-0">
-        {state === "connected" ? (
-          <span className="chip chip-neutral">Connected</span>
-        ) : (
-          <span className="chip chip-neutral">Not connected</span>
-        )}
-      </span>
+      <div className="flex shrink-0 items-center gap-2.5">
+        {action}
+        <span>
+          {state === "connected" ? (
+            <span className="chip chip-neutral">Connected</span>
+          ) : (
+            <span className="chip chip-neutral">Not connected</span>
+          )}
+        </span>
+      </div>
     </div>
   );
 }
