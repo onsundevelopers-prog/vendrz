@@ -10,7 +10,7 @@
 /*  AI_PROVIDER=gemini | vllm           - planned, not implemented     */
 /* ------------------------------------------------------------------ */
 
-import { LocalOllamaProvider, OllamaCloudProvider } from "./ollama";
+import { LocalOllamaWithCloudFallback, OllamaCloudProvider } from "./ollama";
 import type { AIProvider, AIProviderId } from "./provider";
 
 export type { AIProvider, AIProviderId };
@@ -58,7 +58,9 @@ export function getAIProvider(): AIProvider {
   cached =
     id === "ollama_cloud"
       ? new OllamaCloudProvider()
-      : new LocalOllamaProvider();
+      : // Local with a transparent cloud fallback: scanning keeps working
+        // even when the local daemon is down, as long as a cloud key exists.
+        new LocalOllamaWithCloudFallback();
   return cached;
 }
 

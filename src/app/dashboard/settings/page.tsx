@@ -292,7 +292,7 @@ export default function SettingsPage() {
               <div className="px-4 py-3">
                 <p className="text-[11.5px] leading-relaxed text-muted">
                   {plan === "business"
-                    ? `Business is active for this workspace (${BUSINESS_PRICE}). You're billed through your PayPal subscription, which you can cancel anytime.`
+                    ? `Business is active for this workspace (${BUSINESS_PRICE}). Your PayPal subscription keeps it unlocked, and once enabled it stays active indefinitely - it is never revoked automatically.`
                     : "You're on the free Simple plan. Upgrade to Business for the full operational workspace."}
                 </p>
               </div>

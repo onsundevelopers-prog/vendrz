@@ -13,9 +13,10 @@
 /*  Business accounts are automatically given Business mode on every   */
 /*  visit - they never see the chooser again.                          */
 /*                                                                     */
-/*  The choice persists in localStorage. Billing itself is not wired   */
-/*  to a payment processor yet, so the upgrade screen says so plainly  */
-/*  instead of pretending a payment happened.                          */
+/*  Once enabled, Business stays on indefinitely: there is no periodic */
+/*  re-verification and no automatic downgrade, so a cancelled or      */
+/*  expired PayPal subscription can never silently revoke access.      */
+/*  The choice persists in localStorage.                               */
 /* ------------------------------------------------------------------ */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -85,29 +86,13 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
     /* eslint-disable react-hooks/set-state-in-effect */
     const storedPlan = readStored<Plan>(PLAN_KEY, ["free", "business"], "free");
     const storedMode = readStored<DashboardMode>(MODE_KEY, ["simple", "business"], null);
-    const storedSubscription = readSubscriptionId();
     setPlanState(storedPlan ?? "free");
     // Business accounts always get Business - never re-ask, never downgrade.
+    // Once the plan is enabled it stays enabled indefinitely: no periodic
+    // PayPal re-verification, so a cancellation/expiry webhook or a network
+    // blip can never silently revoke access.
     if (storedPlan === "business") {
       setModeState("business");
-      // Re-verify the stored subscription server-side. Downgrade only when
-      // the server definitively reports it as no longer active (e.g. a
-      // cancellation webhook came in); if PayPal is unreachable, keep the
-      // current state so a network blip never downgrades a paying user.
-      if (storedSubscription) {
-        fetch(`/api/paypal/subscription?subscriptionId=${encodeURIComponent(storedSubscription)}`)
-          .then((r) => (r.ok ? r.json() : null))
-          .then((data: { active?: boolean } | null) => {
-            if (data && data.active === false) {
-              clearStoredPlan();
-              setPlanState("free");
-              setModeState(null);
-            }
-          })
-          .catch(() => {
-            /* server unreachable - keep current state */
-          });
-      }
     }
     // Free accounts keep their chosen density, but the old "business"
     // preference no longer applies without the plan - they re-choose once.
@@ -188,24 +173,6 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
       {upgradeOpen && <UpgradeOverlay />}
     </DisplayModeContext.Provider>
   );
-}
-
-function readSubscriptionId(): string | null {
-  try {
-    return localStorage.getItem(SUBSCRIPTION_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function clearStoredPlan(): void {
-  try {
-    localStorage.removeItem(PLAN_KEY);
-    localStorage.removeItem(MODE_KEY);
-    localStorage.removeItem(SUBSCRIPTION_KEY);
-  } catch {
-    /* storage unavailable */
-  }
 }
 
 function UpgradeOverlay() {

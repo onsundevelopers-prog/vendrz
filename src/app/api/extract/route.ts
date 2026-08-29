@@ -135,7 +135,7 @@ async function processExtraction(jobId: string, file: File, name: string) {
     if (pipelineResult.taskErrors.length >= 3) {
       failJob(
         jobId,
-        "The analysis service is unavailable right now. Please try again in a moment."
+        "The AI analysis service isn't reachable right now. Start Ollama locally (ollama serve) or check your OLLAMA_API_KEY, then try again."
       );
       console.error(
         `[extract] Job ${jobId}: LLM unreachable - ${pipelineResult.taskErrors.join("; ")}`

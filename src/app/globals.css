@@ -777,3 +777,19 @@ body {
 /*  (The data-mode attribute still rides on the dashboard root so a   */
 /*  future theme can hook in without touching components.)            */
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/*  Clerk - keep the auth flow pure black.                            */
+/*  The appearance objects style the card/inputs; these rules kill the */
+/*  leftover default surfaces: the light footer panel, the "Secured by */
+/*  Clerk" badge, and the orange dev-mode overlay. The brand logo is   */
+/*  the only thing that keeps its color.                               */
+/* ------------------------------------------------------------------ */
+.cl-footer {
+  background: transparent !important;
+}
+.cl-footerItem,
+.cl-footerPages,
+[data-clerk-dev-mode-overlay] {
+  display: none !important;
+}
