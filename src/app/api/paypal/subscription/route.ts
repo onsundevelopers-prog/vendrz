@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPayPalSubscription } from "@/lib/paypal";
+import { getPayPalSubscription, PayPalError } from "@/lib/paypal";
 import {
   getStoredSubscription,
   upsertSubscription,
@@ -52,7 +52,17 @@ export async function GET(req: NextRequest) {
       status: sub.status,
       active,
     });
-  } catch {
+  } catch (err) {
+    // PayPal explicitly says the subscription doesn't exist (404) or the id
+    // is malformed (400) - it is not active, and it never was here.
+    if (err instanceof PayPalError && (err.status === 404 || err.status === 400)) {
+      return NextResponse.json({
+        subscriptionId,
+        status: stored?.status ?? "INACTIVE",
+        active: false,
+        error: "This subscription doesn't exist.",
+      });
+    }
     return NextResponse.json(
       {
         subscriptionId,

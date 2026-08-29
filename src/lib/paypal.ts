@@ -17,9 +17,12 @@
 const PAYPAL_API_BASE = (process.env.PAYPAL_API_BASE ?? "https://api-m.paypal.com").replace(/\/+$/, "");
 
 export class PayPalError extends Error {
-  constructor(message: string) {
+  /** HTTP status PayPal returned (404 = subscription doesn't exist, etc.). */
+  status?: number;
+  constructor(message: string, status?: number) {
     super(message);
     this.name = "PayPalError";
+    this.status = status;
   }
 }
 
@@ -92,7 +95,8 @@ export async function getPayPalSubscription(
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new PayPalError(
-      `PayPal couldn't verify this subscription (${res.status}). ${text.slice(0, 160)}`
+      `PayPal couldn't verify this subscription (${res.status}). ${text.slice(0, 160)}`,
+      res.status
     );
   }
   const data = (await res.json()) as { id?: string; status?: string; plan_id?: string };
@@ -100,6 +104,21 @@ export async function getPayPalSubscription(
     throw new PayPalError("PayPal returned an incomplete subscription record.");
   }
   return { id: data.id, status: data.status, planId: data.plan_id ?? "" };
+}
+
+/* ------------------------- plan id -> tier --------------------------- */
+
+/**
+ * Map a PayPal plan id onto one of our tiers. Returns undefined when the
+ * plan isn't one we sell (so we never grant access to unknown plans).
+ */
+export function mapPlanIdToTier(planId: string): string | undefined {
+  const businessPlan =
+    process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID ?? process.env.PAYPAL_PLAN_ID ?? "";
+  if (businessPlan && planId === businessPlan) return "business";
+  const teamPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID ?? "";
+  if (teamPlan && planId === teamPlan) return "team";
+  return undefined;
 }
 
 /* ------------------------------ webhooks ------------------------------ */
@@ -144,4 +163,29 @@ export async function verifyPayPalWebhookSignature(
   if (!res.ok) return false;
   const data = (await res.json()) as { verification_status?: string };
   return data.verification_status === "SUCCESS";
+}
+
+/* ----------------------- plan metadata helpers ------------------------ */
+
+export interface PlanMetadata {
+  tier: string;
+  subscriptionId: string;
+  status: string;
+  updatedAt: string;
+}
+
+/** Read the paid-plan record stored on the user's Clerk account. */
+export function readPlanMetadata(
+  metadata: Record<string, unknown> | undefined
+): PlanMetadata | null {
+  const plan = metadata?.plan;
+  if (!plan || typeof plan !== "object") return null;
+  const p = plan as Record<string, unknown>;
+  if (typeof p.tier !== "string" || typeof p.subscriptionId !== "string") return null;
+  return {
+    tier: p.tier,
+    subscriptionId: p.subscriptionId,
+    status: typeof p.status === "string" ? p.status : "active",
+    updatedAt: typeof p.updatedAt === "string" ? p.updatedAt : "",
+  };
 }

@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPayPalSubscription } from "@/lib/paypal";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import {
+  getPayPalSubscription,
+  mapPlanIdToTier,
+  PayPalError,
+  type PlanMetadata,
+} from "@/lib/paypal";
 import { upsertSubscription } from "@/lib/paypalStore";
 
 export const runtime = "nodejs";
@@ -9,10 +15,19 @@ export const runtime = "nodejs";
  *
  * Called from the client right after the buyer approves a PayPal
  * subscription. The server asks PayPal directly whether the subscription
- * is real, ACTIVE, and matches the configured Business plan. Only then is
- * Business mode granted - the client's word is never trusted.
+ * is real, ACTIVE, and matches one of our configured plans. Only then is
+ * the plan granted - the client's word is never trusted.
+ *
+ * On success the verified plan is written to the signed-in user's Clerk
+ * account (privateMetadata.plan), so the paid status follows the account
+ * across browsers and devices instead of living only in localStorage.
  */
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
   try {
     const body = (await req.json().catch(() => null)) as {
       subscriptionId?: string;
@@ -26,20 +41,20 @@ export async function POST(req: NextRequest) {
     try {
       sub = await getPayPalSubscription(subscriptionId);
     } catch (err) {
+      if (err instanceof PayPalError && (err.status === 404 || err.status === 400)) {
+        // PayPal explicitly says this subscription doesn't exist.
+        return NextResponse.json(
+          { active: false, error: "This subscription couldn't be found at PayPal." },
+          { status: 200 }
+        );
+      }
       const message = err instanceof Error ? err.message : "Unknown error";
       return NextResponse.json({ error: message }, { status: 502 });
     }
 
     // Map the PayPal plan the subscription actually belongs to onto one of
     // our tiers. The client-sent plan is never used as the source of truth.
-    const planIdToTier: Record<string, string> = {};
-    const businessPlan =
-      process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID ?? process.env.PAYPAL_PLAN_ID ?? "";
-    if (businessPlan) planIdToTier[businessPlan] = "business";
-    const teamPlan = process.env.NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID ?? "";
-    if (teamPlan) planIdToTier[teamPlan] = "team";
-
-    const tier = sub.planId ? planIdToTier[sub.planId] : undefined;
+    const tier = sub.planId ? mapPlanIdToTier(sub.planId) : undefined;
     if (!tier) {
       return NextResponse.json(
         { active: false, error: "This subscription isn't for one of our plans." },
@@ -50,7 +65,7 @@ export async function POST(req: NextRequest) {
     const active = sub.status === "ACTIVE";
     upsertSubscription({
       subscriptionId,
-      planId: sub.planId || businessPlan,
+      planId: sub.planId || "",
       status: active ? "ACTIVE" : "PAYMENT_PENDING",
     });
 
@@ -63,6 +78,26 @@ export async function POST(req: NextRequest) {
             "Your subscription isn't active yet. It can take a moment to activate - try again shortly.",
         },
         { status: 200 }
+      );
+    }
+
+    // Bind the paid plan to the Clerk account so it survives browsers,
+    // devices and logouts (localStorage alone is not the source of truth).
+    const metadata: PlanMetadata = {
+      tier,
+      subscriptionId,
+      status: "active",
+      updatedAt: new Date().toISOString(),
+    };
+    try {
+      const client = await clerkClient();
+      await client.users.updateUser(userId, {
+        privateMetadata: { plan: metadata },
+      });
+    } catch (err) {
+      console.error(
+        `[paypal] Couldn't save plan metadata for ${userId}:`,
+        err instanceof Error ? err.message : err
       );
     }
 

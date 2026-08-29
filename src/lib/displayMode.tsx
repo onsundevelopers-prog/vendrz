@@ -25,6 +25,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { PayPalSubscribe } from "@/components/dashboard/PayPalSubscribe";
+import { isClerkEnabled } from "@/lib/auth";
 
 export type DashboardMode = "simple" | "business";
 export type Plan = "free" | "team" | "business" | "enterprise";
@@ -231,6 +232,57 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
     else setModeState("simple");
     setReady(true);
     /* eslint-enable react-hooks/set-state-in-effect */
+
+    // Server-side plan reconciliation (Clerk mode only). The paid plan is
+    // bound to the Clerk account by /api/paypal/verify, so on every load we
+    // ask the server for the truth and apply it - paid status follows the
+    // user across browsers and devices, and cancelled/expired subscriptions
+    // are revoked even after a serverless restart.
+    if (!isClerkEnabled) return;
+    let localSub: string | null = null;
+    try {
+      localSub = localStorage.getItem(SUBSCRIPTION_KEY);
+    } catch {
+      /* storage unavailable */
+    }
+    const q = localSub ? `?subscriptionId=${encodeURIComponent(localSub)}` : "";
+    fetch(`/api/plan${q}`)
+      .then((res) => (res.ok ? (res.json() as Promise<ServerPlan>) : null))
+      .then((data) => {
+        if (!data) return;
+        // Server confirmed a paid subscription -> apply it everywhere.
+        if (data.active && data.plan && data.plan !== "free") {
+          const def = planDef(data.plan as Plan);
+          try {
+            localStorage.setItem(PLAN_KEY, data.plan as string);
+            localStorage.setItem(MODE_KEY, def.mode);
+            if (data.subscriptionId) {
+              localStorage.setItem(SUBSCRIPTION_KEY, data.subscriptionId);
+            }
+          } catch {
+            /* storage unavailable - applies for this session */
+          }
+          setPlanState(data.plan as Plan);
+          setModeState(def.mode);
+          return;
+        }
+        // Server checked a known subscription and it is no longer active
+        // (or doesn't exist) -> downgrade to Free.
+        if (data.verified && !data.active && localSub) {
+          try {
+            localStorage.setItem(PLAN_KEY, "free");
+            localStorage.setItem(MODE_KEY, "simple");
+            localStorage.removeItem(SUBSCRIPTION_KEY);
+          } catch {
+            /* storage unavailable */
+          }
+          setPlanState("free");
+          setModeState("simple");
+        }
+      })
+      .catch(() => {
+        // Offline or server unreachable - keep the local state.
+      });
   }, []);
 
   const setMode = useCallback(
@@ -463,6 +515,14 @@ function UpgradeOverlay() {
       </div>
     </div>
   );
+}
+
+interface ServerPlan {
+  plan: string;
+  active: boolean;
+  verified: boolean;
+  subscriptionId?: string;
+  status?: string;
 }
 
 export function useDisplayMode(): DisplayModeContextValue {
