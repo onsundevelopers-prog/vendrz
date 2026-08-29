@@ -23,13 +23,16 @@ export function CtaSection() {
           hiding in your spend - before the deadlines pass, not after.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button
-            href="/audit"
-            size="lg"
-            className="w-full px-8 sm:w-auto"
-          >
-            Run your free vendor spend review
-          </Button>
+          {/* Traveling grey border beam around the free audit CTA. */}
+          <div className="border-beam rounded-full p-[1.5px]">
+            <Button
+              href="/audit"
+              size="lg"
+              className="w-full px-8 sm:w-auto"
+            >
+              Run your free vendor spend review
+            </Button>
+          </div>
         </div>
         <p className="mt-5 text-[12px] tracking-tight text-muted">
           No signup · No credit card · First review in under two minutes

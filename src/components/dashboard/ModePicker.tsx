@@ -88,10 +88,10 @@ export function ModePicker() {
         className="text-center"
       >
         <p className="text-[10.5px] font-semibold uppercase tracking-[0.2em] text-muted">
-          noma
+          Noma
         </p>
         <h1 className="mt-3 text-[26px] font-semibold tracking-tight text-fg">
-          How do you want to use noma?
+          How do you want to use Noma?
         </h1>
         <p className="mt-2 text-[13px] text-muted">
           Two ways to work with the same data. You can switch anytime in Settings.

@@ -65,7 +65,7 @@ const RESPONSE_SCHEMA = {
   ],
 };
 
-const SYSTEM_PROMPT = `You are a meticulous contract analyst for noma, a spend-management product.
+const SYSTEM_PROMPT = `You are a meticulous contract analyst for Noma, a spend-management product.
 
 Extract structured data from the contract text that follows. Rules:
 - Only fill a field when the text actually supports it; otherwise use null or leave arrays empty.

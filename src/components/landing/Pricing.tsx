@@ -44,7 +44,7 @@ const TIERS = [
   },
   {
     name: "Team",
-    price: "$1,000",
+    price: "$999",
     cadence: "one-time",
     blurb: "Everything, paid once. For a team that wants it all, no subscription.",
     features: [
@@ -75,7 +75,7 @@ function TierCard({
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay: index * 0.1, ease }}
       whileHover={{ y: -4 }}
-      className={`relative flex flex-col rounded-lg border border-line bg-surface p-6 transition-colors duration-200 hover:border-white/15`}
+      className={`border-sheen card-faded relative flex flex-col rounded-lg p-6`}
     >
       <div className="relative flex flex-1 flex-col">
         <div className="flex items-baseline justify-between">

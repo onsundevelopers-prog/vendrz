@@ -4,7 +4,7 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createAuditSession, updateAuditSession } from "@/lib/store";
-import type { ContractExtraction } from "@/lib/types";
+import { analyzeFile } from "@/lib/extract";
 import { Navbar } from "@/components/landing/Navbar";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -30,93 +30,48 @@ export default function AuditPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
 
+  /** Analyze each selected file and open the first successful review. */
   const onFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!file || uploading) return;
+    if (files.length === 0 || uploading) return;
     setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
+    setNotice(null);
 
-      // /api/extract returns a jobId and extracts in the background, so poll
-      // the job status until it completes, then persist the real extraction.
-      // Without this the review would land on an empty result - the exact
-      // dead-end this flow used to hit.
-      let res: Response;
+    const sessionIds: string[] = [];
+    let failed = false;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setUploadProgress(files.length > 1 ? `Analyzing ${file.name} (${i + 1} of ${files.length})…` : `Analyzing ${file.name}…`);
       try {
-        res = await fetch("/api/extract", { method: "POST", body: fd });
-      } catch {
-        alert("Couldn't reach the extraction service. Check your connection and try again.");
-        return;
-      }
-      const init = (await res.json().catch(() => null)) as {
-        jobId?: string;
-        error?: string;
-      } | null;
-      if (!res.ok || !init?.jobId) {
-        alert(init?.error ?? "Couldn't start extraction. Try another file.");
-        return;
-      }
-
-      const jobId = init.jobId;
-      // The server extracts in the background (local models can take several
-      // minutes for a real contract), so keep polling until the job reaches a
-      // terminal state rather than cutting off after a short fixed timeout.
-      const TERMINAL = new Set(["complete", "failed"]);
-      const MAX_WAIT_MS = 20 * 60 * 1000; // 20 min safety cap
-      const POLL_MS = 2000;
-      const startedAt = Date.now();
-      let consecutiveFailures = 0;
-      while (Date.now() - startedAt < MAX_WAIT_MS) {
-        const statusRes = await fetch(`/api/extract/status/${jobId}`).catch(
-          () => null
+        // The shared helper uploads the file, polls until the analysis
+        // finishes, and retries when a job is lost - it throws only with a
+        // message safe to show the user.
+        const { extraction } = await analyzeFile(file);
+        const session = createAuditSession("manual");
+        updateAuditSession(session.id, {
+          extraction,
+          documentName: file.name,
+          pipelineStatus: "complete",
+        });
+        sessionIds.push(session.id);
+      } catch (err) {
+        failed = true;
+        setNotice(
+          `Couldn't analyze ${file.name}: ${err instanceof Error ? err.message : "Something went wrong."}`
         );
-        const data = (await statusRes?.json().catch(() => null)) as {
-          status?: string;
-          error?: string;
-          result?: { extraction?: ContractExtraction | null };
-        } | null;
-
-        if (data && TERMINAL.has(data.status ?? "")) {
-          if (data.status === "complete") {
-            const extraction = data.result?.extraction;
-            if (!extraction) {
-              alert("Couldn't extract terms from this file. Try another file.");
-              return;
-            }
-            const session = createAuditSession("manual");
-            updateAuditSession(session.id, {
-              extraction,
-              documentName: file.name,
-              pipelineStatus: "complete",
-            });
-            router.push(`/audit/results/${session.id}`);
-            return;
-          }
-          alert(data.error ?? "Couldn't extract terms from this file. Try another file.");
-          return;
-        }
-
-        // A dropped poll is usually transient - only give up after repeated
-        // consecutive failures, never on a single network blip.
-        if (!statusRes || !statusRes.ok || !data) {
-          consecutiveFailures += 1;
-          if (consecutiveFailures >= 3) {
-            alert("Couldn't reach the extraction service. Try again.");
-            return;
-          }
-        } else {
-          consecutiveFailures = 0;
-        }
-        await new Promise((r) => setTimeout(r, POLL_MS));
+        break;
       }
-      alert("Extraction is taking longer than expected. The file is still being processed - please try again shortly.");
-    } catch {
-      alert("Couldn't reach the extraction service.");
-    } finally {
-      setUploading(false);
+    }
+    setUploadProgress(null);
+    setUploading(false);
+
+    if (sessionIds.length > 0) {
+      router.push(`/audit/results/${sessionIds[0]}`);
+    } else if (!failed) {
+      setNotice("No files were selected. Choose a PDF or DOCX to get started.");
     }
   };
 
@@ -168,9 +123,9 @@ export default function AuditPage() {
                 Connect Gmail
               </h3>
               <p className="mt-2 text-[13.5px] leading-relaxed tracking-[-0.01em] text-muted">
-                Read-only scan of your inbox. We surface contract-looking emails and
-                attachments: renewal notices, agreements, and order forms, as reviewable
-                candidates.
+                Read-only scan of your inbox. We surface contract-related emails and
+                attachments - renewal notices, agreements, and order forms - for you to
+                review.
               </p>
             </div>
             <div className="mt-5 flex w-full items-center justify-between">
@@ -238,7 +193,7 @@ export default function AuditPage() {
                 {uploading ? (
                   <>
                     <span className="size-3 animate-spin rounded-full border-2 border-zinc-500 border-t-transparent" />
-                    Extracting…
+                    {uploadProgress ?? "Analyzing…"}
                   </>
                 ) : (
                   "PDF · DOCX · up to 25 MB"
@@ -271,7 +226,7 @@ export default function AuditPage() {
         >
           <span>Read-only access, always</span>
           <span>We cannot move money or modify accounts</span>
-          <span>Results in under 2 minutes</span>
+          <span>Results in under two minutes</span>
         </motion.div>
 
       </div>
@@ -281,6 +236,7 @@ export default function AuditPage() {
         ref={fileInputRef}
         type="file"
         accept=".pdf,.docx,.txt,.md"
+        multiple
         className="hidden"
         onChange={onFileSelected}
       />

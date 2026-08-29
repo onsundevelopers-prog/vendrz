@@ -24,11 +24,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "noma - Vendor Spend Analysis",
-    template: "%s · noma",
+    default: "Noma - Vendor Spend Analysis",
+    template: "%s · Noma",
   },
   description:
-    "Know where your company's money is going - and find where you can save. noma turns transactions, invoices, and contracts into spend analysis: renewals, waste, billing anomalies, and savings opportunities. Run a free review, no signup required.",
+    "Know where your company's money is going - and find where you can save. Noma turns transactions, invoices, and contracts into spend analysis: renewals, waste, billing anomalies, and savings opportunities. Run a free review, no signup required.",
 };
 
 export default function RootLayout({
@@ -42,16 +42,19 @@ export default function RootLayout({
             appearance={{
               theme: dark,
               variables: {
+                // Pure black surfaces - no grey panels anywhere in Clerk.
                 colorPrimary: "#ffffff",
-                colorBackground: "#0d0d11",
-                colorForeground: "#f4f4f5",
-                colorMuted: "#a1a1aa",
-                colorInput: "rgba(255,255,255,0.04)",
-                colorInputForeground: "#f4f4f5",
+                colorBackground: "#000000",
+                colorForeground: "#ffffff",
+                colorMuted: "#d4d4d8",
+                colorMutedForeground: "#d4d4d8",
+                colorInput: "#000000",
+                colorInputForeground: "#ffffff",
+                colorBorder: "rgba(255,255,255,0.18)",
                 borderRadius: "0.75rem",
               },
               elements: {
-                footerActionLink: "text-zinc-200",
+                footerActionLink: "text-white",
                 formButtonPrimary: "bg-white text-black hover:bg-zinc-200",
                 socialButtonsBlockButton: "border-white/15",
               },

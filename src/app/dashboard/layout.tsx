@@ -93,7 +93,7 @@ export default function DashboardLayout({
     () => [
       ...NAV.map((n) => ({
         id: n.href,
-        group: "noma",
+        group: "Noma",
         label: n.label,
         keywords: n.label,
         onSelect: () => router.push(n.href),
@@ -147,13 +147,13 @@ export default function DashboardLayout({
         {/* ---------------------------- top header ---------------------------- */}
         <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-3">
           {/* brand + workspace */}
-          <Link href="/" aria-label="noma home" className="flex shrink-0 items-center rounded-md px-1.5 py-1 hover:bg-hover">
+          <Link href="/" aria-label="Noma home" className="flex shrink-0 items-center rounded-md px-1.5 py-1 hover:bg-hover">
             <Logo className="[&_span:last-child]:text-[14px]" />
           </Link>
 
           <span className="hidden h-4 w-px bg-line sm:block" aria-hidden="true" />
           <span className="hidden truncate text-[12.5px] font-medium text-fg sm:block">
-            {auth.name || "noma"}
+            {auth.name || "Noma"}
           </span>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">

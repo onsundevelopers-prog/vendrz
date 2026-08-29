@@ -25,9 +25,8 @@ export default function ResultsPage() {
         <div className="text-center">
           <p className="text-[15px] font-medium text-fg">Analysis unavailable</p>
           <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-muted">
-            We couldn&apos;t extract terms from this document - the extraction service
-            may have been unavailable. Nothing was estimated; upload the file again
-            to retry.
+            We couldn&apos;t find extractable terms in this document. Nothing was
+            estimated - upload the file again to retry.
           </p>
           <Link href="/upload" className="mt-4 inline-block text-[13px] tracking-tight text-muted underline underline-offset-4 hover:text-fg">
             Back to upload

@@ -39,3 +39,18 @@ services:
         value: /dashboard
       - key: NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
         value: /dashboard
+      # PayPal subscriptions (Business plan). Public values are safe in the
+      # repo; the REST pair is server-only. PAYPAL_WEBHOOK_ID powers the
+      # /api/paypal/webhook endpoint that revokes Business mode on
+      # cancellation/expiry - create the webhook in the PayPal dashboard
+      # (URL: https://<this-app>/api/paypal/webhook) and paste its ID.
+      - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
+        value: BAAjyAyhnMTDiBOTtiavA40HQ7ObZlJ1SQkvhwYk8OTWkBd_Jdmlkk-QR0GMA_ds9YGun_QzJGJIf7p8eY
+      - key: NEXT_PUBLIC_PAYPAL_PLAN_ID
+        value: P-6JW433095T554031YNKJDN3I
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_SECRET
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false

@@ -112,7 +112,7 @@ export default function SettingsPage() {
           {section === "dashboard" && (
             <Section
               title="Plan"
-              sub="How you use noma. Business is part of the paid plan - Simple is free."
+              sub="How you use Noma. Business is part of the paid plan - Simple is free."
             >
               <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
                 {(
@@ -168,8 +168,8 @@ export default function SettingsPage() {
               {plan === "free" && (
                 <p className="px-4 pb-4 text-[11.5px] leading-relaxed text-muted">
                   You&apos;re on the free plan. Business unlocks the full operational
-                  workspace for {BUSINESS_PRICE}. Billing isn&apos;t connected yet - starting
-                  the plan enables it for this workspace now.
+                  workspace for {BUSINESS_PRICE} - subscribing via PayPal activates it
+                  for this workspace.
                 </p>
               )}
               <p className="px-4 pb-4 text-[11px] leading-relaxed text-zinc-600">
@@ -220,7 +220,7 @@ export default function SettingsPage() {
           {section === "integrations" && (
             <Section
               title="Integrations"
-              sub="Connected data sources. Honest states only - nothing is assumed."
+              sub="Connected data sources. Only real connections are shown - nothing is assumed."
             >
               <Row
                 title="Gmail"
@@ -285,12 +285,14 @@ export default function SettingsPage() {
               <DetailRow label="Status">
                 {plan === "business" ? "Active" : "Free plan"}
               </DetailRow>
-              <DetailRow label="Payment method">Not connected</DetailRow>
+              <DetailRow label="Payment method">
+                {plan === "business" ? "PayPal subscription" : "Not connected"}
+              </DetailRow>
               <DetailRow label="Invoices">No invoices on file</DetailRow>
               <div className="px-4 py-3">
                 <p className="text-[11.5px] leading-relaxed text-muted">
                   {plan === "business"
-                    ? `Business is active for this workspace (${BUSINESS_PRICE}). Billing isn't connected to a payment processor yet - you'll set up payment once it is.`
+                    ? `Business is active for this workspace (${BUSINESS_PRICE}). You're billed through your PayPal subscription, which you can cancel anytime.`
                     : "You're on the free Simple plan. Upgrade to Business for the full operational workspace."}
                 </p>
               </div>

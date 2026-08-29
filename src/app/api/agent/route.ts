@@ -31,7 +31,7 @@ interface AgentRequest {
   senderName?: string;
 }
 
-const AGENT_SYSTEM = `You are noma's assistant, a procurement analyst.
+const AGENT_SYSTEM = `You are Noma's assistant, a procurement analyst.
 
 You have access to the user's real vendor contracts, email threads, and activity data.
 You MUST use the available tools to answer questions. Do NOT make up data.

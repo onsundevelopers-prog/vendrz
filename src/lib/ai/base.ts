@@ -34,7 +34,7 @@ const MAX_CONTRACT_CHARS = 60_000;
 
 /* ------------------------------ prompts ------------------------------ */
 
-const CONTRACT_ANALYSIS_SYSTEM = `You are a meticulous contract analyst for noma, a spend-management product.
+const CONTRACT_ANALYSIS_SYSTEM = `You are a meticulous contract analyst for Noma, a spend-management product.
 
 Extract structured data from the contract text. Rules:
 - Only fill a field when the text actually supports it; otherwise use null or leave arrays empty.
@@ -47,7 +47,7 @@ Extract structured data from the contract text. Rules:
 - For each savings opportunity, give a low and high annualized estimate in USD and a one-line ` + "basis" + ` explaining how it was derived; set confirmed to true only when the figure is directly calculable from the document.
 - Return ONLY valid JSON matching the schema. No markdown fences, no commentary.`;
 
-const EMAIL_DRAFT_SYSTEM = `You are a procurement assistant for noma.
+const EMAIL_DRAFT_SYSTEM = `You are a procurement assistant for Noma.
 
 Draft a professional vendor email using ONLY the contract facts provided in the request. Rules:
 - Never invent prices, dates, clauses, or contact details that are not in the provided context.
@@ -55,7 +55,7 @@ Draft a professional vendor email using ONLY the contract facts provided in the 
 - The draft is prepared for human review and approval - it is never sent automatically.
 - Return ONLY valid JSON matching the schema: { subject, body, to }. No markdown fences.`;
 
-const DATA_REASONING_SYSTEM = `You are a procurement analyst for noma.
+const DATA_REASONING_SYSTEM = `You are a procurement analyst for Noma.
 
 Answer the question using ONLY the structured data provided. Rules:
 - Treat the data as ground truth. Never invent companies, contracts, prices, dates, or risks that are not present.
@@ -150,6 +150,29 @@ type Severity = ContractRisk["severity"];
 function strOrNull(v: unknown): string | null {
   return typeof v === "string" && v.trim() ? v.trim() : null;
 }
+
+/**
+ * Coerce a model-provided date into a strict YYYY-MM-DD string.
+ * Accepts plain dates and full ISO datetimes (models frequently return
+ * "2026-12-31T00:00:00.000Z"); anything unparseable becomes null so a
+ * malformed value can never break downstream date math.
+ */
+function dateOrNull(v: unknown): string | null {
+  const s = strOrNull(v);
+  if (!s) return null;
+  const m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s].*)?$/);
+  if (m) {
+    const month = Number(m[2]);
+    const day = Number(m[3]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${m[1].padStart(4, "0")}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+    }
+    return null;
+  }
+  const t = new Date(s).getTime();
+  return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10);
+}
+
 function numOrNull(v: unknown): number | null {
   return typeof v === "number" && Number.isFinite(v)
     ? v
@@ -182,8 +205,8 @@ export function normalizeRichExtraction(input: unknown): RichContractExtraction 
   return {
     vendor_name: strOrNull(r.vendor_name) ?? "Unknown vendor",
     customer_name: strOrNull(r.customer_name) ?? "",
-    contract_start_date: strOrNull(r.contract_start_date),
-    contract_end_date: strOrNull(r.contract_end_date),
+    contract_start_date: dateOrNull(r.contract_start_date),
+    contract_end_date: dateOrNull(r.contract_end_date),
     auto_renewal: boolOrNull(r.auto_renewal),
     renewal_term_months: numOrNull(r.renewal_term_months)
       ? Math.round(numOrNull(r.renewal_term_months)!)
@@ -191,7 +214,7 @@ export function normalizeRichExtraction(input: unknown): RichContractExtraction 
     notice_period_days: numOrNull(r.notice_period_days)
       ? Math.round(numOrNull(r.notice_period_days)!)
       : null,
-    cancellation_deadline: strOrNull(r.cancellation_deadline),
+    cancellation_deadline: dateOrNull(r.cancellation_deadline),
     contract_value: numOrNull(r.contract_value),
     currency: strOrNull(r.currency) ?? "USD",
     billing_frequency: strOrNull(r.billing_frequency),
@@ -237,12 +260,16 @@ export function normalizeRichExtraction(input: unknown): RichContractExtraction 
  */
 export function richToExtraction(rich: RichContractExtraction): ContractExtraction {
   // Worse-case renewal date: end date, or end + renewal term if auto-renewing.
+  // Dates are normalized to YYYY-MM-DD upstream, but guard anyway so a bad
+  // value can never throw and fail the whole extraction.
   const end = rich.contract_end_date ? rich.contract_end_date + "T00:00:00" : null;
   let renewalDate: string | null = rich.contract_end_date;
   if (rich.auto_renewal && rich.renewal_term_months && end) {
     const d = new Date(end);
-    d.setMonth(d.getMonth() + rich.renewal_term_months);
-    renewalDate = d.toISOString().slice(0, 10);
+    if (!Number.isNaN(d.getTime())) {
+      d.setMonth(d.getMonth() + rich.renewal_term_months);
+      renewalDate = d.toISOString().slice(0, 10);
+    }
   }
 
   return {

@@ -3,12 +3,12 @@
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import {
-  createAnonymousSession,
+import { createAnonymousSession,
   transferSessionToAccount,
   updateSession,
 } from "@/lib/store";
 import { runPipeline } from "@/lib/pipeline";
+import { analyzeFile } from "@/lib/extract";
 import { useAuthUser } from "@/lib/auth";
 import type { ContractExtraction, RichContractExtraction } from "@/lib/types";
 import { Navbar } from "@/components/landing/Navbar";
@@ -47,6 +47,7 @@ export default function UploadPage() {
 
   const addFiles = useCallback(
     (list: FileList | File[]) => {
+      if (analyzing) return; // don't accept files mid-batch; they'd never be analyzed
       const incoming = Array.from(list);
       if (incoming.length === 0) return;
       const accepted: UploadRow[] = [];
@@ -63,7 +64,7 @@ export default function UploadPage() {
         setError(null);
       }
     },
-    [validate]
+    [validate, analyzing]
   );
 
   const removeRow = useCallback((id: string) => {
@@ -78,65 +79,12 @@ export default function UploadPage() {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status, error } : r)));
   }, []);
 
-  /** POST a single file to /api/extract and poll until it terminates. Resolves
-      with the real extracted contract terms + analysis; throws on failure so
-      the caller can mark the row accordingly. */
+  /** Upload a single file via the shared extraction helper, which handles
+      retries and re-uploads when a job is lost, and throws with a message
+      that is safe to show the user. */
   const runExtraction = useCallback(
-    async (file: File): Promise<{ extraction: ContractExtraction; analysis: RichContractExtraction | null }> => {
-      const form = new FormData();
-      form.append("file", file);
-
-      let res: Response;
-      try {
-        res = await fetch("/api/extract", { method: "POST", body: form });
-      } catch {
-        throw new Error("Couldn't reach the extraction service. Check your connection and try again.");
-      }
-      const init = (await res.json().catch(() => null)) as { jobId?: string; error?: string } | null;
-      if (!res.ok || !init?.jobId) {
-        throw new Error(init?.error ?? "Couldn't start extraction. Try another file.");
-      }
-
-      const jobId = init.jobId;
-      const TERMINAL = new Set(["complete", "failed"]);
-      const MAX_WAIT_MS = 20 * 60 * 1000;
-      const POLL_MS = 2000;
-      const startedAt = Date.now();
-      let consecutiveFailures = 0;
-
-      while (Date.now() - startedAt < MAX_WAIT_MS) {
-        const statusRes = await fetch(`/api/extract/status/${jobId}`).catch(() => null);
-        const data = (await statusRes?.json().catch(() => null)) as {
-          status?: string;
-          error?: string;
-          result?: { extraction?: ContractExtraction; analysis?: RichContractExtraction };
-        } | null;
-
-        if (data && TERMINAL.has(data.status ?? "")) {
-          if (data.status === "complete") {
-            const extraction = data.result?.extraction;
-            if (!extraction) {
-              throw new Error("Couldn't extract terms from this file. Try another file.");
-            }
-            return { extraction, analysis: data.result?.analysis ?? null };
-          }
-          throw new Error(data.error ?? "Couldn't extract terms from this file. Try another file.");
-        }
-
-        if (!statusRes || !statusRes.ok || !data) {
-          consecutiveFailures += 1;
-          if (consecutiveFailures >= 3) {
-            throw new Error("Couldn't reach the extraction service. Try again.");
-          }
-        } else {
-          consecutiveFailures = 0;
-        }
-        await new Promise((r) => setTimeout(r, POLL_MS));
-      }
-      throw new Error(
-        "Extraction is taking longer than expected. Your file is still being processed - you can check your workspace shortly."
-      );
-    },
+    async (file: File): Promise<{ extraction: ContractExtraction; analysis: RichContractExtraction | null }> =>
+      analyzeFile(file),
     []
   );
 
@@ -241,6 +189,8 @@ export default function UploadPage() {
       }
     } else if (anyErrored) {
       setError("None of the files could be analyzed. Fix the issues above and try again.");
+    } else {
+      setError("No files were analyzed.");
     }
     setAnalyzing(false);
   }, [rows, runExtraction, startAnalysis, fileKind, setRowStatus, auth.id, router]);
@@ -272,7 +222,7 @@ export default function UploadPage() {
         >
           <div className="text-center">
             <span className="inline-flex rounded-md border border-white/[0.08] bg-[#18181B] px-3 py-1.5 text-[12px] tracking-tight text-muted">
-              No signup · No credit card · Results in under a minute
+              No signup · No credit card · Results in under two minutes
             </span>
             <h1 className="mt-6 text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.03em] text-fg sm:text-[34px]">
               Upload your vendor contracts
@@ -366,6 +316,11 @@ export default function UploadPage() {
                         {row.status === "done" && " · analyzed"}
                         {row.status === "error" && " · failed"}
                       </p>
+                      {row.status === "error" && row.error && (
+                        <p className="mt-0.5 text-[11px] leading-snug tracking-tight text-zinc-300">
+                          {row.error}
+                        </p>
+                      )}
                     </div>
                     {row.status === "analyzing" && (
                       <span className="flex size-4 shrink-0 animate-spin items-center justify-center rounded-full border-2 border-zinc-400 border-t-transparent" />
@@ -373,9 +328,7 @@ export default function UploadPage() {
                     {row.status === "done" && (
                       <span aria-hidden="true" className="block h-[7px] w-[11px] shrink-0 rotate-45 border-b-2 border-r-2 border-zinc-200" />
                     )}
-                    {row.status === "error" && (
-                      <span className="shrink-0 text-[11px] text-zinc-100">{row.error}</span>
-                    )}
+
                   </div>
                   <button
                     onClick={(e) => {

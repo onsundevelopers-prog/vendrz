@@ -36,6 +36,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Fail fast on AI misconfiguration instead of creating a job that is
+    // guaranteed to fail minutes later, after the user has been waiting.
+    try {
+      getAIProvider();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      console.error("[extract] AI provider not configured:", message);
+      return NextResponse.json(
+        { error: "The analysis service isn't configured yet. Contact support or check the server logs." },
+        { status: 503 }
+      );
+    }
+
     // Create job and return immediately
     const job = createJob("anonymous", file.name);
     setJobStage(job.id, "queued", 100);
@@ -116,27 +129,60 @@ async function processExtraction(jobId: string, file: File, name: string) {
 
     setJobStage(jobId, "validating", 50);
 
+    // Distinguish a reachable-but-empty document from an unreachable model.
+    // When the LLM tasks all failed, the job should fail loudly with a real
+    // reason instead of silently "completing" with a hollow extraction.
+    if (pipelineResult.taskErrors.length >= 3) {
+      failJob(
+        jobId,
+        "The analysis service is unavailable right now. Please try again in a moment."
+      );
+      console.error(
+        `[extract] Job ${jobId}: LLM unreachable - ${pipelineResult.taskErrors.join("; ")}`
+      );
+      return;
+    }
+
+    const rich = pipelineResult.extraction;
+    const hasRealTerms =
+      !!rich.contract_start_date ||
+      !!rich.contract_end_date ||
+      !!rich.cancellation_deadline ||
+      rich.auto_renewal !== null ||
+      rich.contract_value !== null ||
+      rich.price_escalation !== null ||
+      rich.obligations.length > 0 ||
+      rich.risks.length > 0 ||
+      rich.savings_opportunities.length > 0;
+    if (!hasRealTerms) {
+      failJob(
+        jobId,
+        "Couldn't find any contract terms in this file. Try another file."
+      );
+      return;
+    }
+
     // Stage 5: Map to legacy extraction + result
-    const extraction = richToExtraction(pipelineResult.extraction);
+    const extraction = richToExtraction(rich);
     const analysis = {
       id: `r-${file.name.replace(/\.[^.]+$/, "").toLowerCase()}`,
       documentName: file.name,
-      vendorName: pipelineResult.extraction.vendor_name || "Unidentified Vendor",
+      vendorName: rich.vendor_name || "Unidentified Vendor",
       category: "Uncategorized",
       analyzedAt: new Date().toISOString(),
       riskScore: 0,
       riskLabel: "Pending",
-      renewalDate: pipelineResult.extraction.contract_end_date,
-      cancellationDeadline: pipelineResult.extraction.cancellation_deadline,
-      autoRenew: pipelineResult.extraction.auto_renewal,
-      autoRenewNoticeDays: pipelineResult.extraction.notice_period_days,
-      priceEscalation: pipelineResult.extraction.price_escalation
-        ? { rate: pipelineResult.extraction.price_escalation_percentage, trigger: "Annual increase" }
+      renewalDate: rich.contract_end_date,
+      cancellationDeadline: rich.cancellation_deadline,
+      autoRenew: rich.auto_renewal,
+      autoRenewNoticeDays: rich.notice_period_days,
+      priceEscalation: rich.price_escalation
+        ? { rate: rich.price_escalation_percentage, trigger: "Annual increase" }
         : null,
-      annualValue: pipelineResult.extraction.contract_value,
+      annualValue: rich.contract_value,
       savings: {
-        low: pipelineResult.extraction.savings_opportunities.reduce((s, o) => s + (o.estimate_low ?? 0), 0),
-        high: pipelineResult.extraction.savings_opportunities.reduce((s, o) => s + (o.estimate_high ?? 0), 0),
+        low: rich.savings_opportunities.reduce((s, o) => s + (o.estimate_low ?? 0), 0),
+        high: rich.savings_opportunities.reduce((s, o) => s + (o.estimate_high ?? 0), 0),
       },
       findings: [],
       opportunities: [],

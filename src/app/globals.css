@@ -158,6 +158,56 @@ body {
   }
 }
 
+/* ---------- Faded cards with a slow, subtle border sheen ---------- */
+/* Slightly recessed panels that stay clearly visible while receding
+   behind the page text, plus a soft light that travels around the
+   hairline once every few seconds. Quiet on purpose: no glow, no color. */
+.card-faded {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+@property --sheen-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+.border-sheen {
+  position: relative;
+}
+.border-sheen::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--sheen-angle, 0deg),
+    transparent 0deg,
+    rgba(255, 255, 255, 0.2) 42deg,
+    transparent 96deg,
+    transparent 225deg,
+    rgba(255, 255, 255, 0.1) 265deg,
+    transparent 315deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: sheen-spin 8s linear infinite;
+  opacity: 0.3;
+  transition: opacity 0.35s ease;
+}
+.border-sheen:hover::before {
+  opacity: 0.9;
+}
+@keyframes sheen-spin {
+  to {
+    --sheen-angle: 360deg;
+  }
+}
+
 /* ---------- Auth form inputs (dark) ---------- */
 .auth-input {
   width: 100%;

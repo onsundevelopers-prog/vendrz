@@ -145,7 +145,7 @@ export default function ProcessingPage() {
         </div>
 
         <p className="mt-6 text-center text-[12px] tracking-tight text-muted">
-          Each stage reports real pipeline progress - nothing is faked, nothing is skipped.
+          Progress updates in real time as your contract is analyzed.
         </p>
       </motion.div>
     </main>

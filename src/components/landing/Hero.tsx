@@ -60,7 +60,7 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.55, ease }}
             className="mt-6 max-w-xl text-pretty text-lg font-normal leading-[1.5] tracking-[-0.01em] text-muted"
           >
-            noma turns your financial transactions, invoices, and contracts
+            Noma turns your financial transactions, invoices, and contracts
             into spend analysis: renewals, waste, billing anomalies, and the savings
             hiding inside them.
           </motion.p>

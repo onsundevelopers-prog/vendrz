@@ -104,7 +104,7 @@ export function Navbar() {
       }`}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">
-        <Link href="/" aria-label="noma home" className="shrink-0">
+        <Link href="/" aria-label="Noma home" className="shrink-0">
           <Logo className="[&_span:last-child]:text-[15px]" />
         </Link>
 

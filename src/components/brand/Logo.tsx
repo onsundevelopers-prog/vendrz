@@ -6,7 +6,7 @@ export function Logo({
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <span className="text-[17px] font-semibold tracking-[-0.02em] text-fg">
-        noma
+        Noma
       </span>
     </span>
   );

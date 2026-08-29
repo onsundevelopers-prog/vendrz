@@ -19,6 +19,7 @@
 /* ------------------------------------------------------------------ */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { PayPalSubscribe } from "@/components/dashboard/PayPalSubscribe";
 
 export type DashboardMode = "simple" | "business";
 export type Plan = "free" | "business";
@@ -27,6 +28,7 @@ export const BUSINESS_PRICE = "$200/month";
 
 const MODE_KEY = "vendrz.displayMode";
 const PLAN_KEY = "vendrz.plan";
+const SUBSCRIPTION_KEY = "vendrz.subscription";
 
 interface DisplayModeContextValue {
   /** Effective mode. Null only before the user has chosen (free plan) -
@@ -83,9 +85,30 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
     /* eslint-disable react-hooks/set-state-in-effect */
     const storedPlan = readStored<Plan>(PLAN_KEY, ["free", "business"], "free");
     const storedMode = readStored<DashboardMode>(MODE_KEY, ["simple", "business"], null);
+    const storedSubscription = readSubscriptionId();
     setPlanState(storedPlan ?? "free");
     // Business accounts always get Business - never re-ask, never downgrade.
-    if (storedPlan === "business") setModeState("business");
+    if (storedPlan === "business") {
+      setModeState("business");
+      // Re-verify the stored subscription server-side. Downgrade only when
+      // the server definitively reports it as no longer active (e.g. a
+      // cancellation webhook came in); if PayPal is unreachable, keep the
+      // current state so a network blip never downgrades a paying user.
+      if (storedSubscription) {
+        fetch(`/api/paypal/subscription?subscriptionId=${encodeURIComponent(storedSubscription)}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data: { active?: boolean } | null) => {
+            if (data && data.active === false) {
+              clearStoredPlan();
+              setPlanState("free");
+              setModeState(null);
+            }
+          })
+          .catch(() => {
+            /* server unreachable - keep current state */
+          });
+      }
+    }
     // Free accounts keep their chosen density, but the old "business"
     // preference no longer applies without the plan - they re-choose once.
     else if (storedMode === "simple") setModeState("simple");
@@ -167,8 +190,82 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
   );
 }
 
+function readSubscriptionId(): string | null {
+  try {
+    return localStorage.getItem(SUBSCRIPTION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function clearStoredPlan(): void {
+  try {
+    localStorage.removeItem(PLAN_KEY);
+    localStorage.removeItem(MODE_KEY);
+    localStorage.removeItem(SUBSCRIPTION_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 function UpgradeOverlay() {
   const { closeUpgrade, startBusiness, plan } = useDisplayMode();
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  // Business is paid-only: it unlocks through a verified PayPal subscription
+  // and through nothing else. When PayPal isn't configured there is no way to
+  // enable it, so free users can never toggle themselves into the paid plan.
+  const paypalConfigured =
+    !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID &&
+    !!process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID;
+
+  /** The buyer approved a PayPal subscription. Only enable Business after
+      the server has confirmed with PayPal that it is real and ACTIVE. */
+  const handlePayPalSuccess = useCallback(
+    async (subscriptionId: string) => {
+      setVerifying(true);
+      setVerifyError(null);
+      try {
+        const res = await fetch("/api/paypal/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscriptionId }),
+        });
+        const data = (await res.json().catch(() => null)) as {
+          active?: boolean;
+          error?: string;
+        } | null;
+        if (res.ok && data?.active) {
+          try {
+            localStorage.setItem(SUBSCRIPTION_KEY, subscriptionId);
+          } catch {
+            /* storage unavailable - plan applies for this session */
+          }
+          startBusiness();
+          return;
+        }
+        if (res.status >= 500) {
+          // Server-side trouble (e.g. PayPal credentials misconfigured). The
+          // details stay in the server logs; the user gets a clean message.
+          setVerifyError(
+            "We couldn't verify your subscription right now. If this keeps happening, contact support."
+          );
+          return;
+        }
+        setVerifyError(
+          data?.error ??
+            "We couldn't verify your subscription with PayPal. Try again in a moment."
+        );
+      } catch {
+        setVerifyError(
+          "We couldn't reach the payment service. Check your connection and try again."
+        );
+      } finally {
+        setVerifying(false);
+      }
+    },
+    [startBusiness]
+  );
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
       <div className="w-full max-w-md rounded-xl border border-line-strong bg-surface p-6 shadow-2xl shadow-black/60">
@@ -194,15 +291,31 @@ function UpgradeOverlay() {
             </li>
           ))}
         </ul>
-        <button
-          onClick={startBusiness}
-          className="mt-6 flex h-10 w-full items-center justify-center rounded-md bg-white text-[13px] font-semibold text-black transition-opacity hover:opacity-90"
-        >
-          Start Business plan
-        </button>
+        {paypalConfigured ? (
+          <PayPalSubscribe onSuccess={handlePayPalSuccess} />
+        ) : (
+          <div className="mt-6 rounded-md border border-line bg-canvas px-4 py-3 text-center">
+            <p className="text-[12.5px] font-medium text-fg">Billing isn&apos;t connected yet</p>
+            <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500">
+              Business requires the paid plan and can&apos;t be enabled for free.
+              Check back once payments are live.
+            </p>
+          </div>
+        )}
+        {verifying && (
+          <p className="mt-3 text-center text-[11px] tracking-tight text-muted">
+            Verifying your subscription with PayPal…
+          </p>
+        )}
+        {verifyError && (
+          <p className="mt-3 text-center text-[11px] leading-relaxed text-zinc-400">
+            {verifyError}
+          </p>
+        )}
         <p className="mt-2.5 text-center text-[11px] leading-relaxed text-zinc-500">
-          Billing isn&apos;t connected yet — starting the plan enables Business for
-          this workspace now, and you&apos;ll set up payment once billing is wired up.
+          {paypalConfigured
+            ? `Subscribe to Business for ${BUSINESS_PRICE} - billed securely by PayPal. You can cancel anytime.`
+            : "Business requires the paid plan - it can&apos;t be enabled for free."}
           {plan === "free" && " You can switch back to Simple anytime."}
         </p>
         <button

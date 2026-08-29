@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const ITEMS: { label: string; body: string }[] = [
   {
     label: "Risk score",
-    body: "Deterministic rules, not model vibes - every point attributable to a clause.",
+    body: "Deterministic rules applied to the source text - every point traceable to a clause.",
   },
   {
     label: "Evidence citations",
@@ -13,7 +13,7 @@ const ITEMS: { label: string; body: string }[] = [
   },
   {
     label: "Savings range",
-    body: "Rule-derived estimates with a full paper trail and disclaimer.",
+    body: "Rule-derived estimates with the full methodology disclosed.",
   },
   {
     label: "Renewal alerts",
@@ -37,7 +37,7 @@ function CapabilityCard({
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.55, delay: index * 0.08, ease }}
       whileHover={{ y: -4 }}
-      className="flex aspect-square flex-col items-center justify-center rounded-lg border border-line bg-surface p-5 text-center transition-colors duration-200 hover:border-white/15"
+      className="border-sheen card-faded flex aspect-square flex-col items-center justify-center rounded-lg p-5 text-center"
     >
       <span className="text-[11px] font-medium tracking-[0.14em] text-zinc-500">
         {String(index + 1).padStart(2, "0")}
@@ -66,8 +66,8 @@ export function Capabilities() {
             Trust the clause, not the claim.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
-            Finance leaders don&apos;t need more AI confidence. They need receipts -
-            every feature is built to be verified.
+            Finance teams don&apos;t need more AI confidence. They need output they
+            can verify - every feature points back to the source.
           </p>
         </motion.div>
 

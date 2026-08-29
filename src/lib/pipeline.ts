@@ -15,13 +15,13 @@ import type {
 
 export const PIPELINE_STAGES: PipelineStageMeta[] = [
   { id: "queued", label: "Queued", description: "Document accepted" },
-  { id: "extraction", label: "Reading contract", description: "Extracting text & OCR" },
-  { id: "classification", label: "Classifying document", description: "Detecting vendor & document type" },
-  { id: "segmentation", label: "Segmenting clauses", description: "Splitting into renewal, pricing, termination sections" },
-  { id: "llm_extraction", label: "Extracting key terms", description: "LLM pulling dates, escalations, auto-renewal" },
-  { id: "validation", label: "Validating findings", description: "Cross-checking against source passages" },
-  { id: "risk_rules", label: "Scoring risk", description: "Deterministic risk rules, not model guesses" },
-  { id: "savings", label: "Calculating savings", description: "Rule-based opportunity estimates" },
+  { id: "extraction", label: "Reading contract", description: "Pulling readable text from your document" },
+  { id: "classification", label: "Classifying document", description: "Identifying the vendor and document type" },
+  { id: "segmentation", label: "Segmenting clauses", description: "Splitting the document into renewal, pricing, and termination sections" },
+  { id: "llm_extraction", label: "Extracting key terms", description: "Reading dates, escalations, and renewal terms" },
+  { id: "validation", label: "Validating findings", description: "Cross-checking against the source text" },
+  { id: "risk_rules", label: "Scoring risk", description: "Applying fixed risk rules to the extracted terms" },
+  { id: "savings", label: "Calculating savings", description: "Estimating opportunities from the extracted terms" },
   { id: "results", label: "Building results", description: "Assembling your report" },
 ];
 

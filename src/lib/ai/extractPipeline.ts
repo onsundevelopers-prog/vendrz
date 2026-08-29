@@ -192,6 +192,8 @@ Return ONLY valid JSON matching the schema. Use empty arrays for unknown fields.
 
 export interface ExtractionPipelineResult {
   extraction: RichContractExtraction;
+  /** Errors from LLM tasks that failed after retries (empty when healthy). */
+  taskErrors: string[];
   timings: {
     textExtractionMs: number;
     partiesMs: number;
@@ -265,6 +267,7 @@ export async function runExtractionPipeline(
   ];
 
   const results: Record<string, unknown> = {};
+  const taskErrors: string[] = [];
 
   // Run tasks in parallel (4 concurrent LLM calls)
   const taskPromises = tasks.map(async (task) => {
@@ -281,8 +284,12 @@ export async function runExtractionPipeline(
       tokensEstimate += Math.ceil(task.chunk.length / 4); // rough token estimate
       return { name: task.name, result };
     } catch (err) {
-      // Return partial results instead of failing entirely
-      return { name: task.name, result: {}, error: err instanceof Error ? err.message : "failed" };
+      // Return partial results instead of failing entirely, but record the
+      // error so callers can tell a degraded extraction from an unreachable
+      // model.
+      const message = err instanceof Error ? err.message : "failed";
+      taskErrors.push(`${task.name}: ${message}`);
+      return { name: task.name, result: {}, error: message };
     }
   });
 
@@ -332,6 +339,7 @@ export async function runExtractionPipeline(
 
   return {
     extraction,
+    taskErrors,
     timings: {
       textExtractionMs: 0, // caller measures this
       partiesMs: 0, // individual timings not tracked in parallel

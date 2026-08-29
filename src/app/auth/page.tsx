@@ -30,7 +30,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
     <main className="grid min-h-screen bg-canvas lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       {/* brand panel */}
       <div className="relative hidden flex-col justify-between border-r border-line bg-[#0a0a0d] p-12 lg:flex">
-        <Link href="/" aria-label="noma home" className="w-fit">
+        <Link href="/" aria-label="Noma home" className="w-fit">
           <Logo />
         </Link>
 
@@ -62,7 +62,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
         </div>
 
         <p className="text-[12px] tracking-tight text-muted/50">
-          © {new Date().getFullYear()} noma
+          © {new Date().getFullYear()} Noma
         </p>
       </div>
 
@@ -75,7 +75,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
           className="w-full max-w-[420px]"
         >
           <div className="mb-8 flex justify-center lg:hidden">
-            <Link href="/" aria-label="noma home">
+            <Link href="/" aria-label="Noma home">
               <Logo />
             </Link>
           </div>
@@ -127,39 +127,40 @@ function SessionBanner({ sessionId, mode }: { sessionId: string | null; mode: "l
 
 const clerkAppearance = {
   elements: {
-    card: "rounded-xl border border-line bg-[#0d0d11] p-6 sm:p-7",
+    // Pure black card and inputs - no grey surfaces in the Clerk flow.
+    card: "rounded-xl border border-white/15 bg-black p-6 sm:p-7",
     header: "hidden",
     formButtonPrimary:
       "h-11 rounded-full bg-white text-sm font-semibold text-black hover:bg-zinc-200 shadow-none",
     socialButtonsBlockButton:
-      "h-11 rounded-full border border-white/15 bg-white/[0.04] text-sm font-medium text-fg hover:bg-white/[0.08]",
-    socialButtonsBlockButtonText: "text-fg font-medium",
+      "h-11 rounded-full border border-white/15 bg-black text-sm font-medium text-white hover:bg-white/[0.08]",
+    socialButtonsBlockButtonText: "text-white font-medium",
     socialButtonsIconButton:
-      "h-11 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.08]",
-    dividerLine: "bg-white/10",
-    dividerText: "text-[11px] uppercase tracking-[0.1em] text-muted",
-    formFieldLabel: "text-[12px] font-medium text-muted",
+      "h-11 rounded-full border border-white/15 bg-black hover:bg-white/[0.08]",
+    dividerLine: "bg-white/15",
+    dividerText: "text-[11px] uppercase tracking-[0.1em] text-zinc-300",
+    formFieldLabel: "text-[12px] font-medium text-zinc-300",
     formFieldInput:
-      "h-11 rounded-[10px] border border-white/10 bg-white/[0.04] text-[14px] text-fg transition-colors focus:border-white/40",
+      "h-11 rounded-[10px] border border-white/15 bg-black text-[14px] text-white transition-colors focus:border-white/50",
     formFieldInputPlaceholder: "text-zinc-600",
-    footerActionLink: "font-medium text-zinc-300 hover:text-fg",
-    footerActionText: "text-[12.5px] text-muted",
-    footer: "text-center text-[12.5px] text-muted",
-    formFieldError: "text-[12px] text-zinc-300",
-    alert: "rounded-lg border border-zinc-300/25 bg-zinc-400/[0.08] text-zinc-300",
-    alertText: "text-zinc-300",
-    identityPreviewText: "text-fg",
+    footerActionLink: "font-medium text-white hover:text-zinc-200",
+    footerActionText: "text-[12.5px] text-zinc-400",
+    footer: "text-center text-[12.5px] text-zinc-400",
+    formFieldError: "text-[12px] text-zinc-200",
+    alert: "rounded-lg border border-white/20 bg-black text-zinc-200",
+    alertText: "text-zinc-200",
+    identityPreviewText: "text-white",
     identityPreviewEditButton: "text-zinc-300",
   },
   variables: {
     colorPrimary: "#ffffff",
-    colorForeground: "#f4f4f5",
-    colorMuted: "#a1a1aa",
-    colorMutedForeground: "#a1a1aa",
-    colorBackground: "#0d0d11",
-    colorInput: "rgba(255,255,255,0.04)",
-    colorInputForeground: "#f4f4f5",
-    colorBorder: "rgba(255,255,255,0.08)",
+    colorForeground: "#ffffff",
+    colorMuted: "#d4d4d8",
+    colorMutedForeground: "#d4d4d8",
+    colorBackground: "#000000",
+    colorInput: "#000000",
+    colorInputForeground: "#ffffff",
+    colorBorder: "rgba(255,255,255,0.18)",
     borderRadius: "0.75rem",
   },
 };

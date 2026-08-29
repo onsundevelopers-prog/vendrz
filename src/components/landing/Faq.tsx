@@ -22,7 +22,7 @@ const FAQS = [
   },
   {
     q: "What does the Gmail integration actually do?",
-    a: "It's optional and read-only. Connect it from the workspace (never during signup) and noma proposes contract-looking emails and attachments for you to review. Nothing is imported until you explicitly select it, and you can disconnect anytime.",
+    a: "It's optional and read-only. Connect it from the workspace (never during signup) and Noma proposes contract-related emails and attachments for you to review. Nothing is imported until you explicitly select it, and you can disconnect anytime.",
   },
 ];
 

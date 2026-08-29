@@ -43,7 +43,24 @@ export interface ExtractionResult {
 // In-memory job store (server-scoped)
 const jobs = new Map<string, ExtractionJob>();
 
+const JOB_TTL_MS = 60 * 60 * 1000; // jobs are kept for 1 hour
+
+/**
+ * Drop jobs older than the TTL. Called opportunistically so the map never
+ * grows without bound on a long-running server.
+ */
+function purgeExpiredJobs(): void {
+  const cutoff = Date.now() - JOB_TTL_MS;
+  for (const [id, job] of jobs) {
+    if (new Date(job.createdAt).getTime() < cutoff) {
+      jobs.delete(id);
+    }
+  }
+}
+
 export function createJob(userId: string, filename: string): ExtractionJob {
+  // Keep the map bounded - purge expired entries on each new job.
+  if (jobs.size > 64) purgeExpiredJobs();
   const id = `job-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
   const now = new Date().toISOString();
   const job: ExtractionJob = {
@@ -78,16 +95,6 @@ export function completeJob(id: string, result: ExtractionResult): ExtractionJob
 
 export function failJob(id: string, error: string): ExtractionJob | null {
   return updateJob(id, { status: "failed", error });
-}
-
-/** Clean up jobs older than 1 hour to prevent memory leaks. */
-export function cleanupJobs(): void {
-  const cutoff = Date.now() - 3600_000;
-  for (const [id, job] of jobs) {
-    if (new Date(job.createdAt).getTime() < cutoff) {
-      jobs.delete(id);
-    }
-  }
 }
 
 /** Stage weights for overall progress calculation. */
