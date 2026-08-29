@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useAuthUser, useAuthSignOut } from "@/lib/auth";
 import { DashboardModeProvider } from "@/lib/displayMode";
+import { hydrateUserData, persistUserData } from "@/lib/sync";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
@@ -63,6 +64,7 @@ export default function DashboardLayout({
   const [ready, setReady] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railCollapsed, setRailCollapsed] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
 
   useEffect(() => {
     if (!auth.isLoaded) return;
@@ -73,6 +75,30 @@ export default function DashboardLayout({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setReady(true);
   }, [auth.isLoaded, auth.id, router]);
+
+  // Workspace persistence: pull the user's saved data into localStorage
+  // once per sign-in (remount children when it arrives so nothing renders
+  // as empty), then push changes to Supabase on an interval and on unload.
+  useEffect(() => {
+    if (!auth.isLoaded || !auth.id) return;
+    const userId = auth.id;
+    let alive = true;
+    void hydrateUserData(userId).then((changed) => {
+      if (alive && changed) setDataVersion((v) => v + 1);
+    });
+    const timer = setInterval(() => persistUserData(userId), 15_000);
+    const onHide = () => persistUserData(userId);
+    window.addEventListener("beforeunload", onHide);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) persistUserData(userId);
+    });
+    return () => {
+      alive = false;
+      clearInterval(timer);
+      window.removeEventListener("beforeunload", onHide);
+      document.removeEventListener("visibilitychange", onHide);
+    };
+  }, [auth.isLoaded, auth.id]);
 
   // Global ⌘K / Ctrl+K to open the command palette.
   useEffect(() => {
@@ -270,7 +296,7 @@ export default function DashboardLayout({
             )}
             <main className="min-h-0 flex-1 overflow-hidden">
               <motion.div
-                key={pathname}
+                key={`${pathname}-${dataVersion}`}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}

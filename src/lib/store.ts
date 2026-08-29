@@ -25,7 +25,7 @@ import { daysFromNow } from "./dates";
 /*  changes. Data is scoped to the current browser for the MVP demo.   */
 /* ------------------------------------------------------------------ */
 
-const KEYS = {
+export const KEYS = {
   sessions: "wt.sessions",
   accounts: "wt.accounts",
   currentAccount: "wt.currentAccount",
