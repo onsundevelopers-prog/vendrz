@@ -52,10 +52,20 @@ interface JobStatus {
   result?: { extraction?: ContractExtraction; analysis?: RichContractExtraction };
 }
 
+interface StartJobOutcome {
+  /** When the server already finished the job synchronously (serverless),
+      the result is returned with the POST and polling is unnecessary. */
+  done: boolean;
+  jobId: string;
+  extraction?: ContractExtraction;
+  analysis?: RichContractExtraction | null;
+  failure?: string;
+}
+
 /** POST the file and return the job id, retrying transient failures. */
 async function startJob(
   file: File
-): Promise<string> {
+): Promise<StartJobOutcome> {
   let lastNetworkError = false;
   for (let attempt = 0; ; attempt++) {
     const form = new FormData();
@@ -74,8 +84,34 @@ async function startJob(
         "network"
       );
     }
-    const init = (await res.json().catch(() => null)) as { jobId?: string; error?: string } | null;
-    if (res.ok && init?.jobId) return init.jobId;
+    const init = (await res.json().catch(() => null)) as {
+      jobId?: string;
+      status?: string;
+      error?: string;
+      result?: { extraction?: ContractExtraction; analysis?: RichContractExtraction };
+    } | null;
+
+    if (res.ok && init?.jobId) {
+      // Serverless path: the POST itself ran the pipeline and returned the
+      // finished (or failed) job - use it directly.
+      if (init.status === "complete" && init.result?.extraction) {
+        return {
+          done: true,
+          jobId: init.jobId,
+          extraction: init.result.extraction,
+          analysis: init.result.analysis ?? null,
+        };
+      }
+      if (init.status === "failed") {
+        return {
+          done: true,
+          jobId: init.jobId,
+          failure: init.error ?? "Couldn't extract the terms from this file. Try another file.",
+        };
+      }
+      // Persistent-server path: job was queued, poll for it.
+      return { done: false, jobId: init.jobId };
+    }
     if (res.status >= 500 && attempt < MAX_POST_RETRIES) {
       // Transient server error - back off and retry the upload.
       lastNetworkError = true;
@@ -163,8 +199,20 @@ export async function analyzeFile(file: File): Promise<ExtractionResult> {
   let jobReposts = 0;
 
   while (true) {
-    const jobId = await startJob(file);
-    const outcome = await pollJob(jobId);
+    const started = await startJob(file);
+
+    // The server finished the job inside the POST (serverless) - done.
+    if (started.done) {
+      if (started.failure) {
+        throw new ExtractionError(started.failure, "job");
+      }
+      return {
+        extraction: started.extraction as ContractExtraction,
+        analysis: started.analysis ?? null,
+      };
+    }
+
+    const outcome = await pollJob(started.jobId);
 
     if (outcome.done) {
       if ("failure" in outcome) {

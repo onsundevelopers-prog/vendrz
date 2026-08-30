@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
-import { createJob, failJob, saveJobText, setJobStage } from "@/lib/jobs";
+import { createJob, failJob, getJob, saveJobText, setJobStage } from "@/lib/jobs";
 import { extractFileText, finishAnalysis, triggerJobResume } from "@/lib/extractResume";
 
 export const runtime = "nodejs";
@@ -10,9 +10,16 @@ const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
 /**
  * POST /api/extract
- * Accepts a multipart file, creates an extraction job, and processes
- * it in the background. Returns { jobId, status } immediately so the
- * frontend can poll /api/extract/status/[jobId] for progress.
+ * Accepts a multipart file, runs the full extraction pipeline, and
+ * returns the finished result in the response.
+ *
+ * On serverless platforms (Vercel) the function's execution context is
+ * torn down as soon as a response is returned, so fire-and-forget
+ * background processing can never complete and in-memory job stores are
+ * not shared between instances. Running the pipeline inline and
+ * returning { jobId, status: "complete", result } is the only model
+ * that works there. The status endpoint remains for persistent servers
+ * that still use the polling path.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -52,20 +59,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create job and return immediately
+    // Create the job and run the pipeline to completion. Awaiting keeps the
+    // response (and therefore the result) alive on serverless platforms.
     const job = createJob("anonymous", file.name);
     setJobStage(job.id, "queued", 100);
 
-    // Process in background (non-blocking)
-    processExtraction(job.id, file, name).catch((err) => {
-      console.error(`[extract] Job ${job.id} failed:`, err);
-    });
+    await processExtraction(job.id, file, name);
 
-    return NextResponse.json({
-      jobId: job.id,
-      status: "queued",
-      message: "Extraction started. Poll /api/extract/status/{jobId} for progress.",
-    });
+    // Report the final state. Serverless clients read the result straight
+    // from this response; polling clients keep using the status endpoint.
+    const finalJob = getJob(job.id);
+    if (finalJob?.status === "complete" && finalJob.result) {
+      return NextResponse.json({
+        jobId: job.id,
+        status: "complete",
+        result: finalJob.result,
+      });
+    }
+    if (finalJob?.status === "failed") {
+      return NextResponse.json({
+        jobId: job.id,
+        status: "failed",
+        error: finalJob.error ?? "Couldn't extract the terms from this file. Try another file.",
+      });
+    }
+    return NextResponse.json({ jobId: job.id, status: "queued" });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: `Extraction failed: ${message}` }, { status: 502 });
