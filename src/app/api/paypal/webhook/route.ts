@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clerkClient } from "@clerk/nextjs/server";
-import { verifyPayPalWebhookSignature, type PlanMetadata } from "@/lib/paypal";
+import { verifyPayPalWebhookSignature } from "@/lib/paypal";
 import {
   setSubscriptionStatus,
   upsertSubscription,
@@ -69,40 +68,8 @@ export async function POST(req: NextRequest) {
 
   const event = body as {
     event_type?: string;
-    resource?: {
-      id?: string;
-      billing_agreement_id?: string;
-      plan_id?: string;
-      custom_id?: string;
-    };
+    resource?: { id?: string; billing_agreement_id?: string; plan_id?: string };
   };
-
-  // One-time Business purchase: PAYMENT.CAPTURE.COMPLETED carries the Clerk
-  // user id in custom_id (set when the order was created). Grant the tier
-  // permanently so a capture that happened outside the checkout page (or on
-  // another device) still unlocks the account.
-  if (event.event_type === "PAYMENT.CAPTURE.COMPLETED" && event.resource?.custom_id) {
-    const userId = event.resource.custom_id;
-    const metadata: PlanMetadata = {
-      tier: "business",
-      type: "lifetime",
-      subscriptionId: event.resource.id ?? "",
-      status: "active",
-      updatedAt: new Date().toISOString(),
-    };
-    try {
-      const client = await clerkClient();
-      await client.users.updateUser(userId, {
-        privateMetadata: { plan: metadata },
-      });
-      console.log(`[paypal] Webhook PAYMENT.CAPTURE.COMPLETED -> Business granted to ${userId}`);
-    } catch (err) {
-      console.error(
-        `[paypal] Webhook could not grant Business to ${userId}:`,
-        err instanceof Error ? err.message : err
-      );
-    }
-  }
 
   // Sale events carry the subscription id as billing_agreement_id.
   const subscriptionId =

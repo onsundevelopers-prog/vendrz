@@ -2,10 +2,11 @@
 
 /* ------------------------------------------------------------------ */
 /*  Dashboard plan + display mode.                                    */
-/*                                                                     *//*   noma has four tiers:                                              */
+/*                                                                     */
+/*  noma has four tiers:                                              */
 /*    - Free ($0)        - Simple workspace, savings page, 5 AI msgs/mo */
 /*    - Team ($20/mo)    - Business workspace, Gmail, unlimited AI      */
-/*    - Business ($999 one-time) - + team/roles, automations, support   */
+/*    - Business ($999 + $1/yr) - + team/roles, automations, support    */
 /*    - Enterprise (custom) - everything, contact sales                 */
 /*                                                                     */
 /*  The plan gates features:                                           */
@@ -15,10 +16,10 @@
 /*      calendar month (see store.getAiUsage / incrementAiUsage).      */
 /*    - Gmail: Free is excluded; every paid tier can connect.          */
 /*                                                                     */
-/*  Paid plans unlock through a verified PayPal payment: Team is a      */
-/*  monthly subscription, Business is a one-time $999 purchase that     */
-/*  grants the tier permanently (no re-billing, no revocation).         */
-/*  Enterprise is custom-priced through sales.                          */
+/*  Paid plans unlock through a verified PayPal subscription: Team is   */
+/*  $20/month, Business is a $999 setup fee then a $1/year renewal.     */
+/*  Both are verified with PayPal on load; a cancelled/expired          */
+/*  subscription revokes access. Enterprise is custom-priced.           */
 /* ------------------------------------------------------------------ */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
@@ -85,14 +86,13 @@ export const PLANS: PlanDef[] = [
     id: "business",
     name: "Business",
     price: "$999",
-    cadence: "one-time",
-    blurb: "For companies that need advanced features and administration. One payment, yours forever.",
+    cadence: "then $1/yr",
+    blurb: "For companies that need advanced features and administration. $999 upfront, then $1 per year to keep it.",
     features: [
       "Team members, roles & permissions",
       "Advanced automations",
       "Priority AI processing",
       "Dedicated support",
-      "No recurring fees - pay once, keep it forever",
     ],
     mode: "business",
     aiMessages: Infinity,
@@ -126,7 +126,7 @@ export function planDef(plan: Plan): PlanDef {
 }
 
 /** Back-compat constant used by older callers. */
-export const BUSINESS_PRICE = "$999 one-time";
+export const BUSINESS_PRICE = "$999 then $1/yr";
 
 /** Plans that unlock the dense Business workspace. */
 const BUSINESS_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
@@ -390,44 +390,17 @@ function UpgradeOverlay() {
   const paypalConfigured = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
   const selectedDef = planDef(selected);
   const selectedPlanId = paypalPlanId(selected);
-  // Team bills monthly (subscription); Business is a one-time $999 order.
-  const isOrder = selected === "business";
-  const canPay = paypalConfigured && (isOrder || !!selectedPlanId);
+  const canPay = paypalConfigured && !!selectedPlanId;
 
-  /** The buyer approved a PayPal payment. Team: verify the subscription with
-      PayPal before enabling. Business: the capture already granted the tier. */
+  /** The buyer approved a PayPal subscription. Only enable the plan after the
+      server has confirmed with PayPal that it is real and ACTIVE. */
+  /** The buyer approved a PayPal subscription. Only enable the plan after the
+      server has confirmed with PayPal that it is real and ACTIVE. */
   const handlePayPalSuccess = useCallback(
-    async (payload: {
-      subscriptionId?: string;
-      orderId?: string;
-      plan?: string;
-      active?: boolean;
-      error?: string;
-    }) => {
+    async (subscriptionId: string) => {
       setVerifying(true);
       setVerifyError(null);
       try {
-        // One-time order (Business): the capture endpoint already granted
-        // the permanent tier on the account. Only trust known plans.
-        if (
-          payload.orderId &&
-          payload.active &&
-          payload.plan &&
-          PLAN_MAP[payload.plan as Plan]
-        ) {
-          activatePlan(payload.plan as Plan);
-          return;
-        }
-        if (payload.error) {
-          setVerifyError(payload.error);
-          return;
-        }
-
-        const subscriptionId = payload.subscriptionId;
-        if (!subscriptionId) {
-          setVerifyError("Payment didn't return a reference. Try again in a moment.");
-          return;
-        }
         const res = await fetch("/api/paypal/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -528,7 +501,6 @@ function UpgradeOverlay() {
         ) : canPay ? (
           <PayPalSubscribe
             planId={selectedPlanId as string}
-            mode={isOrder ? "order" : "subscription"}
             onSuccess={handlePayPalSuccess}
           />
         ) : (
@@ -542,7 +514,7 @@ function UpgradeOverlay() {
         )}
         {verifying && (
           <p className="mt-3 text-center text-[11px] tracking-tight text-muted">
-            Verifying your payment with PayPal…
+            Verifying your subscription with PayPal…
           </p>
         )}
         {verifyError && (
@@ -552,10 +524,8 @@ function UpgradeOverlay() {
         )}
         <p className="mt-2.5 text-center text-[11px] leading-relaxed text-zinc-500">
           {canPay
-            ? isOrder
-              ? `Pay ${selectedDef.price} once - Business stays on your account forever. Billed securely by PayPal.`
-              : `Subscribe for ${selectedDef.price}${selectedDef.cadence.startsWith("/") ? selectedDef.cadence : ""} - billed securely by PayPal. You can cancel anytime.`
-            : "Paid plans unlock through a verified PayPal payment."}
+            ? `Subscribe for ${selectedDef.price}${selectedDef.cadence.startsWith("/") ? selectedDef.cadence : ` (${selectedDef.cadence})`} - billed securely by PayPal. You can cancel anytime.`
+            : "Paid plans unlock through a verified PayPal subscription. You can cancel anytime."}
           {plan === "free" && " You can switch back to Free anytime."}
         </p>
         <button

@@ -53,8 +53,9 @@ services:
       # (URL: https://<this-app>/api/paypal/webhook) and paste its ID.
       - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
         sync: false          # set in the hosting dashboard (public client id)
+      # Business plan id ($999 setup fee, then $1/yr renewal).
       - key: NEXT_PUBLIC_PAYPAL_PLAN_ID
-        sync: false          # Business plan id, set in the hosting dashboard
+        value: P-6GA22821KV361321JNKKIQDA
       # Team ($20/mo) subscription plan - create it in PayPal Billing > Plans
       # and paste the id here.
       - key: NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID
@@ -65,10 +66,6 @@ services:
         sync: false
       - key: PAYPAL_WEBHOOK_ID
         sync: false
-      # Business tier is a one-time purchase (default $999), granted
-      # permanently. Team remains a monthly subscription.
-      - key: BUSINESS_PRICE_USD
-        value: "999"
       # Gmail OAuth - server-only credential pair + token encryption.
       # The registered redirect URI must be <this-app>/api/gmail/callback.
       - key: GOOGLE_OAUTH_CLIENT_ID

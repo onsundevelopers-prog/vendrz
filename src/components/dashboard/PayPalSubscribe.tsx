@@ -3,28 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 
 /* ------------------------------------------------------------------ */
-/*  PayPal button.                                                     */
+/*  PayPal subscription button.                                       */
 /*                                                                     */
-/*  Two payment modes:                                                 */
-/*    - subscription: recurring plan (Team) - uses the PayPal          */
-/*      subscription SDK with a plan id.                               */
-/*    - order: one-time purchase (Business $999) - creates an order    */
-/*      server-side, opens PayPal's approval flow, then captures on    */
-/*      approval. The capture response carries the granted plan.       */
+/*  Loads the PayPal JS SDK with `vault=true&intent=subscription`,     */
+/*  renders the subscribe button for the given plan id, and calls      */
+/*  `onSuccess` once the buyer approves the subscription.              */
+/*                                                                     */
+/*  Covers every paid tier: Team ($20/mo) and Business ($999 setup     */
+/*  fee then $1/yr - the price structure lives in the PayPal plan).    */
 /*                                                                     */
 /*  Env:                                                               */
 /*    NEXT_PUBLIC_PAYPAL_CLIENT_ID - PayPal app client id (public)     */
 /* ------------------------------------------------------------------ */
 
-interface PayPalSubscriptionActions {
+interface PayPalActions {
   subscription: {
     create: (options: { plan_id: string }) => Promise<string>;
-  };
-}
-
-interface PayPalOrderActions {
-  order: {
-    create: (options: Record<string, never>) => Promise<string>;
   };
 }
 
@@ -35,9 +29,8 @@ interface PayPalButtonsConfig {
     layout?: string;
     label?: string;
   };
-  createSubscription?: (data: unknown, actions: PayPalSubscriptionActions) => Promise<string>;
-  createOrder?: (data: unknown, actions: PayPalOrderActions) => Promise<string>;
-  onApprove: (data: { subscriptionID?: string; orderID?: string }, actions: unknown) => void;
+  createSubscription: (data: unknown, actions: PayPalActions) => Promise<string>;
+  onApprove: (data: { subscriptionID: string }, actions: unknown) => void;
   onError?: (err: unknown) => void;
 }
 
@@ -51,28 +44,12 @@ declare global {
   }
 }
 
-export type PayPalMode = "subscription" | "order";
-
-export interface PayPalSuccess {
-  /** Present for subscription mode - the recurring subscription id. */
-  subscriptionId?: string;
-  /** Present for order mode - the captured one-time order id. */
-  orderId?: string;
-  /** Present for order mode - server response after capture. */
-  plan?: string;
-  active?: boolean;
-  error?: string;
-}
-
 export function PayPalSubscribe({
   planId,
-  mode = "subscription",
   onSuccess,
 }: {
-  /** Required in subscription mode; ignored for one-time orders. */
-  planId?: string;
-  mode?: PayPalMode;
-  onSuccess: (payload: PayPalSuccess) => void;
+  planId: string;
+  onSuccess: (subscriptionId: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const renderedRef = useRef<string | null>(null);
@@ -82,23 +59,17 @@ export function PayPalSubscribe({
   const [sdkError, setSdkError] = useState<string | null>(null);
 
   const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-  const configured = mode === "order" ? !!clientId : !!(clientId && planId);
+  const configured = !!(clientId && planId);
   const ready =
     configured && (typeof window !== "undefined" ? !!window.paypal || sdkLoaded : false);
 
   // Load the SDK once (skipped when PayPal isn't configured or already on
   // the page - both states are derived at render time). Re-loads when the
-  // payment mode/plan changes by re-rendering the button.
+  // plan changes by re-rendering the button.
   useEffect(() => {
     if (!configured || window.paypal) return;
     const script = document.createElement("script");
-    // Subscriptions need the vault (billing-agreement) SDK; one-time orders
-    // use intent=capture without vaulting.
-    const sdkParams =
-      mode === "order"
-        ? `client-id=${clientId}&intent=capture`
-        : `client-id=${clientId}&vault=true&intent=subscription`;
-    script.src = `https://www.paypal.com/sdk/js?${sdkParams}`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&vault=true&intent=subscription`;
     script.setAttribute("data-sdk-integration-source", "button-factory");
     script.async = true;
     script.onload = () => setSdkLoaded(true);
@@ -109,62 +80,23 @@ export function PayPalSubscribe({
     return () => {
       document.body.removeChild(script);
     };
-  }, [configured, clientId, planId, mode]);
+  }, [configured, clientId, planId]);
 
-  // Render the button once the SDK is ready. If the mode/plan changes, force
-  // a re-render so the button points at the newly selected plan.
+  // Render the button once the SDK is ready. If the plan changes, force a
+  // re-render so the button points at the newly selected plan.
   useEffect(() => {
     if (!ready || !containerRef.current) return;
-    const key = `${mode}:${planId ?? ""}`;
-    if (renderedRef.current === key) return;
-    renderedRef.current = key;
+    if (renderedRef.current === planId) return;
+    renderedRef.current = planId;
     // Clear any stale button before re-rendering.
     const host = containerRef.current;
     host.replaceChildren();
-
-    if (mode === "subscription") {
-      window.paypal
-        ?.Buttons({
-          style: { shape: "rect", color: "gold", layout: "vertical", label: "subscribe" },
-          createSubscription: (_data, actions) =>
-            actions.subscription.create({ plan_id: planId as string }),
-          onApprove: (data) => onSuccess({ subscriptionId: data.subscriptionID }),
-          onError: () => {
-            setSdkError("Payment didn't complete. You can try again.");
-          },
-        })
-        .render(host)
-        .catch(() => {
-          setSdkError("Couldn't render the PayPal button.");
-        });
-      return;
-    }
-
-    // One-time order: create server-side, approve with PayPal, then capture.
     window.paypal
       ?.Buttons({
-        style: { shape: "rect", color: "gold", layout: "vertical", label: "pay" },
-        createOrder: async () => {
-          const res = await fetch("/api/paypal/order", { method: "POST" });
-          const data = (await res.json().catch(() => null)) as { id?: string; error?: string } | null;
-          if (!res.ok || !data?.id) {
-            throw new Error(data?.error ?? "Couldn't start the checkout.");
-          }
-          return data.id;
-        },
-        onApprove: async (data) => {
-          try {
-            const res = await fetch("/api/paypal/order/capture", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ orderId: data.orderID }),
-            });
-            const result = (await res.json().catch(() => null)) as PayPalSuccess | null;
-            onSuccess({ orderId: data.orderID, ...result });
-          } catch {
-            onSuccess({ orderId: data.orderID, error: "Couldn't complete the payment. Try again." });
-          }
-        },
+        style: { shape: "rect", color: "gold", layout: "vertical", label: "subscribe" },
+        createSubscription: (_data, actions) =>
+          actions.subscription.create({ plan_id: planId as string }),
+        onApprove: (data) => onSuccess(data.subscriptionID),
         onError: () => {
           setSdkError("Payment didn't complete. You can try again.");
         },
@@ -173,7 +105,7 @@ export function PayPalSubscribe({
       .catch(() => {
         setSdkError("Couldn't render the PayPal button.");
       });
-  }, [ready, planId, mode, onSuccess]);
+  }, [ready, planId, onSuccess]);
 
   return (
     <div className="mt-6">
