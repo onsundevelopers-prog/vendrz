@@ -779,6 +779,17 @@ body {
 /* ------------------------------------------------------------------ */
 
 /* ------------------------------------------------------------------ */
+/*  PayPal button - clip the SDK's 132px iframe down to the gold      */
+/*  button itself. The extra height is PayPal's light branding row    */
+/*  ("PayPal" / checkout text) which renders as a white band under    */
+/*  the button on dark surfaces.                                      */
+/* ------------------------------------------------------------------ */
+.paypal-host > div {
+  height: 48px !important;
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Clerk - keep the auth flow pure black.                            */
 /*  The appearance objects style the card/inputs; these rules kill the */
 /*  leftover default surfaces: the light footer panel, the "Secured by */

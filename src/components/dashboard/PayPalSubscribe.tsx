@@ -114,7 +114,7 @@ export function PayPalSubscribe({
           PayPal isn&apos;t configured yet. Set the PayPal env vars and restart.
         </p>
       ) : ready ? (
-        <div ref={containerRef} className="w-full" />
+        <div ref={containerRef} className="paypal-host w-full" />
       ) : sdkError ? (
         <p className="text-center text-[11px] leading-relaxed text-zinc-400">{sdkError}</p>
       ) : (
