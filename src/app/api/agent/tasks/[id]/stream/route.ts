@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { attachRunStream, detachRunStream, getRun } from "@/lib/services/taskRegistry";
+import { rejectUnauthenticated } from "@/lib/serverAuth";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -21,6 +23,11 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Task state can contain the user's real contract data - only signed-in
+  // users may attach to a task stream.
+  const { userId } = await auth();
+  if (!userId) return rejectUnauthenticated();
+
   const { id } = await params;
   const run = getRun(id);
   if (!run) {

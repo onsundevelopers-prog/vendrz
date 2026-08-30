@@ -83,8 +83,10 @@ export async function POST(req: NextRequest) {
 
     // Bind the paid plan to the Clerk account so it survives browsers,
     // devices and logouts (localStorage alone is not the source of truth).
+    // Subscriptions are re-verified on load; one-time purchases are not.
     const metadata: PlanMetadata = {
       tier,
+      type: "subscription",
       subscriptionId,
       status: "active",
       updatedAt: new Date().toISOString(),

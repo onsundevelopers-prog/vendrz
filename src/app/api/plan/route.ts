@@ -47,6 +47,17 @@ export async function GET(req: NextRequest) {
   const querySubId = req.nextUrl.searchParams.get("subscriptionId")?.trim() ?? "";
   const subscriptionId = stored?.subscriptionId ?? querySubId;
 
+  // A one-time Business purchase is permanent - it is never re-billed and
+  // never revoked, so there is nothing to re-verify with PayPal.
+  if (stored?.type === "lifetime") {
+    return NextResponse.json({
+      plan: stored.tier,
+      active: true,
+      verified: true,
+      status: stored.status,
+    });
+  }
+
   // Nothing to verify - user has never paid (or metadata is unreachable
   // and no local subscription id was provided).
   if (!subscriptionId) {
@@ -67,6 +78,7 @@ export async function GET(req: NextRequest) {
             privateMetadata: {
               plan: {
                 tier,
+                type: "subscription",
                 subscriptionId,
                 status: "active",
                 updatedAt: new Date().toISOString(),

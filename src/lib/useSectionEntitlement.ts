@@ -15,19 +15,31 @@ import { canAccessSection } from "./clientDocuments";
 /*  can never bypass the lock: the server is consulted on mount.       */
 /* ------------------------------------------------------------------ */
 
+interface EntitlementState {
+  /** The section this resolved value belongs to. */
+  section: string;
+  locked: boolean | null;
+}
+
 export function useSectionEntitlement(section: string, clientLocked: boolean) {
-  const [serverLocked, setServerLocked] = useState<boolean | null>(null);
+  // The resolved server decision is stored together with the section it
+  // belongs to, so a stale answer from a previous section is never treated
+  // as authoritative (it falls back to the client hint until the new
+  // section's check resolves). No state is set synchronously in the effect.
+  const [state, setState] = useState<EntitlementState>({
+    section,
+    locked: null,
+  });
 
   useEffect(() => {
     let alive = true;
-    setServerLocked(null);
     canAccessSection(section)
       .then((ok) => {
-        if (alive) setServerLocked(!ok);
+        if (alive) setState({ section, locked: !ok });
       })
       .catch(() => {
         // Server unreachable - fall back to the client-side hint.
-        if (alive) setServerLocked(clientLocked);
+        if (alive) setState({ section, locked: clientLocked });
       });
     return () => {
       alive = false;
@@ -37,7 +49,7 @@ export function useSectionEntitlement(section: string, clientLocked: boolean) {
   // While the server is deciding, show the lock only if the client already
   // signals it (no flash of forbidden content for allowed users). Once known,
   // the server decision is authoritative.
-  const known = serverLocked !== null;
-  const locked = known ? serverLocked : clientLocked;
+  const known = state.section === section && state.locked !== null;
+  const locked = known ? state.locked : clientLocked;
   return { checking: !known && !clientLocked, locked };
 }

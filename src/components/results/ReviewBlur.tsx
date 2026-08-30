@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Lock, Sparkles } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -23,11 +24,14 @@ export function ReviewBlur({
   sessionId?: string;
   className?: string;
 }) {
+  // usePathname works during both server and client rendering - never touch
+  // `window` here, or logged-out visitors 500 on the server-rendered page.
+  const pathname = usePathname();
   if (!blurred) return <div className={className}>{children}</div>;
 
   const href = `/auth?mode=signup${
     sessionId ? `&session=${sessionId}` : ""
-  }&next=${encodeURIComponent(window.location.pathname)}`;
+  }&next=${encodeURIComponent(pathname)}`;
 
   return (
     <div className={`relative ${className}`}>

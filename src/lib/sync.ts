@@ -17,6 +17,11 @@
 import { KEYS } from "./store";
 import type { AgentTaskRef } from "./agentTaskStore";
 import { readAgentTasks as _readTasks } from "./agentTaskStore";
+import {
+  fetchDocuments,
+  reconcileDocumentSessions,
+  type ClientDocument,
+} from "./clientDocuments";
 import type {
   ActivityRecord,
   AgentMessage,
@@ -170,35 +175,54 @@ function mergeAiUsage(userId: string, saved: Record<string, number> | undefined)
   return touched;
 }
 
-/** Pull the user's saved data from Supabase into localStorage. */
-export async function hydrateUserData(userId: string): Promise<boolean> {
+/**
+ * Pull the signed-in user's persisted documents (Supabase `documents`
+ * table) into the localStorage workspace registers. This is what makes an
+ * authenticated upload - which lives server-side - appear in the Vendors /
+ * Contracts / Renewals / Risk / Savings tables and the AI context, on this
+ * device and on any other device the user signs in on.
+ */
+async function hydrateDocumentSessions(userId: string): Promise<boolean> {
+  let documents: ClientDocument[] = [];
   try {
-    const res = await fetch("/api/user-data");
-    if (!res.ok) return false;
-    const { data } = (await res.json()) as { data: UserBlob };
-    if (!data || Object.keys(data).length === 0) return false;
-
-    let changed = false;
-    if (mergeSessions(data.sessions)) changed = true;
-    if (mergeUserArray(KEYS.activity, userId, data.activity)) changed = true;
-    if (mergeUserArray(KEYS.agentMessages, userId, data.agentMessages)) changed = true;
-    if (mergeUserArray(KEYS.emailThreads, userId, data.emailThreads)) changed = true;
-    if (mergeAiUsage(userId, data.aiUsage)) changed = true;
-    if (mergeAgentTasks(userId, data.agentTasks)) changed = true;
-    if (mergeActions(userId, data.actions)) changed = true;
-    if (mergeAuditSessions(data.auditSessions)) changed = true;
-    if (data.gmail) {
-      const map = read<Record<string, GmailConnection>>(KEYS.gmail, {});
-      if (!map[userId]) {
-        map[userId] = data.gmail;
-        write(KEYS.gmail, map);
-        changed = true;
-      }
-    }
-    return changed;
+    documents = await fetchDocuments();
   } catch {
     return false;
   }
+  return reconcileDocumentSessions(documents, userId) > 0;
+}
+
+/** Pull the user's saved data from Supabase into localStorage. */
+export async function hydrateUserData(userId: string): Promise<boolean> {
+  let changed = false;
+  try {
+    const res = await fetch("/api/user-data");
+    if (res.ok) {
+      const { data } = (await res.json()) as { data: UserBlob };
+      if (data && Object.keys(data).length > 0) {
+        if (mergeSessions(data.sessions)) changed = true;
+        if (mergeUserArray(KEYS.activity, userId, data.activity)) changed = true;
+        if (mergeUserArray(KEYS.agentMessages, userId, data.agentMessages)) changed = true;
+        if (mergeUserArray(KEYS.emailThreads, userId, data.emailThreads)) changed = true;
+        if (mergeAiUsage(userId, data.aiUsage)) changed = true;
+        if (mergeAgentTasks(userId, data.agentTasks)) changed = true;
+        if (mergeActions(userId, data.actions)) changed = true;
+        if (mergeAuditSessions(data.auditSessions)) changed = true;
+        if (data.gmail) {
+          const map = read<Record<string, GmailConnection>>(KEYS.gmail, {});
+          if (!map[userId]) {
+            map[userId] = data.gmail;
+            write(KEYS.gmail, map);
+            changed = true;
+          }
+        }
+      }
+    }
+  } catch {
+    // user-data unavailable - documents may still hydrate below
+  }
+  if (await hydrateDocumentSessions(userId)) changed = true;
+  return changed;
 }
 
 /* ------------------------- persist ------------------------- */

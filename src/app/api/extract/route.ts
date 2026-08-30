@@ -7,6 +7,8 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
+// Multipart overhead (boundaries + other fields) on top of the raw file.
+const MAX_BODY_BYTES = MAX_BYTES + 1024 * 1024;
 
 /**
  * POST /api/extract
@@ -27,7 +29,25 @@ export async function POST(req: NextRequest) {
     // the polling client keeps seeing progress instead of a dead 404.
     triggerJobResume();
 
-    const form = await req.formData();
+    // Reject oversized uploads by the request body size BEFORE parsing it -
+    // the serverless runtime refuses to parse multipart bodies over its
+    // limit, so the per-file check below would never get the chance to run.
+    const contentLength = Number(req.headers.get("content-length") ?? 0);
+    if (contentLength > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: "File is larger than 25 MB." }, { status: 413 });
+    }
+
+    let form: FormData;
+    try {
+      form = await req.formData();
+    } catch {
+      // The client always validates size before uploading, so a multipart
+      // body that the runtime refuses to parse is a size rejection.
+      return NextResponse.json(
+        { error: "File is larger than 25 MB." },
+        { status: 413 }
+      );
+    }
     const file = form.get("file");
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file provided." }, { status: 400 });

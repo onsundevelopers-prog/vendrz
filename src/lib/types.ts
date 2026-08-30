@@ -113,6 +113,8 @@ export interface ContractExtraction {
   effectiveDate: string | null;
   /** Next renewal or end date as ISO YYYY-MM-DD when determinable */
   renewalDate: string | null;
+  /** Latest date to give notice and avoid auto-renewal (derived by the AI). */
+  cancellationDeadline: string | null;
   autoRenews: boolean | null;
   /** Days of advance notice required to cancel, when stated */
   autoRenewalNoticeDays: number | null;

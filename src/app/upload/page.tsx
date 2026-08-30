@@ -9,7 +9,11 @@ import { createAnonymousSession,
 } from "@/lib/store";
 import { runPipeline } from "@/lib/pipeline";
 import { analyzeFile } from "@/lib/extract";
-import { uploadDocument } from "@/lib/clientDocuments";
+import {
+  isStorageUnavailable,
+  registerDocumentSession,
+  uploadDocument,
+} from "@/lib/clientDocuments";
 import { useAuthUser } from "@/lib/auth";
 import type { ContractExtraction, RichContractExtraction } from "@/lib/types";
 import { Navbar } from "@/components/landing/Navbar";
@@ -116,31 +120,64 @@ export default function UploadPage() {
     [auth.id]
   );
 
-  /** Single file - persist via the API when signed in (storage + DB), else
-      the existing anonymous flow that hands off to /processing. */
+  /**
+   * Full anonymous analysis of one file: extract -> create session -> run
+   * the real pipeline -> persist the finished result. Returns the session.
+   * When signed in, the session is bound to the account so it shows up in
+   * the dashboard registers.
+   */
+  const analyzeAnonymousFile = useCallback(
+    async (file: File): Promise<ReturnType<typeof startAnalysis>> => {
+      const { extraction, analysis } = await runExtraction(file);
+      const session = startAnalysis(
+        file.name,
+        fileKind(file),
+        file.size,
+        extraction,
+        analysis
+      );
+      const result = await runPipeline(
+        file.name,
+        fileKind(file),
+        () => {},
+        extraction,
+        analysis
+      );
+      updateSession(session.id, { pipelineStatus: "complete", result });
+      return session;
+    },
+    [runExtraction, startAnalysis, fileKind]
+  );
+
+  /**
+   * Single file - persist via the API when signed in (storage + DB), else
+   * the existing anonymous flow that hands off to /processing.
+   */
   const analyzeSingle = useCallback(
     async (row: UploadRow) => {
       setAnalyzing(true);
       setError(null);
       try {
         // Authenticated users: save the PDF + analysis server-side so the
-        // document persists in the dashboard with a proper status.
+        // document persists in the dashboard with a proper status, and mirror
+        // the finished analysis into the workspace registers (the dashboard
+        // tables read from there) so the contract shows up immediately. If
+        // the document storage isn't provisioned, fall back to the local
+        // flow so the analysis still completes and lands in the dashboard.
         if (auth.id) {
-          const doc = await uploadDocument(row.file);
-          void doc;
-          // The document is saved server-side regardless of analysis outcome;
-          // the workspace shows it with the correct status.
-          router.push("/dashboard/contracts");
-          return;
+          try {
+            const doc = await uploadDocument(row.file);
+            registerDocumentSession(doc, auth.id);
+            // The document is saved server-side regardless of analysis outcome;
+            // the workspace shows it with the correct status.
+            router.push("/dashboard/contracts");
+            return;
+          } catch (err) {
+            if (!isStorageUnavailable(err)) throw err;
+            // Document storage isn't configured - analyze locally instead.
+          }
         }
-        const { extraction, analysis } = await runExtraction(row.file);
-        const session = startAnalysis(
-          row.file.name,
-          fileKind(row.file),
-          row.file.size,
-          extraction,
-          analysis
-        );
+        const session = await analyzeAnonymousFile(row.file);
         router.push(`/processing/${session.id}`);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Something went wrong. Try again.";
@@ -148,7 +185,7 @@ export default function UploadPage() {
         setAnalyzing(false);
       }
     },
-    [auth.id, runExtraction, startAnalysis, fileKind, router, setRowStatus]
+    [auth.id, analyzeAnonymousFile, router, setRowStatus]
   );
 
   /** Multiple files - extract each, build a session, then run the pipeline
@@ -157,61 +194,32 @@ export default function UploadPage() {
     setAnalyzing(true);
     setError(null);
 
-    // Authenticated users: persist each file via the API (storage + DB),
-    // then land in the workspace where they all appear with statuses.
-    if (auth.id) {
-      let anyErrored = false;
-      let anySucceeded = false;
-      for (const row of [...rows]) {
-        if (row.status === "error" || row.status === "done") continue;
-        setRowStatus(row.id, "analyzing");
-        try {
-          await uploadDocument(row.file);
-          setRowStatus(row.id, "done");
-          anySucceeded = true;
-        } catch (err) {
-          anyErrored = true;
-          const msg = err instanceof Error ? err.message : "Something went wrong. Try again.";
-          setRowStatus(row.id, "error", msg);
-        }
-      }
-      if (anyErrored && !anySucceeded) {
-        setError("None of the files could be uploaded. Fix the issues above and try again.");
-      } else if (anyErrored) {
-        setError("Some files couldn't be uploaded. The rest were saved to your workspace.");
-      } else {
-        setError(null);
-      }
-      setAnalyzing(false);
-      router.push("/dashboard/contracts");
-      return;
-    }
-
     const sessionIds: string[] = [];
     let anyErrored = false;
+
+    // Authenticated users: persist each file via the API (storage + DB),
+    // then land in the workspace where they all appear with statuses. When
+    // document storage isn't provisioned, each file falls back to the local
+    // flow so every contract is still analyzed and lands in the dashboard.
+    const persistViaApi = !!auth.id;
     for (const row of [...rows]) {
       if (row.status === "error" || row.status === "done") continue;
       setRowStatus(row.id, "analyzing");
       try {
-        const { extraction, analysis } = await runExtraction(row.file);
-        const session = startAnalysis(
-          row.file.name,
-          fileKind(row.file),
-          row.file.size,
-          extraction,
-          analysis
-        );
+        if (persistViaApi) {
+          try {
+            const doc = await uploadDocument(row.file);
+            registerDocumentSession(doc, auth.id as string);
+            setRowStatus(row.id, "done");
+            sessionIds.push(doc.id);
+            continue;
+          } catch (err) {
+            if (!isStorageUnavailable(err)) throw err;
+            // Document storage isn't configured - analyze locally instead.
+          }
+        }
+        const session = await analyzeAnonymousFile(row.file);
         sessionIds.push(session.id);
-        // Build the real result (same path the processing page takes) so the
-        // contract shows up in the workspace after this batch finishes.
-        const result = await runPipeline(
-          row.file.name,
-          fileKind(row.file),
-          () => {},
-          extraction,
-          analysis
-        );
-        updateSession(session.id, { pipelineStatus: "complete", result });
         setRowStatus(row.id, "done");
       } catch (err) {
         anyErrored = true;
@@ -222,11 +230,11 @@ export default function UploadPage() {
 
     if (sessionIds.length > 0) {
       // Authenticated users see everything in their workspace; anonymous users
-      // land on the first result so they can review without an account.
+      // land on the first result with a navigator to the rest of the batch.
       if (auth.id) {
         router.push("/dashboard/contracts");
       } else {
-        router.push(`/results/${sessionIds[0]}`);
+        router.push(`/results/${sessionIds[0]}?batch=${encodeURIComponent(sessionIds.join(","))}`);
       }
     } else if (anyErrored) {
       setError("None of the files could be analyzed. Fix the issues above and try again.");
@@ -234,7 +242,7 @@ export default function UploadPage() {
       setError("No files were analyzed.");
     }
     setAnalyzing(false);
-  }, [rows, runExtraction, startAnalysis, fileKind, setRowStatus, auth.id, router]);
+  }, [rows, analyzeAnonymousFile, setRowStatus, auth.id, router]);
 
   const analyzeAll = useCallback(() => {
     if (rows.length === 0 || analyzing) return;

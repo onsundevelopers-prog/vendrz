@@ -16,6 +16,8 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const MAX_BYTES = 25 * 1024 * 1024;
+// Multipart overhead (boundaries + other fields) on top of the raw file.
+const MAX_BODY_BYTES = MAX_BYTES + 1024 * 1024;
 
 /** GET /api/documents - the signed-in user's uploaded documents (DB truth). */
 export async function GET() {
@@ -58,7 +60,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const form = await req.formData().catch(() => null);
+  // Reject oversized uploads by the request body size BEFORE parsing it -
+  // the serverless runtime refuses to parse multipart bodies over its
+  // limit, so the per-file check below would never get the chance to run.
+  const contentLength = Number(req.headers.get("content-length") ?? 0);
+  if (contentLength > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: "File is larger than 25 MB." }, { status: 413 });
+  }
+
+  let form: FormData | null = null;
+  try {
+    form = await req.formData();
+  } catch {
+    // The client always validates size before uploading, so a multipart
+    // body that the runtime refuses to parse is a size rejection.
+    return NextResponse.json(
+      { error: "File is larger than 25 MB." },
+      { status: 413 }
+    );
+  }
   const file = form?.get("file");
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "No file provided." }, { status: 400 });
@@ -98,7 +118,6 @@ export async function POST(req: NextRequest) {
   // 2. Analyze. Mark processing, run the shared pipeline, then persist the
   //    final state. On any failure the document stays saved (status=failed).
   await updateDocumentRecord(doc.id, userId, { status: "processing" });
-  let analysisText: string = "";
   try {
     const text = await extractFileText(file, file.name);
     if (text.trim().length < 40) {
@@ -111,7 +130,6 @@ export async function POST(req: NextRequest) {
         { status: 200 }
       );
     }
-    analysisText = text;
 
     // Reuse the real LLM extraction (same provider/fallback as /api/extract).
     const provider = getAIProvider();

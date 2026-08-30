@@ -44,27 +44,11 @@ export default function RenewalsPage() {
   const { locked: renewalsLocked } = useSectionEntitlement("renewals", lockedSections.includes("renewals"));
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
-  const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);  const [selected, setSelected] = useState<ContractRecord | null>(null);
+  const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
+  const [selected, setSelected] = useState<ContractRecord | null>(null);
 
-  if (renewalsLocked) {
-    return (
-      <SectionLocked
-        title="Renewals"
-        description="Track every upcoming renewal and cancellation deadline so you never re-commit to a contract by mistake."
-      />
-    );
-  }
-
-
-
-
-  const selEmails = selected
-    ? threads.filter((t) => t.vendorName.toLowerCase() === selected.vendorName.toLowerCase())
-    : [];
-  const selActivity = selected
-    ? activity.filter((a) => (a.vendorName ?? "").toLowerCase() === selected.vendorName.toLowerCase())
-    : [];
-
+  // Hooks are called unconditionally (before any early return) so the
+  // locked-state render keeps the exact same hook order as the full render.
   const rows = useMemo<RenewalRow[]>(() => {
     return contracts
       .filter((c) => c.renewalDate)
@@ -78,6 +62,22 @@ export default function RenewalsPage() {
       }))
       .sort((a, b) => a.days - b.days);
   }, [contracts, now]);
+
+  if (renewalsLocked) {
+    return (
+      <SectionLocked
+        title="Renewals"
+        description="Track every upcoming renewal and cancellation deadline so you never re-commit to a contract by mistake."
+      />
+    );
+  }
+
+  const selEmails = selected
+    ? threads.filter((t) => t.vendorName.toLowerCase() === selected.vendorName.toLowerCase())
+    : [];
+  const selActivity = selected
+    ? activity.filter((a) => (a.vendorName ?? "").toLowerCase() === selected.vendorName.toLowerCase())
+    : [];
 
   const columns: EditorColumn<RenewalRow>[] = [
     {

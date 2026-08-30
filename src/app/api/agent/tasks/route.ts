@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { executeTaskPlan } from "@/lib/services/orchestrator";
 import { awaitsApproval, getRun, registerRun, markDone, emitFrame } from "@/lib/services/taskRegistry";
+import { rejectUnauthenticated } from "@/lib/serverAuth";
 import type { AgentEvent, AgentApprovalRequest, AgentTask, AgentTaskCreateInput } from "@/lib/agentTask";
 
 export const runtime = "nodejs";
@@ -29,6 +31,12 @@ const uid = (prefix: string): string =>
   `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
 export async function POST(req: NextRequest) {
+  // Agent tasks run against the signed-in user's workspace - the task id
+  // also keys the approval and resume endpoints, so the whole lifecycle
+  // requires an authenticated session.
+  const { userId } = await auth();
+  if (!userId) return rejectUnauthenticated();
+
   let body: AgentTaskCreateInput;
   try {
     body = (await req.json()) as AgentTaskCreateInput;

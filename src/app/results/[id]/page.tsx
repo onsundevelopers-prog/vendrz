@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -15,6 +15,26 @@ export default function ResultsPage() {
   const params = useParams<{ id: string }>();
   const session = useMemo(() => getSession(params.id), [params.id]);
   const [dismissed, setDismissed] = useState(false);
+  // Sibling analyses from the same multi-file upload batch (?batch=a,b,c).
+  // Read client-side after mount - purely a navigation aid.
+  const [batch, setBatch] = useState<string[]>([]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const raw = new URLSearchParams(window.location.search).get("batch");
+      if (raw) setBatch(raw.split(",").filter(Boolean));
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  const batchLinks = useMemo(
+    () =>
+      batch
+        .filter((id) => id !== params.id)
+        .map((id) => ({ id, session: getSession(id) }))
+        .filter((b) => b.session?.result),
+    [batch, params.id]
+  );
 
   const auth = useAuthUser();
   const transferred = session?.transferredToUserId != null;
@@ -78,6 +98,36 @@ export default function ResultsPage() {
                 {result.vendorName} · {result.documentName}
               </h1>
             </div>
+            {/* Batch navigator - every analysis from a multi-file upload. */}
+            {batchLinks.length > 0 && (
+              <div className="w-full sm:w-auto">
+                <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted">
+                  {batchLinks.length + 1} analyses in this batch
+                </p>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {batch.map((id) => {
+                    const s = getSession(id);
+                    const active = id === params.id;
+                    return (
+                      <Link
+                        key={id}
+                        href={`/results/${id}?batch=${encodeURIComponent(batch.join(","))}`}
+                        className={`inline-flex max-w-[220px] items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11.5px] tracking-tight transition-colors ${
+                          active
+                            ? "border-white/30 bg-white/[0.08] text-fg"
+                            : "border-line bg-surface text-muted hover:border-line-strong hover:text-fg"
+                        }`}
+                      >
+                        <span className="size-1 shrink-0 rounded-full bg-zinc-500" aria-hidden="true" />
+                        <span className="truncate">
+                          {s?.result?.vendorName || s?.documentName || id.slice(0, 12)}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-2 text-[12px] tracking-tight text-muted">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1">
                 Encrypted · never shared

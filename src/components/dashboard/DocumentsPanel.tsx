@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Loader2, Trash2, ExternalLink, FileText } from "lucide-react";
 import {
   fetchDocuments,
@@ -47,9 +47,9 @@ export function DocumentsPanel() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setError(null);
     try {
       const list = await fetchDocuments();
+      setError(null);
       setDocs(list);
     } catch {
       setError("Couldn't load your uploaded documents.");
@@ -57,7 +57,9 @@ export function DocumentsPanel() {
   }, []);
 
   useEffect(() => {
-    void load();
+    // Defer so the setState calls inside load() never run synchronously
+    // inside the effect body (React 19 lint rule).
+    queueMicrotask(() => void load());
   }, [load]);
 
   // Ongoing uploads that are still processing on first load will be shown

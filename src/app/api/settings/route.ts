@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 
@@ -11,6 +12,10 @@ const KNOWN = ["ollama_cloud", "ollama_local", "gemini", "vllm"] as const;
  * returned - they remain server-only and never leak to the browser.
  */
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
   const raw = (process.env.AI_PROVIDER ?? "ollama_cloud").trim().toLowerCase();
   const provider = (KNOWN as readonly string[]).includes(raw) ? raw : "ollama_cloud";
   const model = process.env.OLLAMA_MODEL?.trim() || null;

@@ -7,9 +7,10 @@ import { PLAN_MAP, type Plan } from "@/lib/displayMode";
 /* ------------------------------------------------------------------ */
 /*  Pricing - Airtable-style plan cards.                              */
 /*                                                                     */
-/*  Four tiers: Free / Team ($20, most popular) / Business ($200) /   */
-/*  Enterprise (custom). Each card shows the plan's own features      */
-/*  ("Everything in X, plus:"), with the featured card highlighted.   */
+/*  Four tiers: Free / Team ($20, most popular) / Business ($999      */
+/*  one-time) / Enterprise (custom). Each card shows the plan's own    */
+/*  features ("Everything in X, plus:"), with the featured card       */
+/*  highlighted.                                                       */
 /* ------------------------------------------------------------------ */
 
 const CARDS: {
@@ -193,7 +194,8 @@ export function Pricing() {
         </div>
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
-          All prices in USD · cancel anytime · Enterprise is custom-priced, not a subscription
+          All prices in USD · Team is billed monthly, cancel anytime · Business is a one-time
+          payment · Enterprise is custom-priced
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
           Free includes the Simple workspace, the Savings page, and 5 AI messages per month.

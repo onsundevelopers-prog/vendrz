@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { getAIProvider } from "@/lib/ai";
 import { AGENT_TOOLS, executeTool } from "@/lib/ai/agentTools";
 import { advisorReply, type AdvisorDraft } from "@/lib/agentQuery";
@@ -52,6 +53,13 @@ You can call multiple tools in sequence to build a complete answer.
 For example: search_contracts("Microsoft") → get_contract(vendor_name="Microsoft") → search_email_threads(vendor_name="Microsoft") → draft_email(vendor_name="Microsoft", purpose="negotiation")`;
 
 export async function POST(req: NextRequest) {
+  // The agent works from the signed-in user's contract data - require a
+  // session so the endpoint can't be abused anonymously.
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+
   let body: AgentRequest;
   try {
     body = (await req.json()) as AgentRequest;

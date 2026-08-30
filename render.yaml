@@ -30,6 +30,8 @@ services:
         sync: false
       - key: GEMINI_MODEL
         sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
       # Clerk authentication.
       - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
         sync: false
@@ -62,4 +64,31 @@ services:
       - key: PAYPAL_SECRET
         sync: false
       - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      # Business tier is a one-time purchase (default $999), granted
+      # permanently. Team remains a monthly subscription.
+      - key: BUSINESS_PRICE_USD
+        value: "999"
+      # Gmail OAuth - server-only credential pair + token encryption.
+      # The registered redirect URI must be <this-app>/api/gmail/callback.
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_TOKEN_SECRET
+        sync: false   # generate: openssl rand -base64 32
+      # Mount a persistent disk on the service and point both file stores at
+      # it so Gmail tokens and in-flight extraction jobs survive restarts.
+      - key: GMAIL_TOKEN_FILE
+        value: /data/gmail-tokens.json
+      - key: EXTRACT_JOB_FILE
+        value: /data/extract-jobs.json
+      # Supabase persistence (workspace data + uploaded documents).
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # Optional one-time redemption codes (code:plan pairs). Omit to
+      # disable code redemption entirely.
+      - key: REDEEM_CODES
         sync: false

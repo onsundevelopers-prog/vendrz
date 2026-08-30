@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { decideApproval, getRun } from "@/lib/services/taskRegistry";
+import { rejectUnauthenticated } from "@/lib/serverAuth";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -15,6 +17,11 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Deciding an approval gate is a privileged action - only a signed-in
+  // user may grant or deny a task's approval.
+  const { userId } = await auth();
+  if (!userId) return rejectUnauthenticated();
+
   const { id } = await params;
   let approved = false;
   try {

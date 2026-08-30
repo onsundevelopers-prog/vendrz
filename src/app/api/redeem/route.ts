@@ -25,20 +25,21 @@ interface RedeemCodeDef {
   limited?: boolean;
 }
 
-const DEFAULT_CODES: Record<string, RedeemCodeDef> = {
-  "7ff437": { plan: "team", label: "One month of Team" },
-};
-
-/** Parse optional env: `REDEEM_CODES=code1:team,code2:business` */
+/**
+ * Parse the env-configured codes: `REDEEM_CODES=code1:team,code2:business`.
+ * Codes ONLY come from the server environment - there is deliberately no
+ * fallback set baked into the source, so a code can never unlock a paid
+ * plan unless an operator explicitly configured it.
+ */
 function configuredCodes(): Record<string, RedeemCodeDef> {
   const raw = process.env.REDEEM_CODES?.trim();
-  if (!raw) return DEFAULT_CODES;
+  if (!raw) return {};
   const out: Record<string, RedeemCodeDef> = {};
   for (const pair of raw.split(",")) {
     const [code, plan] = pair.split(":").map((s) => s.trim());
     if (code && plan) out[code.toLowerCase()] = { plan, label: plan };
   }
-  return Object.keys(out).length ? out : DEFAULT_CODES;
+  return out;
 }
 
 export async function POST(req: NextRequest) {
@@ -47,13 +48,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
+  const codes = configuredCodes();
+  if (Object.keys(codes).length === 0) {
+    // No codes are configured on this deployment - refuse loudly rather
+    // than ever "succeeding" with a frontend-only unlock.
+    return NextResponse.json(
+      { error: "Redemption isn't configured on this deployment." },
+      { status: 503 }
+    );
+  }
+
   const body = (await req.json().catch(() => null)) as { code?: string } | null;
   const code = body?.code?.trim().toLowerCase();
   if (!code) {
     return NextResponse.json({ error: "Enter a code to redeem." }, { status: 400 });
   }
 
-  const def = configuredCodes()[code];
+  const def = codes[code];
   if (!def) {
     return NextResponse.json(
       { error: "That code isn't valid or has expired." },
@@ -80,6 +91,8 @@ export async function POST(req: NextRequest) {
 
     const metadata: PlanMetadata = {
       tier: def.plan,
+      // A redeemed code is a permanent grant (no billing), never revoked.
+      type: "lifetime",
       subscriptionId: `redeem:${code}`,
       status: "active",
       updatedAt: new Date().toISOString(),

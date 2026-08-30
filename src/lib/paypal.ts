@@ -106,6 +106,102 @@ export async function getPayPalSubscription(
   return { id: data.id, status: data.status, planId: data.plan_id ?? "" };
 }
 
+/* --------------------------- one-time orders --------------------------- */
+
+/**
+ * The Business tier is a one-time purchase (default $999 USD) rather than
+ * a recurring subscription. Override the amount with BUSINESS_PRICE_USD.
+ */
+export function businessPriceUsd(): string {
+  return (process.env.BUSINESS_PRICE_USD ?? "999").trim();
+}
+
+export interface PayPalOrder {
+  id: string;
+  status: string;
+}
+
+/**
+ * Create a one-time PayPal order for the Business tier. The Clerk user id
+ * rides along as custom_id so the webhook can grant the buyer even if the
+ * capture happens on a different device/session.
+ */
+export async function createPayPalOrder(userId: string): Promise<PayPalOrder> {
+  const token = await getAccessToken();
+  const res = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: { currency_code: "USD", value: businessPriceUsd() },
+          description: "Noma Business - one-time license",
+        },
+      ],
+      custom_id: userId,
+      application_context: {
+        brand_name: "Noma",
+        user_action: "PAY_NOW",
+      },
+    }),
+    signal: AbortSignal.timeout(15_000),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new PayPalError(
+      `PayPal couldn't create the order (${res.status}). ${text.slice(0, 160)}`,
+      res.status
+    );
+  }
+  const data = (await res.json()) as { id?: string; status?: string };
+  if (!data.id) throw new PayPalError("PayPal returned no order id.");
+  return { id: data.id, status: data.status ?? "" };
+}
+
+/** Capture an approved one-time order. Throws when PayPal rejects it. */
+export async function capturePayPalOrder(
+  orderId: string
+): Promise<{ status: string; amount?: string }> {
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${PAYPAL_API_BASE}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      signal: AbortSignal.timeout(15_000),
+    }
+  );
+  const text = await res.text().catch(() => "");
+  let data: {
+    id?: string;
+    status?: string;
+    purchase_units?: Array<{
+      payments?: { captures?: Array<{ amount?: { value?: string } }> };
+    }>;
+  } = {};
+  try {
+    data = JSON.parse(text || "{}");
+  } catch {
+    /* non-JSON error body */
+  }
+  if (!res.ok) {
+    throw new PayPalError(
+      `PayPal couldn't capture the order (${res.status}). ${text.slice(0, 160)}`,
+      res.status
+    );
+  }
+  const capture = data.purchase_units?.[0]?.payments?.captures?.[0];
+  return { status: data.status ?? "", amount: capture?.amount?.value };
+}
+
 /* ------------------------- plan id -> tier --------------------------- */
 
 /**
@@ -169,6 +265,12 @@ export async function verifyPayPalWebhookSignature(
 
 export interface PlanMetadata {
   tier: string;
+  /**
+   * "subscription" = recurring (Team) - re-verified with PayPal on load and
+   * revoked when cancelled/expired. "lifetime" = one-time purchase
+   * (Business) - granted permanently, never revoked.
+   */
+  type: "subscription" | "lifetime";
   subscriptionId: string;
   status: string;
   updatedAt: string;
@@ -184,6 +286,8 @@ export function readPlanMetadata(
   if (typeof p.tier !== "string" || typeof p.subscriptionId !== "string") return null;
   return {
     tier: p.tier,
+    // Pre-existing records without a type were subscriptions.
+    type: p.type === "lifetime" ? "lifetime" : "subscription",
     subscriptionId: p.subscriptionId,
     status: typeof p.status === "string" ? p.status : "active",
     updatedAt: typeof p.updatedAt === "string" ? p.updatedAt : "",

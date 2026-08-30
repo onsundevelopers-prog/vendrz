@@ -102,7 +102,6 @@ function AIWorkbench() {
     liveMapRef.current = {};
     setLiveMap({});
     /* eslint-enable react-hooks/set-state-in-effect */
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   /* ---------------- selection sync with the URL ---------------- */

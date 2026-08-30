@@ -24,7 +24,7 @@ export class OllamaCloudProvider extends BaseAIProvider {
   readonly model: string;
   private readonly client: OpenAICompatClient;
 
-  constructor(opts: { baseUrl?: string; apiKey?: string; model?: string } = {}) {
+  constructor(opts: { baseUrl?: string; apiKey?: string; model?: string; timeoutMs?: number } = {}) {
     super();
     const apiKey = opts.apiKey ?? process.env.OLLAMA_API_KEY;
     if (!apiKey) {
@@ -52,7 +52,7 @@ export class LocalOllamaProvider extends BaseAIProvider {
   readonly model: string;
   private readonly client: OpenAICompatClient;
 
-  constructor(opts: { baseUrl?: string; apiKey?: string; model?: string } = {}) {
+  constructor(opts: { baseUrl?: string; apiKey?: string; model?: string; timeoutMs?: number } = {}) {
     super();
     this.model =
       opts.model ??
@@ -64,6 +64,13 @@ export class LocalOllamaProvider extends BaseAIProvider {
       // Local Ollama requires a non-empty key field but ignores its value.
       apiKey: opts.apiKey ?? process.env.OLLAMA_LOCAL_API_KEY ?? "ollama",
       model: this.model,
+      // Local models run on the machine's CPU/GPU and are far slower than
+      // hosted endpoints, especially when the four pipeline tasks run in
+      // parallel and contend for the same hardware. A 2-minute default
+      // timeout made the slowest task fall back to Gemini (or fail) under
+      // load, so local requests get a much longer budget. Override with
+      // OLLAMA_LOCAL_TIMEOUT_MS when tuning.
+      timeoutMs: opts.timeoutMs ?? Number(process.env.OLLAMA_LOCAL_TIMEOUT_MS ?? 300_000),
     });
   }
 
@@ -92,7 +99,7 @@ export class LocalOllamaWithCloudFallback extends LocalOllamaProvider {
   private readonly fallback: OpenAICompatClient | null;
   private readonly probeUrl: string;
 
-  constructor(opts: { baseUrl?: string; apiKey?: string; model?: string } = {}) {
+  constructor(opts: { baseUrl?: string; apiKey?: string; model?: string; timeoutMs?: number } = {}) {
     super(opts);
     const baseUrl = opts.baseUrl ?? process.env.OLLAMA_LOCAL_BASE_URL ?? LOCAL_BASE_URL;
     this.probeUrl = `${baseUrl.replace(/\/+$/, "")}/models`;

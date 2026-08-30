@@ -51,7 +51,7 @@ async function ensureTable() {
   // the table must exist (created here via a fallback if reachable).
   // We attempt to create a test bucket+table; table creation falls back
   // to a documented instruction if PostgREST rejects DDL.
-  const { data, error } = await sb.from("documents").select("id").limit(1).maybeSingle();
+  const { error } = await sb.from("documents").select("id").limit(1).maybeSingle();
   if (error && !/relation "documents" does not exist/.test(error.message)) {
     log("[table] check errored:", error.message);
   }

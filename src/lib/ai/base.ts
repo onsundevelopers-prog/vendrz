@@ -278,6 +278,9 @@ export function richToExtraction(rich: RichContractExtraction): ContractExtracti
     contractType: rich.billing_frequency ? `${rich.billing_frequency} subscription` : null,
     effectiveDate: rich.contract_start_date,
     renewalDate,
+    // The model's stated cancellation deadline (end/renewal date minus the
+    // notice period) is authoritative when present - it is never dropped.
+    cancellationDeadline: rich.cancellation_deadline,
     autoRenews: rich.auto_renewal,
     autoRenewalNoticeDays: rich.notice_period_days,
     terminationNoticeDays: rich.notice_period_days,

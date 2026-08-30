@@ -31,6 +31,13 @@ export default function SavingsPage() {
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
 
+  // Hooks are called unconditionally (before any early return) so the
+  // locked-state render keeps the exact same hook order as the full render.
+  const candidates = useMemo(
+    () => contracts.filter((c) => c.opportunityHigh > 0),
+    [contracts]
+  );
+
   if (savingsLocked) {
     return (
       <SectionLocked
@@ -39,11 +46,6 @@ export default function SavingsPage() {
       />
     );
   }
-
-  const candidates = useMemo(
-    () => contracts.filter((c) => c.opportunityHigh > 0),
-    [contracts]
-  );
 
   const savingsDrivers = (c: ContractRecord): string => {
     const drivers: string[] = [];
