@@ -102,7 +102,7 @@ export default function ResultsPage() {
           transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="sticky bottom-4 z-40 mx-auto mb-4 w-[calc(100%-2.5rem)] max-w-2xl"
         >
-          <div className="relative overflow-hidden rounded-xl border border-line bg-panel p-5">
+          <div className="border-sheen relative overflow-hidden rounded-xl border border-line bg-panel p-5">
             <button
               onClick={() => setDismissed(true)}
               aria-label="Dismiss"

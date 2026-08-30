@@ -421,7 +421,7 @@ export default function SettingsPage() {
 
 function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
-    <div className="panel-surface flex flex-col overflow-hidden">
+    <div className="panel-surface border-sheen flex flex-col overflow-hidden">
       <div className="border-b border-line px-4 py-3">
         <h2 className="text-[13.5px] font-semibold tracking-tight text-fg">{title}</h2>
         {sub && <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted">{sub}</p>}

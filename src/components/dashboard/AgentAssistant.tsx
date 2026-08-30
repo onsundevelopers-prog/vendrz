@@ -306,7 +306,7 @@ export function AgentAssistant({
               e.preventDefault();
               submit(draft);
             }}
-            className="flex items-center gap-2 rounded-lg border border-line bg-[#14141a] px-2.5 py-1.5 focus-within:border-white/25"
+            className="border-sheen flex items-center gap-2 rounded-lg border border-line bg-[#14141a] px-2.5 py-1.5 focus-within:border-white/25"
           >
             <Radar size={13} className="shrink-0 text-zinc-500" />
             <input

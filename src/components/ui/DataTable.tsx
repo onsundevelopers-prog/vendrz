@@ -317,7 +317,7 @@ export function DataTable<T>({
   ];
 
   return (
-    <div className="panel-surface overflow-hidden">
+    <div className="panel-surface border-sheen overflow-hidden">
       {/* toolbar */}
       <div className="toolbar">
         {selectable && selection.size > 0 ? (

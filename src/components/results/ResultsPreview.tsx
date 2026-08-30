@@ -47,7 +47,7 @@ export function ResultsPreview({
   const offset = circ * (1 - result.riskScore / 100);
 
   return (
-    <div className="w-full overflow-hidden rounded-lg border border-white/[0.08] bg-[#111113]">
+    <div className="border-sheen w-full overflow-hidden rounded-lg border border-white/[0.08] bg-[#111113]">
       {/* header - doc name */}
       <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3">
         <div className="flex size-8 items-center justify-center rounded-md bg-white/[0.06]">

@@ -98,9 +98,9 @@ export default function ProcessingPage() {
                 key={stage.id}
                 className={`flex items-center gap-3.5 rounded-xl border px-4 py-3 transition-all duration-300 ${
                   isActive
-                    ? "border-white/25 bg-white/[0.05]"
+                    ? "border-beam border-white/25 bg-white/[0.05]"
                     : isDone
-                      ? "border-line bg-surface"
+                      ? "border-sheen border-line bg-surface"
                       : "border-line bg-transparent opacity-40"
                 }`}
               >

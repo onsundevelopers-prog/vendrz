@@ -55,7 +55,7 @@ export function Kpi({
 
 export function KpiStrip({ children }: { children: React.ReactNode }) {
   return (
-    <div className="panel-surface flex divide-x divide-line overflow-x-auto">
+    <div className="panel-surface border-sheen flex divide-x divide-line overflow-x-auto">
       {children}
     </div>
   );

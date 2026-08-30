@@ -110,7 +110,7 @@ export default function AuditPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08, ease }}
             onClick={() => start("gmail")}
-            className="group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
+            className="border-sheen group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
           >
             <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
               01
@@ -144,7 +144,7 @@ export default function AuditPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.16, ease }}
             onClick={() => start("aws")}
-            className="group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
+            className="border-sheen group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
           >
             <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
               02
@@ -174,7 +174,7 @@ export default function AuditPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.24, ease }}
             onClick={() => fileInputRef.current?.click()}
-            className="group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
+            className="border-sheen group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
           >
             <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
               03

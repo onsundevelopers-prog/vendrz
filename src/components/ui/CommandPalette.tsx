@@ -80,7 +80,7 @@ export function CommandPalette({
 
   return (
     <div className="palette-overlay" onPointerDown={onClose}>
-      <div className="palette" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="palette border-sheen" onPointerDown={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 border-b border-line px-4">
           <Search size={16} className="shrink-0 text-muted" />
           <input

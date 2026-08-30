@@ -19,7 +19,7 @@ export function SectionLocked({
   return (
     <div className="flex h-full items-center justify-center bg-canvas px-5">
       <div className="mx-auto w-full max-w-md text-center">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-xl border border-line bg-surface">
+        <div className="border-sheen mx-auto flex size-12 items-center justify-center rounded-xl border border-line bg-surface">
           <Lock size={18} className="text-muted" />
         </div>
         <h2 className="mt-5 text-[18px] font-semibold tracking-tight text-fg">

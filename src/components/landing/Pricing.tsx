@@ -97,7 +97,7 @@ function TierCard({
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay: index * 0.1, ease }}
       whileHover={{ y: -4 }}
-      className={`relative flex flex-col rounded-xl border bg-surface transition-colors ${
+      className={`border-sheen relative flex flex-col rounded-xl border bg-surface transition-colors ${
         card.featured
           ? "mt-4 border-white/30 shadow-2xl shadow-black/50"
           : "border-line shadow-lg shadow-black/20 hover:border-line-strong"

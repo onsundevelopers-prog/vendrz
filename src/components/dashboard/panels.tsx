@@ -33,7 +33,7 @@ export function Panel({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, ease: EASE }}
-      className={`panel-surface flex min-h-0 flex-col ${className}`}
+      className={`panel-surface border-sheen flex min-h-0 flex-col ${className}`}
     >
       <header className="panel-header">
         <div className="min-w-0">

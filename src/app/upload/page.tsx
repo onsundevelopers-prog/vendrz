@@ -288,7 +288,7 @@ export default function UploadPage() {
               addFiles(e.dataTransfer.files);
             }}
             onClick={() => inputRef.current?.click()}
-            className={`mt-10 cursor-pointer rounded-lg border border-dashed p-8 text-center transition-colors duration-150 ${
+            className={`glass-glow mt-10 cursor-pointer rounded-lg border border-dashed p-8 text-center transition-colors duration-150 ${
               dragOver
                 ? "border-white/60 bg-white/[0.06]"
                 : "border-white/15 bg-surface hover:border-white/25"
@@ -339,7 +339,7 @@ export default function UploadPage() {
               {rows.map((row) => (
                 <div
                   key={row.id}
-                  className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3"
+                  className="border-sheen flex items-center gap-3 rounded-xl border border-line bg-surface p-3"
                 >
                   <div className="flex size-9 items-center justify-center rounded-lg border border-white/20 bg-white/[0.06]">
                     <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-300">

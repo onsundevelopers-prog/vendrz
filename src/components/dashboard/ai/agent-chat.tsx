@@ -162,7 +162,7 @@ function ActivityStrip({ task }: { task: AgentTask }) {
   if (views.length === 0) return null;
 
   return (
-    <div className="mt-2 overflow-hidden rounded-xl border border-line bg-surface">
+    <div className="border-sheen mt-2 overflow-hidden rounded-xl border border-line bg-surface">
       <button
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left"
@@ -257,7 +257,7 @@ function ClauseFindings({
 }) {
   if (findings.length === 0) return null;
   return (
-    <div className="mt-2 overflow-hidden rounded-xl border border-line bg-surface">
+    <div className="border-sheen mt-2 overflow-hidden rounded-xl border border-line bg-surface">
       <div className="flex items-center gap-2 border-b border-line/60 px-3.5 py-2">
         <FileText size={12} className="text-zinc-500" />
         <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-zinc-200">
@@ -322,7 +322,7 @@ function ApprovalGate({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="mt-3 overflow-hidden rounded-xl border border-white/15 bg-surface"
+      className="border-sheen mt-3 overflow-hidden rounded-xl border border-white/15 bg-surface"
     >
       <div className="px-3.5 py-2.5">
         <p className="text-[12.5px] font-medium text-fg">
@@ -337,7 +337,7 @@ function ApprovalGate({
             Review the draft
             <ChevronDown size={12} className="transition-transform duration-200 group-open:rotate-180" />
           </summary>
-          <div className="mt-2 overflow-hidden rounded-lg border border-line bg-[#0a0a0e] p-3">
+          <div className="border-sheen mt-2 overflow-hidden rounded-lg border border-line bg-[#0a0a0e] p-3">
             <p className="text-[10.5px] uppercase tracking-[0.06em] text-zinc-600">
               To · {approval.to || "address not on file"}
             </p>
@@ -409,7 +409,7 @@ function FinalSummary({ task }: { task: AgentTask }) {
           </span>
         </p>
       ) : (
-        <div className="rounded-xl border border-line/70 bg-surface px-4 py-3">
+        <div className="border-sheen rounded-xl border border-line/70 bg-surface px-4 py-3">
           <p className="text-[13.5px] leading-relaxed text-zinc-200">{renderInline(task.result)}</p>
           <p className="mt-2 text-[11.5px] text-zinc-500">Let me know if you&apos;d like me to take any next step.</p>
         </div>

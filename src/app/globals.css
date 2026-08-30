@@ -268,7 +268,10 @@ body {
 /*  Application workspace - dense professional surfaces                */
 /* ------------------------------------------------------------------ */
 
-/* Panels / tables are flat: hairline borders, no rounded marketing cards. */
+/* Panels / tables are flat: hairline borders, no rounded marketing cards.   */
+/* They share the established .border-sheen treatment (added in the shared   */
+/* Panel / surface components) so every major dashboard surface uses the    */
+/* same quiet travelling-light border language as the landing cards.        */
 .panel-surface {
   border: 1px solid var(--color-line);
   background: var(--color-surface);

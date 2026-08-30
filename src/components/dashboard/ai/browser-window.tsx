@@ -50,7 +50,7 @@ export function BrowserWindow({ tab, onClose }: { tab: BrowserTab; onClose: () =
   const hasClauses = (tab.clauses?.length ?? 0) > 0;
 
   return (
-    <div className="pointer-events-auto flex w-[300px] flex-col overflow-hidden rounded-lg border border-line-strong bg-[#121216] shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
+    <div className="border-sheen pointer-events-auto flex w-[300px] flex-col overflow-hidden rounded-lg border border-line-strong bg-[#121216] shadow-[0_16px_40px_rgba(0,0,0,0.55)]">
       {/* window title bar */}
       <div className="flex items-center gap-2 border-b border-line bg-[#16161b] px-2.5 py-1.5">
         <span className="min-w-0 flex-1 truncate text-[10.5px] font-medium text-zinc-300">
