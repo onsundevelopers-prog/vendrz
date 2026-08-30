@@ -22,6 +22,37 @@ import {
   setJobStage,
 } from "./jobs";
 
+/* ------------------------------------------------------------------ */
+/*  PDF extraction on Node / Vercel.                                   */
+/*                                                                     */
+/*  pdf-parse v2 wraps pdfjs-dist, which references browser globals     */
+/*  (DOMMatrix, ImageData, Path2D) at MODULE LOAD time. Node lacks     */
+/*  them, and pdf-parse's canvas dependency (@napi-rs/canvas) provides */
+/*  real implementations - but they must be installed on globalThis    */
+/*  BEFORE pdfjs-dist is imported, otherwise parsing throws            */
+/*  "DOMMatrix is not defined" and every PDF fails server-side.        */
+/* ------------------------------------------------------------------ */
+let pdfGlobalsInstalled = false;
+async function installPdfGlobals(): Promise<void> {
+  if (pdfGlobalsInstalled) return;
+  pdfGlobalsInstalled = true;
+  try {
+    const { DOMMatrix, ImageData, Path2D } = await import("@napi-rs/canvas");
+    // Only fill gaps - never override if the runtime already provides them.
+    if (typeof globalThis.DOMMatrix === "undefined") {
+      (globalThis as unknown as { DOMMatrix: typeof DOMMatrix }).DOMMatrix = DOMMatrix;
+    }
+    if (typeof globalThis.ImageData === "undefined") {
+      (globalThis as unknown as { ImageData: typeof ImageData }).ImageData = ImageData;
+    }
+    if (typeof globalThis.Path2D === "undefined") {
+      (globalThis as unknown as { Path2D: typeof Path2D }).Path2D = Path2D;
+    }
+  } catch (err) {
+    console.error("[extract] Could not load @napi-rs/canvas for PDF text extraction:", err);
+  }
+}
+
 let resumeTriggered = false;
 const resuming = new Set<string>();
 
@@ -66,9 +97,12 @@ export async function finishAnalysis(
   filename: string
 ): Promise<void> {
   const startTime = Date.now();
+  const provider = getAIProvider();
+  console.log(
+    `[extract] analyze job=${jobId} file="${filename}" provider=${provider.id} model=${provider.model} textChars=${text.length}`
+  );
 
   try {
-    const provider = getAIProvider();
     setJobStage(jobId, "preprocessing", 50);
 
     // Staged LLM extraction (parallel chunked calls)
@@ -88,10 +122,9 @@ export async function finishAnalysis(
     // When the LLM tasks all failed, the job should fail loudly with a real
     // reason instead of silently "completing" with a hollow extraction.
     if (pipelineResult.taskErrors.length >= 3) {
-      failJob(
-        jobId,
-        "The AI analysis service isn't reachable right now. Start Ollama locally (ollama serve) or check your OLLAMA_API_KEY, then try again."
-      );
+      const reason =
+        "The AI analysis service isn't reachable right now. Check your AI provider setup (Ollama / Gemini) and try again.";
+      failJob(jobId, reason);
       console.error(
         `[extract] Job ${jobId}: LLM unreachable - ${pipelineResult.taskErrors.join("; ")}`
       );
@@ -167,6 +200,10 @@ export async function finishAnalysis(
 /** Extract raw text from an uploaded file (PDF / DOCX / text). */
 export async function extractFileText(file: File, name: string): Promise<string> {
   if (name.endsWith(".pdf")) {
+    // pdfjs-dist needs DOMMatrix/ImageData/Path2D on globalThis at load - install
+    // them from @napi-rs/canvas before importing pdf-parse. (Tracking the awaited
+    // promise keeps the dynamic import from racing the global assignment.)
+    await installPdfGlobals();
     const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: Buffer.from(await file.arrayBuffer()) });
     try {

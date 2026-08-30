@@ -487,6 +487,22 @@ export function createAuditSession(
   return session;
 }
 
+/** Bind an anonymous review to a real account so it persists after sign-in. */
+export function unlockAuditSessionToUser(
+  id: string,
+  userId: string
+): AuditSession | null {
+  const session = getAuditSession(id);
+  if (!session) return null;
+  return updateAuditSession(id, { unlockedToUserId: userId });
+}
+
+/** Review sessions that belong to this account (transferred on sign-in). */
+export function getAuditSessionsForUser(userId: string): AuditSession[] {
+  const sessions = read<Record<string, AuditSession>>(KEYS.auditSessions, {});
+  return Object.values(sessions).filter((s) => s.unlockedToUserId === userId);
+}
+
 /* ------------------------------ AI usage ------------------------------ */
 
 /**

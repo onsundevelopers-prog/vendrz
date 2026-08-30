@@ -235,7 +235,7 @@ export async function analyzeFile(file: File): Promise<ExtractionResult> {
       case "lost":
         if (jobReposts >= MAX_JOB_REPOSTS) {
           throw new ExtractionError(
-            "The analysis was interrupted and couldn't be resumed. Please try again.",
+            "The analysis service restarted mid-analysis and the file couldn't be resumed. Please try again.",
             "job"
           );
         }

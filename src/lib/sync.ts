@@ -15,10 +15,14 @@
 /* ------------------------------------------------------------------ */
 
 import { KEYS } from "./store";
+import type { AgentTaskRef } from "./agentTaskStore";
+import { readAgentTasks as _readTasks } from "./agentTaskStore";
 import type {
   ActivityRecord,
   AgentMessage,
   AnonymousSession,
+  ApprovalAction,
+  AuditSession,
   EmailThread,
   GmailConnection,
 } from "./types";
@@ -27,6 +31,12 @@ export interface UserBlob {
   sessions?: AnonymousSession[];
   activity?: ActivityRecord[];
   agentMessages?: AgentMessage[];
+  /** Agent (AI assistant) tasks for the user, terminal ones included. */
+  agentTasks?: AgentTaskRef[];
+  /** Pending/approved/rejected approval actions for the user. */
+  actions?: ApprovalAction[];
+  /** Free-review results claimed by this account. */
+  auditSessions?: AuditSession[];
   aiUsage?: Record<string, number>;
   emailThreads?: EmailThread[];
   gmail?: GmailConnection;
@@ -80,6 +90,70 @@ function mergeSessions(saved: AnonymousSession[] | undefined): boolean {
   return touched;
 }
 
+/** Merge saved approval actions that aren't already local (local wins). */
+function mergeActions(
+  userId: string,
+  saved: ApprovalAction[] | undefined
+): boolean {
+  if (!Array.isArray(saved) || saved.length === 0) return false;
+  const all = read<Record<string, Record<string, ApprovalAction>>>(KEYS.actions, {});
+  const mine = all[userId] ?? {};
+  let touched = false;
+  for (const a of saved) {
+    if (a && a.action_id && !mine[a.action_id]) {
+      mine[a.action_id] = a;
+      touched = true;
+    }
+  }
+  if (touched) {
+    all[userId] = mine;
+    write(KEYS.actions, all);
+  }
+  return touched;
+}
+
+/** Merge claimed free-review sessions that aren't already local. */
+function mergeAuditSessions(saved: AuditSession[] | undefined): boolean {
+  if (!Array.isArray(saved) || saved.length === 0) return false;
+  const map = read<Record<string, AuditSession>>(KEYS.auditSessions, {});
+  let touched = false;
+  for (const s of saved) {
+    if (s && s.id && !map[s.id]) {
+      map[s.id] = s;
+      touched = true;
+    }
+  }
+  if (touched) write(KEYS.auditSessions, map);
+  return touched;
+}
+
+/** Merge the saved agent (AI assistant) tasks that aren't already local. */
+function mergeAgentTasks(
+  userId: string,
+  saved: AgentTaskRef[] | undefined
+): boolean {
+  if (!Array.isArray(saved) || saved.length === 0) return false;
+  const local = read<Record<string, AgentTaskRef>>(
+    userId ? `vendrz.agentTasks.v2:${userId}` : "vendrz.agentTasks.v2:anon",
+    {}
+  );
+  let touched = false;
+  for (const ref of saved) {
+    const t = ref?.task;
+    if (t && t.id && !local[t.id]) {
+      local[t.id] = { task: t, live: false };
+      touched = true;
+    }
+  }
+  if (touched) {
+    write(
+      userId ? `vendrz.agentTasks.v2:${userId}` : "vendrz.agentTasks.v2:anon",
+      local
+    );
+  }
+  return touched;
+}
+
 /** Merge monthly AI usage entries for this user (missing months only). */
 function mergeAiUsage(userId: string, saved: Record<string, number> | undefined): boolean {
   if (!saved || Object.keys(saved).length === 0) return false;
@@ -110,6 +184,9 @@ export async function hydrateUserData(userId: string): Promise<boolean> {
     if (mergeUserArray(KEYS.agentMessages, userId, data.agentMessages)) changed = true;
     if (mergeUserArray(KEYS.emailThreads, userId, data.emailThreads)) changed = true;
     if (mergeAiUsage(userId, data.aiUsage)) changed = true;
+    if (mergeAgentTasks(userId, data.agentTasks)) changed = true;
+    if (mergeActions(userId, data.actions)) changed = true;
+    if (mergeAuditSessions(data.auditSessions)) changed = true;
     if (data.gmail) {
       const map = read<Record<string, GmailConnection>>(KEYS.gmail, {});
       if (!map[userId]) {
@@ -159,6 +236,21 @@ async function pushUserData(userId: string): Promise<void> {
 
     const emailThreads = read<Record<string, EmailThread[]>>(KEYS.emailThreads, {})[userId];
     if (emailThreads?.length) blob.emailThreads = emailThreads;
+
+    // Agent (AI assistant) tasks + audit for the user.
+    const agentTasks = _readTasks(userId);
+    if (agentTasks.length > 0) blob.agentTasks = agentTasks;
+
+    // Free-review sessions claimed by / bound to this account.
+    const auditSessions = read<Record<string, AuditSession>>(KEYS.auditSessions, {});
+    const myAudits = Object.values(auditSessions).filter((s) => s.unlockedToUserId === userId);
+    if (myAudits.length > 0) blob.auditSessions = myAudits;
+    const actions = read<Record<string, Record<string, ApprovalAction>>>(KEYS.actions, {})[
+      userId
+    ];
+    if (actions && Object.keys(actions).length > 0) {
+      blob.actions = Object.values(actions);
+    }
 
     const gmail = read<Record<string, GmailConnection>>(KEYS.gmail, {})[userId];
     if (gmail) blob.gmail = gmail;

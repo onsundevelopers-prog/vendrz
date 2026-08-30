@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useAuthUser } from "@/lib/auth";
+import { useDisplayMode } from "@/lib/displayMode";
 import { getActivity, getContracts, getEmailThreads } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import { money } from "@/lib/format";
@@ -13,6 +14,7 @@ import {
   recommendedContractAction,
 } from "@/components/dashboard/CompanyInspector";
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
+import { SectionLocked } from "@/components/dashboard/SectionLocked";
 import { DataTableEditor, type EditorColumn } from "@/components/dashboard/DataTableEditor";
 import { Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
@@ -27,11 +29,21 @@ export default function RisksPage() {
   const auth = useAuthUser();
   const userId = auth.id;
   const now = useNow();
+  const { lockedSections } = useDisplayMode();
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
+
+  if (lockedSections.includes("risk")) {
+    return (
+      <SectionLocked
+        title="Risk"
+        description="See every contract risk and its severity so nothing can auto-renew or escalate unnoticed."
+      />
+    );
+  }
 
   const selEmails = selected
     ? threads.filter((t) => t.vendorName.toLowerCase() === selected.vendorName.toLowerCase())

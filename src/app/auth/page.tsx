@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { SignIn, SignUp, useUser } from "@clerk/nextjs";
-import { getSession, transferSessionToAccount } from "@/lib/store";
+import { getSession, transferSessionToAccount, unlockAuditSessionToUser, getAuditSession } from "@/lib/store";
 import { isClerkEnabled } from "@/lib/auth";
 import { Logo } from "@/components/brand/Logo";
 
@@ -175,9 +175,15 @@ function ClerkAuthPage() {
   useEffect(() => {
     if (!isLoaded || !user) return;
     if (sessionId) {
+      // A document-analysis session (upload flow) transfers to the account.
       const session = getSession(sessionId);
       if (session && !session.transferredToUserId) {
         transferSessionToAccount(sessionId, user.id);
+      }
+      // A free review (audit flow) is unlocked for the account too.
+      const audit = getAuditSession(sessionId);
+      if (audit && audit.unlockedToUserId !== user.id) {
+        unlockAuditSessionToUser(sessionId, user.id);
       }
     }
     router.replace(next);

@@ -8,6 +8,10 @@
 /*  server stream is the source of truth during a run; the client      */
 /*  applies each real event to rebuild the snapshot and stores the     */
 /*  final task.                                                        */
+/*                                                                     */
+/*  Storage is scoped per user (namespace = current Clerk user id) so   */
+/*  two accounts sharing one browser can never see each other's agent   */
+/*  history. Every read/write requires the owning userId.               */
 /* ------------------------------------------------------------------ */
 
 import type {
@@ -17,7 +21,7 @@ import type {
 } from "./agentTask";
 import { applyEventToStep } from "./agentTask";
 
-const KEY = "vendrz.agentTasks.v2";
+const KEY_PREFIX = "vendrz.agentTasks.v2";
 const MAX_TASKS = 30;
 
 export interface AgentTaskRef {
@@ -26,20 +30,30 @@ export interface AgentTaskRef {
   live: boolean;
 }
 
-function readMap(): Record<string, AgentTaskRef> {
+/**
+ * localStorage key namespace for a user's tasks. Guaranteed to be a suffix
+ * of the same bucket the sync layer reads from (see lib/sync.ts). An empty
+ * userId (unauthenticated) resolves to a "local anonymous" namespace so the
+ * page still works while keeping user storage isolated.
+ */
+function keyFor(userId: string): string {
+  return userId ? `${KEY_PREFIX}:${userId}` : `${KEY_PREFIX}:anon`;
+}
+
+function readMap(userId: string): Record<string, AgentTaskRef> {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem(KEY);
+    const raw = window.localStorage.getItem(keyFor(userId));
     return raw ? (JSON.parse(raw) as Record<string, AgentTaskRef>) : {};
   } catch {
     return {};
   }
 }
 
-function writeMap(map: Record<string, AgentTaskRef>): void {
+function writeMap(userId: string, map: Record<string, AgentTaskRef>): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(map));
+    window.localStorage.setItem(keyFor(userId), JSON.stringify(map));
   } catch {
     /* storage unavailable - ignore */
   }
@@ -60,20 +74,20 @@ export function taskUid(): string {
 }
 
 /** All tasks for the workspace, newest first. */
-export function readAgentTasks(): AgentTaskRef[] {
-  const map = readMap();
+export function readAgentTasks(userId: string): AgentTaskRef[] {
+  const map = readMap(userId);
   return Object.values(map).sort((a, b) =>
     b.task.updatedAt.localeCompare(a.task.updatedAt)
   );
 }
 
-export function getAgentTask(taskId: string): AgentTaskRef | null {
-  const map = readMap();
+export function getAgentTask(userId: string, taskId: string): AgentTaskRef | null {
+  const map = readMap(userId);
   return map[taskId] ?? null;
 }
 
-export function saveAgentTask(task: AgentTask): void {
-  const map = readMap();
+export function saveAgentTask(userId: string, task: AgentTask): void {
+  const map = readMap(userId);
   const prev = map[task.id];
   map[task.id] = { task, live: prev?.live ?? false };
   // Bound the store to the most recent tasks.
@@ -81,15 +95,15 @@ export function saveAgentTask(task: AgentTask): void {
     (a, b) => b[1].task.updatedAt.localeCompare(a[1].task.updatedAt)
   );
   for (const [id] of entries.slice(MAX_TASKS)) delete map[id];
-  writeMap(map);
+  writeMap(userId, map);
 }
 
-export function setTaskLive(taskId: string, live: boolean): void {
-  const map = readMap();
+export function setTaskLive(userId: string, taskId: string, live: boolean): void {
+  const map = readMap(userId);
   const ref = map[taskId];
   if (ref) {
     ref.live = live;
-    writeMap(map);
+    writeMap(userId, map);
   }
 }
 
@@ -188,8 +202,8 @@ export function applyLiveEvent(task: AgentTask, ev: AgentEvent): AgentTask {
   return next;
 }
 
-export function applySnapshotTask(task: AgentTask): void {
-  saveAgentTask(task);
+export function applySnapshotTask(userId: string, task: AgentTask): void {
+  saveAgentTask(userId, task);
 }
 
 /* ------------------------------ audit ------------------------------ */
@@ -201,24 +215,32 @@ export interface AgentAuditEvent {
   at: string;
 }
 
-const AUDIT_KEY = "vendrz.agentAudit.v2";
+const AUDIT_KEY_PREFIX = "vendrz.agentAudit.v2";
 
-export function readAudit(): AgentAuditEvent[] {
+/** Audit localStorage namespace for a user (mirrors the task key scheme). */
+function auditKeyFor(userId: string): string {
+  return userId ? `${AUDIT_KEY_PREFIX}:${userId}` : `${AUDIT_KEY_PREFIX}:anon`;
+}
+
+export function readAudit(userId: string): AgentAuditEvent[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(AUDIT_KEY);
+    const raw = window.localStorage.getItem(auditKeyFor(userId));
     return raw ? (JSON.parse(raw) as AgentAuditEvent[]) : [];
   } catch {
     return [];
   }
 }
 
-export function appendAudit(entry: Omit<AgentAuditEvent, "at">): void {
+export function appendAudit(userId: string, entry: Omit<AgentAuditEvent, "at">): void {
   if (typeof window === "undefined") return;
   try {
-    const list = readAudit();
+    const list = readAudit(userId);
     list.unshift({ ...entry, at: new Date().toISOString() });
-    window.localStorage.setItem(AUDIT_KEY, JSON.stringify(list.slice(0, 100)));
+    window.localStorage.setItem(
+      auditKeyFor(userId),
+      JSON.stringify(list.slice(0, 100))
+    );
   } catch {
     /* ignore */
   }

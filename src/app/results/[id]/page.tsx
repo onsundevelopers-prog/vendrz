@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { getSession } from "@/lib/store";
 import { useAuthUser } from "@/lib/auth";
 import { ResultsPreview } from "@/components/results/ResultsPreview";
+import { ReviewBlur } from "@/components/results/ReviewBlur";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 
@@ -87,7 +88,9 @@ export default function ResultsPage() {
             </div>
           </div>
 
-          <ResultsPreview result={result} />
+          <ReviewBlur blurred={!auth.id} sessionId={params.id}>
+            <ResultsPreview result={result} />
+          </ReviewBlur>
         </motion.div>
       </div>
 

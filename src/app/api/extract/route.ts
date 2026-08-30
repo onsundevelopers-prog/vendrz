@@ -64,12 +64,16 @@ export async function POST(req: NextRequest) {
     const job = createJob("anonymous", file.name);
     setJobStage(job.id, "queued", 100);
 
+    const startedAt = Date.now();
     await processExtraction(job.id, file, name);
 
     // Report the final state. Serverless clients read the result straight
     // from this response; polling clients keep using the status endpoint.
     const finalJob = getJob(job.id);
     if (finalJob?.status === "complete" && finalJob.result) {
+      console.log(
+        `[extract] complete job=${job.id} file="${file.name}" dur=${Date.now() - startedAt}ms`
+      );
       return NextResponse.json({
         jobId: job.id,
         status: "complete",
@@ -77,15 +81,31 @@ export async function POST(req: NextRequest) {
       });
     }
     if (finalJob?.status === "failed") {
+      console.log(
+        `[extract] failed job=${job.id} file="${file.name}" dur=${Date.now() - startedAt}ms reason=${finalJob.error ?? "unknown"}`
+      );
       return NextResponse.json({
         jobId: job.id,
         status: "failed",
         error: finalJob.error ?? "Couldn't extract the terms from this file. Try another file.",
       });
     }
-    return NextResponse.json({ jobId: job.id, status: "queued" });
+    // The pipeline must ALWAYS end in a terminal state. If it somehow did not
+    // (e.g. the run was cut short without an explicit fail), record it as
+    // failed rather than returning "queued" - on serverless a queued job is
+    // unreachable from any later poll and the client would report a lost job.
+    const reason =
+      "The analysis did not complete. Please try again.";
+    failJob(job.id, reason);
+    console.error(`[extract] non-terminal job=${job.id} file="${file.name}" state=${finalJob?.status}`);
+    return NextResponse.json({
+      jobId: job.id,
+      status: "failed",
+      error: reason,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[extract] request-level failure:", message);
     return NextResponse.json({ error: `Extraction failed: ${message}` }, { status: 502 });
   }
 }

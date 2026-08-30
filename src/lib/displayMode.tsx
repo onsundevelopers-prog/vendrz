@@ -134,6 +134,20 @@ const BUSINESS_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
 /** Plans shown in the upgrade picker (all paid tiers; Enterprise is sales). */
 const UPGRADE_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
 
+/**
+ * Workspace sections that a given plan does NOT include. For the Business
+ * plan, Renewals / Risk / Savings are gated to the Team plan: they are shown
+ * as locked with an "included with Team" note, never populated. Free uses
+ * the Simple view which still surfaces these as overview stats, so only the
+ * Business tier locks the dedicated sections.
+ */
+export const PLAN_LOCKED_SECTIONS: Record<Plan, string[]> = {
+  free: [],
+  team: [],
+  business: ["renewals", "risk", "savings"],
+  enterprise: [],
+};
+
 /** The PayPal plan id configured for a tier (undefined = not wired yet). */
 export function paypalPlanId(plan: Plan): string | undefined {
   switch (plan) {
@@ -181,6 +195,8 @@ interface DisplayModeContextValue {
   aiMessageLimit: number;
   /** Whether the current plan can connect Gmail. */
   canUseGmail: boolean;
+  /** Sections locked out of the current plan ("renewals", "risk", "savings"). */
+  lockedSections: string[];
 }
 
 const DisplayModeContext = createContext<DisplayModeContextValue>({
@@ -196,6 +212,7 @@ const DisplayModeContext = createContext<DisplayModeContextValue>({
   switchToFree: () => {},
   aiMessageLimit: PLANS[0].aiMessages,
   canUseGmail: PLANS[0].gmail,
+  lockedSections: PLAN_LOCKED_SECTIONS.free,
 });
 
 function readStored<T extends string>(key: string, allowed: T[], fallback: T | null): T | null {
@@ -350,6 +367,7 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
       switchToFree,
       aiMessageLimit: planDef(plan).aiMessages,
       canUseGmail: planDef(plan).gmail,
+      lockedSections: PLAN_LOCKED_SECTIONS[plan] ?? [],
     }),
     [mode, ready, setMode, plan, upgradeOpen, requestUpgrade, closeUpgrade, upgradeTarget, activatePlan, switchToFree]
   );

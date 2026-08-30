@@ -18,14 +18,16 @@ import {
   Search,
   Settings as SettingsIcon,
   ShieldAlert,
+  Ticket,
   Wallet,
 } from "lucide-react";
 import { useAuthUser, useAuthSignOut } from "@/lib/auth";
-import { DashboardModeProvider } from "@/lib/displayMode";
+import { DashboardModeProvider, useDisplayMode } from "@/lib/displayMode";
 import { hydrateUserData, persistUserData } from "@/lib/sync";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
+import { RedeemCode } from "@/components/dashboard/RedeemCode";
 
 /* ------------------------------------------------------------------ */
 /*  Workspace shell - dense enterprise layout.                        */
@@ -52,7 +54,7 @@ const NAV: NavItem[] = [
   { label: "Savings", href: "/dashboard/savings", icon: <Wallet size={15} /> },
 ];
 
-export default function DashboardLayout({
+function WorkspaceShell({
   children,
 }: {
   children: React.ReactNode;
@@ -65,6 +67,8 @@ export default function DashboardLayout({
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [railCollapsed, setRailCollapsed] = useState(false);
   const [dataVersion, setDataVersion] = useState(0);
+  const [redeemOpen, setRedeemOpen] = useState(false);
+  const { plan, setMode, mode, lockedSections } = useDisplayMode();
 
   useEffect(() => {
     if (!auth.isLoaded) return;
@@ -115,9 +119,13 @@ export default function DashboardLayout({
   const isActive = (href: string) =>
     href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 
+  // section key derived from a nav href (e.g. /dashboard/renewals -> "renewals")
+  const isSectionLocked = (href: string, locked: string[]) =>
+    locked.some((s) => href.endsWith(`/${s}`));
+
   const paletteItems = useMemo<PaletteItem[]>(
     () => [
-      ...NAV.map((n) => ({
+      ...NAV.filter((n) => !isSectionLocked(n.href, lockedSections)).map((n) => ({
         id: n.href,
         group: "Noma",
         label: n.label,
@@ -146,7 +154,7 @@ export default function DashboardLayout({
         onSelect: () => router.push("/audit"),
       },
     ],
-    [router]
+    [router, lockedSections]
   );
 
   if (!ready) {
@@ -168,8 +176,7 @@ export default function DashboardLayout({
     .toUpperCase();
 
   return (
-    <DashboardModeProvider>
-      <div className="flex h-screen flex-col overflow-hidden bg-canvas">
+    <div className="flex h-screen flex-col overflow-hidden bg-canvas">
         {/* ---------------------------- top header ---------------------------- */}
         <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-3">
           {/* brand + workspace */}
@@ -190,6 +197,36 @@ export default function DashboardLayout({
               <Plus size={13} />
               Connect
             </Link>
+
+            {/* plan view switcher for paid accounts that hold both views */}
+            {mode && plan !== "free" ? (
+              <div className="flex items-center gap-0.5 rounded-md border border-line p-0.5">
+                <button
+                  onClick={() => setMode("simple")}
+                  data-mode-on={mode === "simple"}
+                  className="rounded px-2 py-1 text-[11px] font-medium text-muted data-[mode-on=true]:bg-white data-[mode-on=true]:text-black"
+                >
+                  Personal
+                </button>
+                <button
+                  onClick={() => setMode("business")}
+                  data-mode-on={mode === "business"}
+                  className="rounded px-2 py-1 text-[11px] font-medium text-muted data-[mode-on=true]:bg-white data-[mode-on=true]:text-black"
+                >
+                  Business
+                </button>
+              </div>
+            ) : null}
+
+            <button
+              onClick={() => setRedeemOpen(true)}
+              aria-label="Redeem a code"
+              title="Redeem a code"
+              className="flex h-7 items-center gap-1 rounded-md border border-line px-2.5 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
+            >
+              <Ticket size={12} />
+              <span className="hidden sm:inline">Redeem</span>
+            </button>
 
             <span className="h-4 w-px bg-line" aria-hidden="true" />
             <span className="hidden text-[11.5px] text-muted lg:block">Feedback</span>
@@ -240,6 +277,23 @@ export default function DashboardLayout({
               <nav className="flex min-h-0 w-full flex-1 flex-col items-center gap-1">
                 {NAV.map((item) => {
                   const active = isActive(item.href);
+                  const locked = isSectionLocked(item.href, lockedSections);
+                  if (locked) {
+                    return (
+                      <div
+                        key={item.href}
+                        title="Included with Team plan"
+                        aria-label={`${item.label} (included with Team plan)`}
+                        className="group relative flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-md text-zinc-600"
+                      >
+                        {item.icon}
+                        <span className="absolute bottom-0 right-0 size-2 rounded-full bg-zinc-700 ring-1 ring-black/40" />
+                        <span className="pointer-events-none absolute left-full z-50 ml-2 hidden whitespace-nowrap rounded-md border border-line bg-float px-2 py-1 text-[11px] text-muted shadow-lg group-hover:block">
+                          {item.label} · included with Team
+                        </span>
+                      </div>
+                    );
+                  }
                   return (
                     <Link
                       key={item.href}
@@ -309,7 +363,19 @@ export default function DashboardLayout({
         </div>
 
         <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={paletteItems} />
+        <RedeemCode open={redeemOpen} onClose={() => setRedeemOpen(false)} />
       </div>
+  );
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <DashboardModeProvider>
+      <WorkspaceShell>{children}</WorkspaceShell>
     </DashboardModeProvider>
   );
 }

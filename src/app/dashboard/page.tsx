@@ -48,7 +48,10 @@ export default function DashboardPage() {
   const stats = useMemo(() => (userId ? getDashboardStats(userId) : null), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
-  const { mode, ready, plan, requestUpgrade, aiMessageLimit } = useDisplayMode();
+  const { mode, ready, plan, requestUpgrade, aiMessageLimit, lockedSections } = useDisplayMode();
+  const renewalsLocked = lockedSections.includes("renewals");
+  const riskLocked = lockedSections.includes("risk");
+  const savingsLocked = lockedSections.includes("savings");
 
   // Landed from a pricing card (e.g. /dashboard?upgrade=team): open the
   // upgrade screen for that plan so the next step is payment, then clean
@@ -374,44 +377,56 @@ export default function DashboardPage() {
       {/* KPI strip - numbers count up from 0 on load (Apple-style) */}
       <KpiStrip>
         <KpiBlock label="Contracts" value={stats?.contractsMonitored ?? contracts.length} sub="Analyzed documents" count={stats?.contractsMonitored ?? contracts.length} />
-        <KpiBlock
-          label="Upcoming renewals"
-          value={stats?.upcomingRenewals ?? 0}
-          sub="Within 90 days"
-          accent={(stats?.upcomingRenewals ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
-          count={(stats?.upcomingRenewals ?? 0)}
-        />
-        <KpiBlock
-          label="High risk"
-          value={stats?.highRiskContracts ?? 0}
-          sub="Score ≥ 60"
-          accent={(stats?.highRiskContracts ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
-          count={(stats?.highRiskContracts ?? 0)}
-        />
-        <KpiBlock
-          label="Auto-renewals"
-          value={stats?.autoRenewals ?? 0}
-          sub="No action = renewed"
-          count={(stats?.autoRenewals ?? 0)}
-        />
-        <KpiBlock
-          label="Price escalations"
-          value={stats?.priceEscalations ?? 0}
-          sub="Fixed % increases"
-          count={(stats?.priceEscalations ?? 0)}
-        />
-        <KpiBlock
-          label="Cancellation opportunities"
-          value={stats?.cancellationOpportunities ?? 0}
-          sub="In window · auto-renew"
-          accent={(stats?.cancellationOpportunities ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
-          count={(stats?.cancellationOpportunities ?? 0)}
-        />
-        <KpiBlock
-          label="Savings potential"
-          value={`${money(totalOpportunityLow)}–${money(totalOpportunityHigh)}`}
-          sub="Estimated range /yr"
-        />
+        {!renewalsLocked && (
+          <KpiBlock
+            label="Upcoming renewals"
+            value={stats?.upcomingRenewals ?? 0}
+            sub="Within 90 days"
+            accent={(stats?.upcomingRenewals ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
+            count={(stats?.upcomingRenewals ?? 0)}
+          />
+        )}
+        {!riskLocked && (
+          <KpiBlock
+            label="High risk"
+            value={stats?.highRiskContracts ?? 0}
+            sub="Score ≥ 60"
+            accent={(stats?.highRiskContracts ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
+            count={(stats?.highRiskContracts ?? 0)}
+          />
+        )}
+        {!renewalsLocked && (
+          <KpiBlock
+            label="Auto-renewals"
+            value={stats?.autoRenewals ?? 0}
+            sub="No action = renewed"
+            count={(stats?.autoRenewals ?? 0)}
+          />
+        )}
+        {!riskLocked && (
+          <KpiBlock
+            label="Price escalations"
+            value={stats?.priceEscalations ?? 0}
+            sub="Fixed % increases"
+            count={(stats?.priceEscalations ?? 0)}
+          />
+        )}
+        {!renewalsLocked && (
+          <KpiBlock
+            label="Cancellation opportunities"
+            value={stats?.cancellationOpportunities ?? 0}
+            sub="In window · auto-renew"
+            accent={(stats?.cancellationOpportunities ?? 0) > 0 ? "text-zinc-100" : "text-fg"}
+            count={(stats?.cancellationOpportunities ?? 0)}
+          />
+        )}
+        {!savingsLocked && (
+          <KpiBlock
+            label="Savings potential"
+            value={`${money(totalOpportunityLow)}–${money(totalOpportunityHigh)}`}
+            sub="Estimated range /yr"
+          />
+        )}
         <KpiBlock label="Annual spend" value={money(totalSpend)} sub="Sum of stated values" count={totalSpend} countFormat={(v) => money(v)} />
       </KpiStrip>
 
@@ -438,84 +453,103 @@ export default function DashboardPage() {
           )}
         </Panel>
 
-        <Panel
-          title="Renewal exposure"
-          sub="Contract value by horizon"
-          className="col-span-3 border-r border-line"
-          bodyClass="overflow-y-auto px-4 py-3"
-        >
-          {exposureBuckets.some((d) => d.value > 0) ? (
-            <BarChart
-              data={exposureBuckets}
-              height={200}
-              color="#a1a1aa"
-              format={(v) => money(v)}
-            />
-          ) : (
-            <PanelEmpty
-              title="No renewal dates"
-              body="Renewal dates appear here once extracted from your contracts."
-            />
-          )}
-        </Panel>
+        {renewalsLocked ? (
+          <Panel title="Renewal exposure" sub="included with Team" className="col-span-3 border-r border-line" bodyClass="flex items-center justify-center px-4 py-3">
+            <p className="text-[12px] text-zinc-600">Renewal tracking is included with the Team plan.</p>
+          </Panel>
+        ) : (
+          <Panel
+            title="Renewal exposure"
+            sub="Contract value by horizon"
+            className="col-span-3 border-r border-line"
+            bodyClass="overflow-y-auto px-4 py-3"
+          >
+            {exposureBuckets.some((d) => d.value > 0) ? (
+              <BarChart
+                data={exposureBuckets}
+                height={200}
+                color="#a1a1aa"
+                format={(v) => money(v)}
+              />
+            ) : (
+              <PanelEmpty
+                title="No renewal dates"
+                body="Renewal dates appear here once extracted from your contracts."
+              />
+            )}
+          </Panel>
+        )}
 
-        <Panel title="Risk distribution" sub="By contract count" className="col-span-4" bodyClass="px-4 py-3">
-          <div className="flex items-center gap-5">
-            <DonutChart
-              data={riskDist}
-              size={150}
-              thickness={14}
-              centerValue={String(contracts.length)}
-              centerLabel="contracts"
-            />
-            <div className="min-w-0 flex-1 space-y-1.5">
-              {riskDist.map((r) => (
-                <div key={r.name} className="flex items-center gap-2 text-[11.5px]">
-                  <span className="h-2 w-2 shrink-0" style={{ background: r.color }} />
-                  <span className="text-muted">{r.name}</span>
-                  <span className="ml-auto tabular-nums text-fg">{r.value}</span>
-                </div>
-              ))}
+        {riskLocked ? (
+          <Panel title="Risk distribution" sub="included with Team" className="col-span-4" bodyClass="flex items-center justify-center px-4 py-3">
+            <p className="text-[12px] text-zinc-600">Risk scoring is included with the Team plan.</p>
+          </Panel>
+        ) : (
+          <Panel title="Risk distribution" sub="By contract count" className="col-span-4" bodyClass="px-4 py-3">
+            <div className="flex items-center gap-5">
+              <DonutChart
+                data={riskDist}
+                size={150}
+                thickness={14}
+                centerValue={String(contracts.length)}
+                centerLabel="contracts"
+              />
+              <div className="min-w-0 flex-1 space-y-1.5">
+                {riskDist.map((r) => (
+                  <div key={r.name} className="flex items-center gap-2 text-[11.5px]">
+                    <span className="h-2 w-2 shrink-0" style={{ background: r.color }} />
+                    <span className="text-muted">{r.name}</span>
+                    <span className="ml-auto tabular-nums text-fg">{r.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </Panel>
+          </Panel>
+        )}
       </div>
 
       {/* row: renewals + status + financial exposure */}
       <div className="grid grid-cols-12 border-b border-line">
-        <Panel
-          title="Upcoming renewals"
-          sub={`${renewals.length} with dates`}
-          className="col-span-4 border-r border-line"
-          bodyClass="overflow-y-auto"
-        >
-          {renewals.slice(0, 7).map((c) => {
-            const days = daysUntil(c.renewalDate, now);
-            return (
-              <button
-                key={c.id}
-                onClick={() => setSelected(c)}
-                className="flex w-full items-center gap-3 border-b border-line/50 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[12.5px] font-medium text-fg">{c.vendorName}</p>
-                  <p className="truncate text-[10.5px] text-muted">
-                    Renews {formatDate(c.renewalDate)} · cancel by {formatDate(c.cancellationDeadline)}
-                  </p>
-                </div>
-                <span
-                  className={`shrink-0 text-[12px] font-semibold tabular-nums ${
-                    days < 30 ? "text-zinc-100" : days < 60 ? "text-zinc-300" : "text-muted"
-                  }`}
+        {renewalsLocked ? (
+          <Panel title="Upcoming renewals" sub="included with Team" className="col-span-4 border-r border-line" bodyClass="flex items-center justify-center px-4 py-3">
+            <p className="text-[12px] text-zinc-600">Renewal tracking is included with the Team plan.</p>
+          </Panel>
+        ) : (
+          <Panel
+            title="Upcoming renewals"
+            sub={`${renewals.length} with dates`}
+            className="col-span-4 border-r border-line"
+            bodyClass="overflow-y-auto"
+          >
+            {renewals.slice(0, 7).map((c) => {
+              const days = daysUntil(c.renewalDate, now);
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setSelected(c)}
+                  className="flex w-full items-center gap-3 border-b border-line/50 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
                 >
-                  {days}d
-                </span>
-                <ChevronRight size={12} className="shrink-0 text-zinc-600" />
-              </button>
-            );
-          })}
-          {renewals.length === 0 && <PanelEmpty title="No renewal dates extracted" />}
-        </Panel>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[12.5px] font-medium text-fg">{c.vendorName}</p>
+                    <p className="truncate text-[10.5px] text-muted">
+                      Renews {formatDate(c.renewalDate)} · cancel by {formatDate(c.cancellationDeadline)}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 text-[12px] font-semibold tabular-nums ${
+                      days < 30 ? "text-zinc-100" : days < 60 ? "text-zinc-300" : "text-muted"
+                    }`}
+                  >
+                    {days}d
+                  </span>
+                  <ChevronRight size={12} className="shrink-0 text-zinc-600" />
+                </button>
+              );
+            })
+            }
+            {renewals.length === 0 && <PanelEmpty title="No renewal dates extracted" />}
+          </Panel>
+        )}
 
         <Panel
           title="Contracts by status"
@@ -538,20 +572,26 @@ export default function DashboardPage() {
         <Panel title="Financial exposure" sub="From stated values" className="col-span-4" bodyClass="px-4 py-1">
           <div className="grid grid-cols-2">
             <KpiBlock label="Annual spend" value={money(totalSpend)} sub="All contracts" count={totalSpend} countFormat={(v) => money(v)} />
-            <KpiBlock
-              label="Renewal exposure"
-              value={money(renewalExposure)}
-              sub="Renewing within 90 days"
-              accent={renewalExposure > 0 ? "text-zinc-100" : "text-fg"}
-              count={renewalExposure}
-              countFormat={(v) => money(v)}
-            />
-            <KpiBlock label="High risk" value={atRisk.length} sub="Score ≥ 60" count={atRisk.length} />
-            <KpiBlock
-              label="Savings potential"
-              value={`${money(totalOpportunityLow)}–${money(totalOpportunityHigh)}`}
-              sub="Estimated range /yr"
-            />
+            {!renewalsLocked && (
+              <KpiBlock
+                label="Renewal exposure"
+                value={money(renewalExposure)}
+                sub="Renewing within 90 days"
+                accent={renewalExposure > 0 ? "text-zinc-100" : "text-fg"}
+                count={renewalExposure}
+                countFormat={(v) => money(v)}
+              />
+            )}
+            {!riskLocked && (
+              <KpiBlock label="High risk" value={atRisk.length} sub="Score ≥ 60" count={atRisk.length} />
+            )}
+            {!savingsLocked && (
+              <KpiBlock
+                label="Savings potential"
+                value={`${money(totalOpportunityLow)}–${money(totalOpportunityHigh)}`}
+                sub="Estimated range /yr"
+              />
+            )}
           </div>
         </Panel>
       </div>
@@ -613,34 +653,40 @@ export default function DashboardPage() {
           </table>
         </Panel>
 
-        <Panel
-          title="Risk watch"
-          sub={`${atRisk.length} elevated`}
-          className="col-span-4"
-          bodyClass="overflow-y-auto"
-        >
-          {atRisk.slice(0, 8).map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setSelected(c)}
-              className="flex w-full items-center gap-3 border-b border-line/50 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[12.5px] font-medium text-fg">{c.vendorName}</p>
-                <p className="truncate text-[10.5px] text-muted">
-                  {c.autoRenew ? "Auto-renews" : "Manual renewal"}
-                  {c.cancellationDeadline
-                    ? ` · cancel by ${formatDate(c.cancellationDeadline)}`
-                    : ""}
-                </p>
-              </div>
-              <span className="shrink-0 text-[11px] font-semibold tabular-nums text-zinc-100">
-                {c.riskScore}
-              </span>
-            </button>
-          ))}
-          {atRisk.length === 0 && <PanelEmpty title="No elevated risks" />}
-        </Panel>
+        {riskLocked ? (
+          <Panel title="Risk watch" sub="included with Team" className="col-span-4" bodyClass="flex items-center justify-center px-4 py-3">
+            <p className="text-[12px] text-zinc-600">Risk monitoring is included with the Team plan.</p>
+          </Panel>
+        ) : (
+          <Panel
+            title="Risk watch"
+            sub={`${atRisk.length} elevated`}
+            className="col-span-4"
+            bodyClass="overflow-y-auto"
+          >
+            {atRisk.slice(0, 8).map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelected(c)}
+                className="flex w-full items-center gap-3 border-b border-line/50 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[12.5px] font-medium text-fg">{c.vendorName}</p>
+                  <p className="truncate text-[10.5px] text-muted">
+                    {c.autoRenew ? "Auto-renews" : "Manual renewal"}
+                    {c.cancellationDeadline
+                      ? ` · cancel by ${formatDate(c.cancellationDeadline)}`
+                      : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[11px] font-semibold tabular-nums text-zinc-100">
+                  {c.riskScore}
+                </span>
+              </button>
+            ))}
+            {atRisk.length === 0 && <PanelEmpty title="No elevated risks" />}
+          </Panel>
+        )}
       </div>
 
       {/* row: activity + correspondence */}

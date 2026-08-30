@@ -6,11 +6,15 @@ import { useParams } from "next/navigation";
 import { getAuditSession } from "@/lib/store";
 import { generateAnalysis } from "@/lib/pipeline";
 import type { AnalysisResult } from "@/lib/types";
+import { useAuthUser } from "@/lib/auth";
 import { ResultsPreview } from "@/components/results/ResultsPreview";
+import { ReviewBlur } from "@/components/results/ReviewBlur";
 
 export default function AuditResultsPage() {
   const params = useParams<{ id: string }>();
   const session = useMemo(() => getAuditSession(params.id), [params.id]);
+  const auth = useAuthUser();
+  const isSignedIn = !!auth.id;
   const audit = session?.result;
 
   const extractionAnalysis = useMemo(() => {
@@ -70,7 +74,12 @@ export default function AuditResultsPage() {
       </header>
 
       <div className="mx-auto max-w-5xl px-5 py-8 lg:px-8">
-        <ResultsPreview result={analysis as AnalysisResult} />
+        <ReviewBlur
+          blurred={!isSignedIn}
+          sessionId={params.id}
+        >
+          <ResultsPreview result={analysis as AnalysisResult} />
+        </ReviewBlur>
       </div>
     </main>
   );

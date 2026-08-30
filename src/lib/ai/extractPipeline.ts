@@ -22,6 +22,14 @@ import { normalizeRichExtraction as normalizeExtraction } from "./base";
 
 const MAX_CHARS_PER_CHUNK = 15_000;
 
+/**
+ * Hard ceiling for the whole pipeline (all four LLM tasks, including retries
+ * and the Ollama→Gemini fallback). Kept safely under Vercel's function-time
+ * limit so a hung provider fails with a clear reason instead of the whole
+ * invocation silently being terminated mid-air. Surfaces a clear message.
+ */
+const PIPELINE_DEADLINE_MS = Number(process.env.EXTRACT_PIPELINE_DEADLINE_MS ?? 100_000);
+
 /* ----------------------------- helpers ----------------------------- */
 
 /** Extract a chunk of text around relevant keywords. */
@@ -256,9 +264,7 @@ export async function runExtractionPipeline(
     "termination", "savings", "negotiation", "discount",
   ], 3000, 4000);
 
-  onStage?.("analyzing", 10);
-
-  // Step 3: Run parallel LLM extraction tasks
+  const deadlineAt = Date.now() + PIPELINE_DEADLINE_MS;
   const tasks = [
     { name: "parties", chunk: partiesChunk, system: PARTIES_PROMPT, schema: PARTIES_SCHEMA },
     { name: "dates", chunk: datesChunk, system: DATES_PROMPT, schema: DATES_SCHEMA },
@@ -270,9 +276,16 @@ export async function runExtractionPipeline(
   const taskErrors: string[] = [];
 
   // Run tasks in parallel (4 concurrent LLM calls)
+  onStage?.("analyzing", 10);
+
   const taskPromises = tasks.map(async (task) => {
     try {
       const result = await withRetry(async () => {
+        // Enforce the global deadline on the whole pipeline, not just per call:
+        // a single hung attempt should not blow through the serverless budget.
+        if (Date.now() > deadlineAt) {
+          throw new Error("Analysis exceeded the time limit.");
+        }
         return provider.structured<unknown>({
           system: task.system,
           prompt: `Analyze this contract section:\n\n--- CONTRACT TEXT ---\n${task.chunk}\n\n--- END ---`,

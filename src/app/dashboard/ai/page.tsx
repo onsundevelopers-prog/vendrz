@@ -61,7 +61,9 @@ function AIWorkbench() {
   const analyses = useMemo(() => (userId ? getContractAnalyses(userId) : []), [userId]);
   const gmailConnected = useMemo(() => (userId ? !!getGmailConnection(userId) : false), [userId]);
 
-  const [tasks, setTasks] = useState<AgentTask[]>(() => readAgentTasks().map((r) => r.task));
+  const [tasks, setTasks] = useState<AgentTask[]>(() =>
+    readAgentTasks(userId).map((r) => r.task)
+  );
   const [notice, setNotice] = useState<string | null>(null);
   const [limitHit, setLimitHit] = useState(false);
   // Every running agent lives in its own slot, keyed by task id.
@@ -89,6 +91,20 @@ function AIWorkbench() {
     []
   );
 
+  // When the signed-in identity changes (sign-out / switch account), reset the
+  // in-memory task list and drop any live streams so a different user never
+  // inherits the previous account's agent history.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time identity reset */
+    setTasks(readAgentTasks(userId).map((r) => r.task));
+    for (const s of Object.values(streamsRef.current)) s.close();
+    streamsRef.current = {};
+    liveMapRef.current = {};
+    setLiveMap({});
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   /* ---------------- selection sync with the URL ---------------- */
 
   // A dedicated chat has its own URL: /dashboard/ai?id=<taskId>. Opening
@@ -115,8 +131,8 @@ function AIWorkbench() {
       final.status = "failed";
     }
     if (!final.error && !ok) final.error = "The analysis stream ended before completing.";
-    saveAgentTask(final);
-    for (const entry of auditFromEvents(final.id, final.events)) appendAudit(entry);
+    saveAgentTask(userId, final);
+    for (const entry of auditFromEvents(final.id, final.events)) appendAudit(userId, entry);
     setTasks((prev) => [final, ...prev.filter((t) => t.id !== final.id)]);
     const doneCount = final.plan.steps.filter((s) => s.status === "completed").length;
     if (final.status === "completed") {
@@ -141,7 +157,7 @@ function AIWorkbench() {
     delete next[taskId];
     updateLiveState(next);
     delete streamsRef.current[taskId];
-    setTaskLive(taskId, false);
+    setTaskLive(userId, taskId, false);
   }
 
   /* ---------------- launch a new agent task ---------------- */
@@ -170,8 +186,8 @@ function AIWorkbench() {
     updateLiveState({ ...liveMapRef.current, [taskId]: seed });
     resumedRef.current = taskId;
     setNotice(null);
-    saveAgentTask(seed);
-    setTaskLive(taskId, true);
+    saveAgentTask(userId, seed);
+    setTaskLive(userId, taskId, true);
 
     // Open the NEW DEDICATED CHAT - the URL becomes the chat's address.
     router.replace(`/dashboard/ai?id=${taskId}`);
@@ -193,8 +209,8 @@ function AIWorkbench() {
           if (eventType === "error" || eventType === "approval.decided") return;
           if (eventType === "task.snapshot") {
             const final = data as AgentTask;
-            saveAgentTask(final);
-            for (const entry of auditFromEvents(final.id, final.events)) appendAudit(entry);
+            saveAgentTask(userId, final);
+            for (const entry of auditFromEvents(final.id, final.events)) appendAudit(userId, entry);
             setTasks((prev) => [final, ...prev.filter((t) => t.id !== final.id)]);
             dropLive(taskId);
             return;
@@ -246,20 +262,20 @@ function AIWorkbench() {
   /* ---------------- resume a task mid-run after reload ---------------- */
 
   function resumeTask(taskId: string) {
-    const ref = readAgentTasks().find((r) => r.task.id === taskId);
+    const ref = readAgentTasks(userId).find((r) => r.task.id === taskId);
     if (!ref) return;
     updateLiveState({ ...liveMapRef.current, [taskId]: ref.task });
-    setTaskLive(taskId, true);
+    setTaskLive(userId, taskId, true);
     let receivedSnapshot = false;
 
     const stream = openAgentStreamGet(`/api/agent/tasks/${taskId}/stream`, {
       onEvent: (eventType, data) => {
-        if (eventType === "error") return;
-        if (eventType === "task.snapshot") {
-          receivedSnapshot = true;
+        if (eventType === "error") return;          if (eventType === "task.snapshot") {
+            receivedSnapshot = true;
+
           // Authoritative live state (full history included) - replace.
           const snap = data as AgentTask;
-          saveAgentTask(snap);
+          saveAgentTask(userId, snap);
           setTasks((prev) => [snap, ...prev.filter((t) => t.id !== snap.id)]);
           updateLiveState({ ...liveMapRef.current, [taskId]: snap });
           return;
@@ -323,7 +339,7 @@ function AIWorkbench() {
     if (resumedRef.current === selectedId) return;
     if (liveMap[selectedId]) return;
     if (streamsRef.current[selectedId]) return;
-    const ref = readAgentTasks().find((r) => r.task.id === selectedId);
+    const ref = readAgentTasks(userId).find((r) => r.task.id === selectedId);
     if (!ref) return;
     const t = ref.task;
     const terminal =
@@ -335,7 +351,7 @@ function AIWorkbench() {
     // effect body (the effect itself only schedules it).
     queueMicrotask(() => resumeTask(id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, liveMap]);
+  }, [selectedId, liveMap, userId]);
 
   /* ---------------- approval ---------------- */
 

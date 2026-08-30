@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useAuthUser } from "@/lib/auth";
+import { useDisplayMode } from "@/lib/displayMode";
 import { getContracts } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import { money } from "@/lib/format";
 import type { ContractRecord } from "@/lib/types";
 import { CompanyInspector, recommendedContractAction } from "@/components/dashboard/CompanyInspector";
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
+import { SectionLocked } from "@/components/dashboard/SectionLocked";
 import { DataTableEditor, type EditorColumn } from "@/components/dashboard/DataTableEditor";
 import { Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
@@ -22,9 +24,19 @@ export default function SavingsPage() {
   const auth = useAuthUser();
   const userId = auth.id;
   const now = useNow();
+  const { lockedSections } = useDisplayMode();
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
+
+  if (lockedSections.includes("savings")) {
+    return (
+      <SectionLocked
+        title="Savings"
+        description="See every negotiated savings opportunity and its estimated annual impact, ranked by value."
+      />
+    );
+  }
 
   const candidates = useMemo(
     () => contracts.filter((c) => c.opportunityHigh > 0),
