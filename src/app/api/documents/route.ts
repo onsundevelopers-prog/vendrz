@@ -149,30 +149,14 @@ export async function POST(req: NextRequest) {
     }
     const rich = pipelineResult.extraction;
     const extraction = richToExtraction(rich);
-    const analysis = {
-      id: `d-${doc.id}`,
-      documentName: file.name,
-      vendorName: rich.vendor_name || "Unidentified Vendor",
-      category: "Uncategorized",
-      analyzedAt: new Date().toISOString(),
-      riskScore: 0,
-      riskLabel: "Pending",
-      renewalDate: rich.contract_end_date,
-      cancellationDeadline: rich.cancellation_deadline,
-      autoRenew: rich.auto_renewal,
-      autoRenewNoticeDays: rich.notice_period_days,
-      priceEscalation: rich.price_escalation
-        ? { rate: rich.price_escalation_percentage, trigger: "Annual increase" }
-        : null,
-      annualValue: rich.contract_value,
-      savings: {
-        low: rich.savings_opportunities.reduce((s, o) => s + (o.estimate_low ?? 0), 0),
-        high: rich.savings_opportunities.reduce((s, o) => s + (o.estimate_high ?? 0), 0),
-      },
-      findings: [],
-      opportunities: [],
-      method: ["Staged extraction with parallel LLM calls"],
-    } as Record<string, unknown> & AnalysisResult;
+
+    // Build the full deterministic analysis (risk score, findings, savings
+    // opportunities, cancellation deadline) from the extracted terms - the
+    // exact same rules the anonymous upload flow applies, so a signed-in
+    // upload is never shown as permanently "Pending / low risk" with an empty
+    // findings list just because it took the authenticated path.
+    const { generateAnalysis } = await import("@/lib/pipeline");
+    const analysis = generateAnalysis(file.name, kind, { extraction, rich });
 
     await updateDocumentRecord(doc.id, userId, {
       status: "ready",

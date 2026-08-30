@@ -143,8 +143,7 @@ const UPGRADE_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
 export const PLAN_LOCKED_SECTIONS: Record<Plan, string[]> = {
   free: [],
   team: [],
-  business: ["renewals", "risk", "savings"],
-  enterprise: [],
+  business: ["renewals", "risk", "savings"],  enterprise: [],
 };
 
 /** The PayPal plan id configured for a tier (undefined = not wired yet). */
@@ -392,8 +391,6 @@ function UpgradeOverlay() {
   const selectedPlanId = paypalPlanId(selected);
   const canPay = paypalConfigured && !!selectedPlanId;
 
-  /** The buyer approved a PayPal subscription. Only enable the plan after the
-      server has confirmed with PayPal that it is real and ACTIVE. */
   /** The buyer approved a PayPal subscription. Only enable the plan after the
       server has confirmed with PayPal that it is real and ACTIVE. */
   const handlePayPalSuccess = useCallback(

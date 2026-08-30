@@ -46,8 +46,8 @@ services:
         value: /dashboard
       - key: NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
         value: /dashboard
-      # PayPal subscriptions (Business plan). Public values are safe in the
-      # repo; the REST pair is server-only. PAYPAL_WEBHOOK_ID powers the
+      # PayPal subscriptions (Business/Team plans). Public values are safe in
+      # the repo; the REST pair is server-only. PAYPAL_WEBHOOK_ID powers the
       # /api/paypal/webhook endpoint that revokes Business mode on
       # cancellation/expiry - create the webhook in the PayPal dashboard
       # (URL: https://<this-app>/api/paypal/webhook) and paste its ID.
@@ -55,7 +55,7 @@ services:
         sync: false          # set in the hosting dashboard (public client id)
       # Business plan id ($999 setup fee, then $1/yr renewal).
       - key: NEXT_PUBLIC_PAYPAL_PLAN_ID
-        value: P-6GA22821KV361321JNKKIQDA
+        value: P-6JW433095T554031YNKJDN3I
       # Team ($20/mo) subscription plan - create it in PayPal Billing > Plans
       # and paste the id here.
       - key: NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID
@@ -66,6 +66,27 @@ services:
         sync: false
       - key: PAYPAL_WEBHOOK_ID
         sync: false
+      # RBC Move Money API - outgoing transfers from your RBC business
+      # account. Requires onboarding via your RBC Advisor; see .env.example
+      # for full guidance. Never expose the client secret to the browser.
+      - key: RBC_MOVE_MONEY_CLIENT_ID
+        sync: false
+      - key: RBC_MOVE_MONEY_CLIENT_SECRET
+        sync: false
+      - key: RBC_MOVE_MONEY_BASE_URL
+        sync: false
+      - key: RBC_MOVE_MONEY_FROM_ACCOUNT_ID
+        sync: false
+      - key: RBC_MOVE_MONEY_FROM_ACCOUNT_ID_TYPE
+        sync: false
+      - key: RBC_MOVE_MONEY_PAYMENT_TYPE
+        sync: false
+      # Clerk user ids allowed to actually send money via RBC.
+      - key: PAYMENT_ADMINS
+        sync: false
+      # Persist payment records to a mounted persistent disk.
+      - key: PAYMENT_STORE_FILE
+        value: /data/payments.json
       # Gmail OAuth - server-only credential pair + token encryption.
       # The registered redirect URI must be <this-app>/api/gmail/callback.
       - key: GOOGLE_OAUTH_CLIENT_ID

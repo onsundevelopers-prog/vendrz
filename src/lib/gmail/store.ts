@@ -2,7 +2,7 @@
 /*  Gmail token store - server-side, secure.                           */
 /*                                                                     */
 /*  Tokens never leave the server and are never sent to the browser.   */
-/*  Storage is a per-process in-memory map (mirroring jobs.ts /        */
+/*   Storage is a per-process in-memory map (mirroring jobs.ts /        */
 /*  paypalStore.ts), optionally persisted to disk encrypted with       */
 /*  AES-256-GCM so restarts don't drop refresh tokens.                 */
 /*                                                                     */

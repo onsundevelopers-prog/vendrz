@@ -2,8 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useAuthUser } from "@/lib/auth";
-import { useDisplayMode } from "@/lib/displayMode";
-import { getActivity, getContracts, getEmailThreads, saveAgentMessage, getAgentMessages, logActivity, createAction, approveAction, rejectAction, markActionProgress } from "@/lib/store";
+import { planDef, useDisplayMode } from "@/lib/displayMode";
+import { getActivity, getContracts, getEmailThreads, saveAgentMessage, getAgentMessages, logActivity, createAction, approveAction, rejectAction, markActionProgress, getAiUsage, incrementAiUsage } from "@/lib/store";
 import { money, formatDate } from "@/lib/format";
 import type { AgentMessage, ContractRecord } from "@/lib/types";
 import { StatusChip, RiskChip, VendorCell, riskLevel } from "@/components/dashboard/shared";
@@ -31,12 +31,14 @@ export default function CompaniesPage() {
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
   const storedMessages = useMemo(() => (userId ? getAgentMessages(userId) : []), [userId]);
+  const { aiMessageLimit } = useDisplayMode();
+  const [aiNotice, setAiNotice] = useState<string | null>(null);
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
   const [category, setCategory] = useState("");
   const [risk, setRisk] = useState("");
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const { mode } = useDisplayMode();
+  const { mode, plan } = useDisplayMode();
   const isSimple = mode === "simple";
 
   const [advisorOpen, setAdvisorOpen] = useState(false);
@@ -150,9 +152,19 @@ export default function CompaniesPage() {
     ? activity.filter((a) => (a.vendorName ?? "").toLowerCase() === selected.vendorName.toLowerCase())
     : [];
 
-  /* --- Advisor send (unchanged, honest real-delay behavior) --- */
+  /* --- Advisor send (honest real-delay behavior) --- */
   const sendAdvisor = (text: string) => {
     if (!userId || consultingGuard.current) return;
+    // Free-tier AI allowance - counted per calendar month, matching the
+    // Overview + AI workbench so the Vendors advisor obeys the same cap.
+    const { used } = getAiUsage(userId);
+    if (used >= aiMessageLimit) {
+      setAiNotice(
+        `You've used all ${aiMessageLimit} AI ${aiMessageLimit === 1 ? "message" : "messages"} this month on the ${planDef(plan).name} plan.`
+      );
+      return;
+    }
+    incrementAiUsage(userId);
     consultingGuard.current = true;
     setConsulting(true);
 
@@ -324,6 +336,14 @@ export default function CompaniesPage() {
   if (contracts.length === 0) {
     return (
       <div className="h-full">
+        {aiNotice && (
+          <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5">
+            <p className="min-w-0 flex-1 text-[12px] text-muted">{aiNotice}</p>
+            <button onClick={() => setAiNotice(null)} className="shrink-0 text-[12px] text-fg">
+              Dismiss
+            </button>
+          </div>
+        )}
         <WorkspaceEmpty
           title="No vendors yet"
           body="Upload and analyze a contract and the vendor will appear here with its real extracted terms."
@@ -334,6 +354,14 @@ export default function CompaniesPage() {
 
   return (
     <>
+      {aiNotice && (
+        <div className="flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5">
+          <p className="min-w-0 flex-1 text-[12px] text-muted">{aiNotice}</p>
+          <button onClick={() => setAiNotice(null)} className="shrink-0 text-[12px] text-fg">
+            Dismiss
+          </button>
+        </div>
+      )}
       <DataTableEditor<ContractRecord>
         title="Vendors"
         railLabel="Vendors"

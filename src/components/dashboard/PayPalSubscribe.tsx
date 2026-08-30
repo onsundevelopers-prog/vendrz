@@ -119,8 +119,7 @@ export function PayPalSubscribe({
         <p className="text-center text-[11px] leading-relaxed text-zinc-400">{sdkError}</p>
       ) : (
         <div className="flex h-10 w-full items-center justify-center rounded-md border border-white/15 text-[12.5px] text-muted">
-          Loading PayPal…
-        </div>
+          Loading PayPal…  </div>
       )}
     </div>
   );

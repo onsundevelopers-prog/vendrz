@@ -89,14 +89,15 @@ export function SimpleOverview({
     .map((c) => c.annualSpend)
     .filter((v) => v > 0);
 
-  // Savings opportunity blended across the next 12 months so the area reads
-  // like a forward savings curve built from each contract's real potential.
+  // Savings opportunity spread as an even monthly share of the real annual
+  // high estimate. It is a straight-line projection of the actual figure -
+  // no invented growth ramp, nothing that isn't derived from the data.
   const savingsSeries = Array.from({ length: 12 }, (_, i) => {
     const month = new Date(now);
     month.setMonth(month.getMonth() + i);
     return {
       label: month.toLocaleDateString("en-US", { month: "short" }),
-      value: Math.round((opportunityHigh / 12) * (1 + i * 0.08)),
+      value: Math.round(opportunityHigh / 12),
     };
   });
 
