@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { SignIn, SignUp, useUser } from "@clerk/nextjs";
-import { getSession, transferSessionToAccount, unlockAuditSessionToUser, getAuditSession } from "@/lib/store";
+import { getSession, transferSessionToAccount, unlockAuditSessionToUser, getAuditSession, claimOrphanedSessions } from "@/lib/store";
 import { isClerkEnabled } from "@/lib/auth";
 import { Logo } from "@/components/brand/Logo";
 
@@ -185,6 +185,11 @@ function ClerkAuthPage() {
       if (audit && audit.unlockedToUserId !== user.id) {
         unlockAuditSessionToUser(sessionId, user.id);
       }
+    } else {
+      // No specific session in the URL: still bind any anonymous uploads on
+      // this device so a logged-out upload followed by a normal sign-in is
+      // not lost in the user's new workspace.
+      claimOrphanedSessions(user.id);
     }
     router.replace(next);
   }, [isLoaded, user, sessionId, next, router]);

@@ -113,6 +113,27 @@ export function transferSessionToAccount(sessionId: string, userId: string): Ano
   return updated;
 }
 
+/**
+ * Bind any anonymous uploads on this device to the signed-in account.
+ *
+ * Uploads start anonymous ("No signup · No credit card"), so a user who
+ * uploads while logged out and then signs in through a path that does NOT
+ * carry a `?session=` param (dashboard login, navbar, "Go to workspace")
+ * would otherwise lose that work forever. This claims sessions that have a
+ * real result but no owning account yet. Returns how many were bound.
+ */
+export function claimOrphanedSessions(userId: string): number {
+  const sessions = read<Record<string, AnonymousSession>>(KEYS.sessions, {});
+  let claimed = 0;
+  for (const s of Object.values(sessions)) {
+    if (s && s.id && !s.transferredToUserId && s.result && s.result.id) {
+      updateSession(s.id, { transferredToUserId: userId });
+      claimed++;
+    }
+  }
+  return claimed;
+}
+
 /* ------------------------------ gmail ------------------------------ */
 
 export function getGmailConnection(userId: string): GmailConnection | null {
