@@ -9,6 +9,7 @@ import { createAnonymousSession,
 } from "@/lib/store";
 import { runPipeline } from "@/lib/pipeline";
 import { analyzeFile } from "@/lib/extract";
+import { uploadDocument } from "@/lib/clientDocuments";
 import { useAuthUser } from "@/lib/auth";
 import type { ContractExtraction, RichContractExtraction } from "@/lib/types";
 import { Navbar } from "@/components/landing/Navbar";
@@ -115,13 +116,23 @@ export default function UploadPage() {
     [auth.id]
   );
 
-  /** Single file - preserve the existing polished flow: create the session,
-      then hand off to /processing which runs the staged pipeline + results. */
+  /** Single file - persist via the API when signed in (storage + DB), else
+      the existing anonymous flow that hands off to /processing. */
   const analyzeSingle = useCallback(
     async (row: UploadRow) => {
       setAnalyzing(true);
       setError(null);
       try {
+        // Authenticated users: save the PDF + analysis server-side so the
+        // document persists in the dashboard with a proper status.
+        if (auth.id) {
+          const doc = await uploadDocument(row.file);
+          void doc;
+          // The document is saved server-side regardless of analysis outcome;
+          // the workspace shows it with the correct status.
+          router.push("/dashboard/contracts");
+          return;
+        }
         const { extraction, analysis } = await runExtraction(row.file);
         const session = startAnalysis(
           row.file.name,
@@ -137,7 +148,7 @@ export default function UploadPage() {
         setAnalyzing(false);
       }
     },
-    [runExtraction, startAnalysis, fileKind, router, setRowStatus]
+    [auth.id, runExtraction, startAnalysis, fileKind, router, setRowStatus]
   );
 
   /** Multiple files - extract each, build a session, then run the pipeline
@@ -145,6 +156,36 @@ export default function UploadPage() {
   const analyzeMulti = useCallback(async () => {
     setAnalyzing(true);
     setError(null);
+
+    // Authenticated users: persist each file via the API (storage + DB),
+    // then land in the workspace where they all appear with statuses.
+    if (auth.id) {
+      let anyErrored = false;
+      let anySucceeded = false;
+      for (const row of [...rows]) {
+        if (row.status === "error" || row.status === "done") continue;
+        setRowStatus(row.id, "analyzing");
+        try {
+          await uploadDocument(row.file);
+          setRowStatus(row.id, "done");
+          anySucceeded = true;
+        } catch (err) {
+          anyErrored = true;
+          const msg = err instanceof Error ? err.message : "Something went wrong. Try again.";
+          setRowStatus(row.id, "error", msg);
+        }
+      }
+      if (anyErrored && !anySucceeded) {
+        setError("None of the files could be uploaded. Fix the issues above and try again.");
+      } else if (anyErrored) {
+        setError("Some files couldn't be uploaded. The rest were saved to your workspace.");
+      } else {
+        setError(null);
+      }
+      setAnalyzing(false);
+      router.push("/dashboard/contracts");
+      return;
+    }
 
     const sessionIds: string[] = [];
     let anyErrored = false;

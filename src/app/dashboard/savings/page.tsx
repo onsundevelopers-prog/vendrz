@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useAuthUser } from "@/lib/auth";
 import { useDisplayMode } from "@/lib/displayMode";
+import { useSectionEntitlement } from "@/lib/useSectionEntitlement";
 import { getContracts } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import { money } from "@/lib/format";
@@ -25,11 +26,12 @@ export default function SavingsPage() {
   const userId = auth.id;
   const now = useNow();
   const { lockedSections } = useDisplayMode();
+  const { locked: savingsLocked } = useSectionEntitlement("savings", lockedSections.includes("savings"));
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
 
-  if (lockedSections.includes("savings")) {
+  if (savingsLocked) {
     return (
       <SectionLocked
         title="Savings"

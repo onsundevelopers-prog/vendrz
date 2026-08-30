@@ -8,11 +8,12 @@ import type { ContractRecord } from "@/lib/types";
 import { StatusChip, RiskChip, riskLevel } from "@/components/dashboard/shared";
 import { CompanyInspector } from "@/components/dashboard/CompanyInspector";
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
+import { DocumentsPanel } from "@/components/dashboard/DocumentsPanel";
 import {
   DataTableEditor,
   type EditorColumn,
 } from "@/components/dashboard/DataTableEditor";
-import { Sparkles } from "lucide-react";
+import { FileText, Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
 
 /* ------------------------------------------------------------------ */
@@ -180,40 +181,50 @@ export default function ContractsPage() {
 
   const totalSpend = contracts.reduce((s, c) => s + c.annualSpend, 0);
 
-  if (contracts.length === 0) {
-    return (
-      <div className="h-full">
-        <WorkspaceEmpty
-          title="No contracts yet"
-          body="Analyze an uploaded contract and its terms will appear here - value, renewal, cancellation and risk."
-        />
-      </div>
-    );
-  }
-
   return (
-    <DataTableEditor<ContractRecord>
-      title="Contracts"
-      railLabel="Contracts"
-      description="contract register"
-      icon={<Sparkles size={13} className="text-muted" />}
-      columns={columns}
-      rows={contracts}
-      defaultSort={{ key: "cost", dir: -1 }}
-      filter={(c, q) =>
-        [c.vendorName, c.category, c.linkedDocument, c.status].join(" ").toLowerCase().includes(q.toLowerCase())
-      }
-      tables={tables}
-      selectedId={selected?.id}
-      onRowClick={(c) => setSelected(selected?.id === c.id ? null : c)}
-      footerHint={`${money(totalSpend)} combined annual cost across ${contracts.length} contracts`}
-    >
-      <CompanyInspector
-        contract={selected}
-        onClose={() => setSelected(null)}
-        emails={selEmails}
-        activity={selActivity}
-      />
-    </DataTableEditor>
+    <div className="h-full overflow-y-auto">
+      <div className="border-b border-line">
+        <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-2">
+          <FileText size={12} className="text-muted" />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+            Document library
+          </span>
+        </div>
+        <DocumentsPanel />
+      </div>
+      {contracts.length === 0 ? (
+        <div className="py-10">
+          <WorkspaceEmpty
+            title="No contracts yet"
+            body="Documents you upload are shown above. Once a contract is analyzed, its extracted terms appear below."
+          />
+        </div>
+      ) : (
+        <div className="h-full">
+          <DataTableEditor<ContractRecord>
+            title="Contracts"
+            railLabel="Contracts"
+            description="contract register"
+            icon={<Sparkles size={13} className="text-muted" />}
+            columns={columns}
+            rows={contracts}
+            defaultSort={{ key: "cost", dir: -1 }}
+            filter={(c, q) =>
+              [c.vendorName, c.category, c.linkedDocument, c.status].join(" ").toLowerCase().includes(q.toLowerCase())
+            }
+            tables={tables}
+            selectedId={selected?.id}
+            onRowClick={(c) => setSelected(selected?.id === c.id ? null : c)}
+            footerHint={`${money(totalSpend)} combined annual cost across ${contracts.length} contracts`}
+          >
+            <CompanyInspector
+              contract={selected}
+              onClose={() => setSelected(null)}
+              emails={selEmails}
+              activity={selActivity}
+            />
+          </DataTableEditor>
+        </div>
+      )}    </div>
   );
 }

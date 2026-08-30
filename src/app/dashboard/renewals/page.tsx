@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useAuthUser } from "@/lib/auth";
 import { useDisplayMode } from "@/lib/displayMode";
+import { useSectionEntitlement } from "@/lib/useSectionEntitlement";
 import { getActivity, getContracts, getEmailThreads } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import { money, formatDate } from "@/lib/format";
@@ -40,11 +41,12 @@ export default function RenewalsPage() {
   const userId = auth.id;
   const now = useNow();
   const { lockedSections } = useDisplayMode();
+  const { locked: renewalsLocked } = useSectionEntitlement("renewals", lockedSections.includes("renewals"));
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);  const [selected, setSelected] = useState<ContractRecord | null>(null);
 
-  if (lockedSections.includes("renewals")) {
+  if (renewalsLocked) {
     return (
       <SectionLocked
         title="Renewals"
