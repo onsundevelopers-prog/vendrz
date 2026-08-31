@@ -51,7 +51,7 @@ export function DetailRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-line/60 px-4 py-2.5">
-      <span className="shrink-0 text-[11px] font-medium uppercase tracking-[0.08em] text-muted/80">
+      <span className="shrink-0 text-[11px] font-medium tracking-[0.08em] text-muted/80">
         {label}
       </span>
       <span

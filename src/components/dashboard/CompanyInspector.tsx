@@ -1,6 +1,5 @@
 "use client";
 
-import { Mail, ShieldAlert } from "lucide-react";
 import type { ActivityRecord, ContractRecord, EmailThread } from "@/lib/types";
 import { money, formatDate, timeAgo } from "@/lib/format";
 import { useNow } from "@/lib/useNow";
@@ -115,7 +114,6 @@ export function CompanyInspector({
           ))}
         </div>
         <div className="mt-2.5 flex items-start gap-2 rounded-md border border-line bg-white/[0.03] p-2.5">
-          <ShieldAlert size={13} className="mt-0.5 shrink-0 text-zinc-400" />
           <p className="text-[11.5px] leading-snug text-zinc-300">
             <span className="font-semibold text-fg">Recommended: </span>
             {recommendedContractAction(contract, now)}
@@ -129,7 +127,6 @@ export function CompanyInspector({
           {emails.map((t) => (
             <div key={t.id} className="border-b border-line/60 px-4 py-2.5">
               <div className="flex items-center gap-2">
-                <Mail size={11} className="shrink-0 text-zinc-500" />
                 <span className="min-w-0 truncate text-[12px] font-medium text-fg">{t.subject}</span>
               </div>
               <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-muted">{t.snippet}</p>

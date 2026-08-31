@@ -128,7 +128,7 @@ export function ChatComposer({
                 transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute bottom-full left-0 z-20 mb-2 w-64 overflow-hidden rounded-lg border border-line bg-[#14141a] shadow-[0_12px_32px_rgba(0,0,0,0.55)]"
               >
-                <p className="border-b border-line px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-zinc-500">
+                <p className="border-b border-line px-3 py-1.5 text-[10px] font-semibold tracking-[0.1em] text-zinc-500">
                   Add context
                 </p>
                 {AT_MENTIONS.map((m) => (

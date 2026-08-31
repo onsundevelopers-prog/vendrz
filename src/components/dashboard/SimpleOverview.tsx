@@ -2,18 +2,8 @@
 
 import Link from "next/link";
 import {
-  AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
-  Bell,
-  Download,
-  Eye,
-  Mail,
-  RefreshCw,
-  Sparkles,
-  TrendingUp,
-  Upload,
-  XCircle,
 } from "lucide-react";
 import { useNow } from "@/lib/useNow";
 import { money, moneyShort, formatDateShort, timeAgo } from "@/lib/format";
@@ -45,17 +35,6 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 /*  and charts drawing in like a market terminal. No added sections -  */
 /*  every block is one of the existing ones, only presented as data.   */
 /* ------------------------------------------------------------------ */
-
-const ACT_ICON: Record<ActivityRecord["type"], typeof Bell> = {
-  alert: AlertTriangle,
-  import: Download,
-  review: Eye,
-  email_sent: Mail,
-  email_drafted: Mail,
-  cancellation: XCircle,
-  status_change: RefreshCw,
-  savings: TrendingUp,
-};
 
 const daysUntil = (iso: string, now: number) =>
   Math.ceil((new Date(iso + "T00:00:00").getTime() - now) / 86400000);
@@ -147,7 +126,7 @@ export function SimpleOverview({
         {/* ------------------------------ header ------------------------------ */}
         <div className="flex items-end gap-3">
           <div>
-            <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted/70">
+            <p className="text-[10.5px] font-semibold tracking-[0.14em] text-muted/70">
               {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
             <h1 className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-fg">
@@ -161,11 +140,9 @@ export function SimpleOverview({
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <Link href="/dashboard/ai" className="toolbar-btn active">
-              <Sparkles size={13} />
               Ask AI
             </Link>
             <Link href="/upload" className="toolbar-btn">
-              <Upload size={13} />
               Upload
             </Link>
           </div>
@@ -209,7 +186,7 @@ export function SimpleOverview({
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <Sparkline data={spendSeries} width={120} height={34} color="#a1a1aa" />
-                <span className="text-[9px] uppercase tracking-[0.1em] text-muted/60">spend · $/yr</span>
+                <span className="text-[9px] tracking-[0.1em] text-muted/60">spend · $/yr</span>
               </div>
             </div>
           </FinCard>
@@ -251,7 +228,7 @@ export function SimpleOverview({
                       onClick={() => onSelectContract(r as unknown as ContractRecord)}
                       className="flex w-full items-center gap-2 group/row"
                     >
-                      <span className="w-8 shrink-0 truncate text-[10px] uppercase tracking-wide text-muted">{r.label}</span>
+                      <span className="w-8 shrink-0 truncate text-[10px] tracking-wide text-muted">{r.label}</span>
                       <span className="h-[6px] flex-1 overflow-hidden rounded-sm bg-white/[0.06]">
                         <span
                           className="block h-full rounded-sm transition-all group-hover/row:opacity-80"
@@ -294,7 +271,7 @@ export function SimpleOverview({
                       onClick={() => onSelectContract(c)}
                       className="flex w-full items-center gap-2 group/row"
                     >
-                      <span className="w-8 shrink-0 truncate text-[10px] uppercase tracking-wide text-muted">{c.vendorName.slice(0, 3).toUpperCase()}</span>
+                      <span className="w-8 shrink-0 truncate text-[10px] tracking-wide text-muted">{c.vendorName.slice(0, 3).toUpperCase()}</span>
                       <span className={`font-semibold tabular-nums text-[11px] w-7 shrink-0 text-right ${tone}`}>{c.riskScore}</span>
                       <span className="h-[6px] flex-1 overflow-hidden rounded-sm bg-white/[0.06]">
                         <span
@@ -326,7 +303,7 @@ export function SimpleOverview({
           className="mt-3"
         >
           {activity.slice(0, 6).map((a) => {
-            const Icon = ACT_ICON[a.type] ?? Bell;
+            const act = a;
             return (
               <button
                 key={a.id}
@@ -336,14 +313,11 @@ export function SimpleOverview({
                 <span className="w-20 shrink-0 text-[10.5px] tabular-nums text-muted">
                   {formatDateShort(a.createdAt.slice(0, 10))}
                 </span>
-                <span className="flex size-6 shrink-0 items-center justify-center rounded bg-inset text-muted">
-                  <Icon size={12} />
-                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[12.5px] font-medium text-fg">{a.title}</p>
                   {a.vendorName && <p className="truncate text-[10.5px] text-muted">{a.vendorName}</p>}
                 </div>
-                <span className="hidden shrink-0 text-[10px] uppercase tracking-wide text-muted/60 sm:block">
+                <span className="hidden shrink-0 text-[10px] tracking-wide text-muted/60 sm:block">
                   {a.actor === "agent" ? "AI" : a.actor}
                 </span>
                 <span className="w-16 shrink-0 text-right text-[10.5px] text-muted">{timeAgo(a.createdAt)}</span>
@@ -368,7 +342,7 @@ export function SimpleOverview({
 function Tick({ label, value, tone, up }: { label: string; value: string; tone: string; up?: boolean }) {
   return (
     <span className="glass-glow inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 py-1 text-[11px] tabular-nums">
-      <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted/70">{label}</span>
+      <span className="text-[9px] font-semibold tracking-[0.12em] text-muted/70">{label}</span>
       <span className={`font-semibold ${tone}`}>
         {up ? (
           <span className="inline-flex items-center gap-0.5"><ArrowUpRight size={11} className="text-zinc-200" />{value}</span>
@@ -410,7 +384,7 @@ function SavingsTrendCard({
     >
       <div className="spotlight-glow" aria-hidden="true" />
       <CardHeader className="min-h-10 items-center border-b border-line px-4">
-        <CardTitle className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted">
+        <CardTitle className="text-[10.5px] font-semibold tracking-[0.14em] text-muted">
           Potential savings
         </CardTitle>
         <CardDescription className="text-[11px] tabular-nums text-muted/70">
@@ -546,7 +520,7 @@ function FinCard({
       <div className="spotlight-glow" aria-hidden="true" />
       {/* header */}
       <div className="flex h-10 items-center gap-2 border-b border-line px-4">
-        <h2 className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted">{label}</h2>
+        <h2 className="text-[10.5px] font-semibold tracking-[0.14em] text-muted">{label}</h2>
         {meta && <span className="truncate text-[11px] tabular-nums text-muted/70">{meta}</span>}
         {actionHref && (
           <Link

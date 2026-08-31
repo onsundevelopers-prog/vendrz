@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  ReviewBlur - wraps the real review results and blurs them for      */
@@ -65,7 +65,6 @@ export function ReviewBlur({
             href={href}
             className="mt-5 inline-flex h-10 items-center gap-1.5 rounded-md bg-white px-5 text-[13px] font-semibold text-black transition-opacity hover:opacity-90"
           >
-            <Sparkles size={14} />
             Sign in to view results
           </Link>
           <p className="mt-2.5 text-[11px] tracking-tight text-zinc-600">

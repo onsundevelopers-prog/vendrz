@@ -90,7 +90,7 @@ export function BrowserWindow({ tab, onClose }: { tab: BrowserTab; onClose: () =
         <div className="divide-y divide-line/60 border-t border-line px-3 py-1">
           {rows.map(([k, v]) => (
             <div key={k} className="flex items-baseline justify-between gap-3 py-1.5">
-              <span className="shrink-0 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+              <span className="shrink-0 text-[9.5px] font-semibold tracking-[0.08em] text-zinc-500">
                 {k}
               </span>
               <span className="min-w-0 truncate text-right text-[11px] font-medium text-zinc-200">
@@ -102,7 +102,7 @@ export function BrowserWindow({ tab, onClose }: { tab: BrowserTab; onClose: () =
 
         {hasClauses && (
           <div className="border-t border-line px-3 py-2">
-            <p className="mb-1.5 text-[9.5px] font-semibold uppercase tracking-[0.1em] text-zinc-500">
+            <p className="mb-1.5 text-[9.5px] font-semibold tracking-[0.1em] text-zinc-500">
               Extracted clauses · {tab.clauses!.length}
             </p>
             <div className="space-y-1.5">

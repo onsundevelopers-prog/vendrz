@@ -350,7 +350,7 @@ export default function UploadPage() {
                   className="border-sheen flex items-center gap-3 rounded-xl border border-line bg-surface p-3"
                 >
                   <div className="flex size-9 items-center justify-center rounded-lg border border-white/20 bg-white/[0.06]">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-300">
+                    <span className="text-[10px] font-semibold tracking-wide text-zinc-300">
                       {(row.file.name.split(".").pop() ?? "doc").slice(0, 4)}
                     </span>
                   </div>

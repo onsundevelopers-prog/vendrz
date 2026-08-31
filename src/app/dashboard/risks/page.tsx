@@ -17,7 +17,6 @@ import {
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
 import { SectionLocked } from "@/components/dashboard/SectionLocked";
 import { DataTableEditor, type EditorColumn } from "@/components/dashboard/DataTableEditor";
-import { Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
 
 /* ------------------------------------------------------------------ */
@@ -262,7 +261,6 @@ export default function RisksPage() {
       title="Risk"
       railLabel="Risk"
       description="risk register"
-      icon={<Sparkles size={13} className="text-muted" />}
       columns={columns}
       rows={atRisk}
       defaultSort={{ key: "level", dir: -1 }}

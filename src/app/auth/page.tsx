@@ -135,7 +135,7 @@ const clerkAppearance = {
     socialButtonsIconButton:
       "h-11 rounded-full border border-white/15 bg-black hover:bg-white/[0.08]",
     dividerLine: "bg-white/15",
-    dividerText: "text-[11px] uppercase tracking-[0.1em] text-zinc-300",
+    dividerText: "text-[11px] tracking-[0.1em] text-zinc-300",
     formFieldLabel: "text-[12px] font-medium text-zinc-300",
     formFieldInput:
       "h-11 rounded-[10px] border border-white/15 bg-black text-[14px] text-white transition-colors focus:border-white/50",

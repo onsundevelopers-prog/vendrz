@@ -12,7 +12,6 @@ import { CompanyInspector, recommendedContractAction } from "@/components/dashbo
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
 import { SectionLocked } from "@/components/dashboard/SectionLocked";
 import { DataTableEditor, type EditorColumn } from "@/components/dashboard/DataTableEditor";
-import { Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
 
 /* ------------------------------------------------------------------ */
@@ -199,7 +198,6 @@ export default function SavingsPage() {
       title="Savings"
       railLabel="Savings"
       description="savings register"
-      icon={<Sparkles size={13} className="text-muted" />}
       columns={columns}
       rows={candidates}
       defaultSort={{ key: "savings", dir: -1 }}

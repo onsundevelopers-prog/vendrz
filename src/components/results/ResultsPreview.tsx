@@ -86,7 +86,7 @@ const cardHeader =
   "min-h-10 items-center gap-0.5 border-b border-line px-4";
 
 const cardTitle =
-  "text-[11px] font-semibold uppercase tracking-[0.1em] text-muted";
+  "text-[11px] font-semibold tracking-[0.1em] text-muted";
 
 const cardDesc = "text-[11px] tracking-tight text-muted/70";
 
@@ -185,7 +185,7 @@ export function ResultsPreview({
       {/* report header */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex size-9 items-center justify-center rounded-md border border-line bg-surface">
-          <span className="text-[10px] font-semibold uppercase text-zinc-300">
+          <span className="text-[10px] font-semibold text-zinc-300">
             {result.documentName.toLowerCase().endsWith(".pdf")
               ? "PDF"
               : result.documentName.toLowerCase().endsWith(".docx")
@@ -264,7 +264,7 @@ export function ResultsPreview({
       {topFindings.length > 0 && (
         <div className="mt-4 border-sheen overflow-hidden rounded-lg border border-line bg-surface">
           <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
-            <h3 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+            <h3 className="text-[11px] font-semibold tracking-[0.1em] text-muted">
               Key findings
             </h3>
             <span className="rounded-md bg-white/[0.08] px-1.5 py-0.5 text-[10.5px] tabular-nums text-zinc-400">
@@ -443,7 +443,7 @@ function RiskGaugeCard({
             <span className="text-3xl font-semibold leading-none tabular-nums tracking-tight text-fg">
               {score}
             </span>
-            <span className="mt-1 text-[9.5px] uppercase tracking-[0.14em] text-muted">
+            <span className="mt-1 text-[9.5px] tracking-[0.14em] text-muted">
               /100
             </span>
           </div>
@@ -736,7 +736,7 @@ function KeyTermsCard({
                 key={f.label}
                 className="flex items-center gap-2.5 border-b border-line/50 px-0.5 py-1.5 last:border-b-0"
               >
-                <span className="text-[10px] uppercase tracking-[0.1em] text-muted/70">
+                <span className="text-[10px] tracking-[0.1em] text-muted/70">
                   {f.label}
                 </span>
                 <span className="ml-auto truncate text-[12px] tabular-nums text-fg">

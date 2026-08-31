@@ -433,7 +433,7 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
 
 function SubLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="px-4 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted/60">
+    <p className="px-4 pb-1 pt-3 text-[10px] font-semibold tracking-[0.12em] text-muted/60">
       {children}
     </p>
   );

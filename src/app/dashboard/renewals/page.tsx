@@ -13,7 +13,6 @@ import { CompanyInspector, recommendedContractAction } from "@/components/dashbo
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
 import { SectionLocked } from "@/components/dashboard/SectionLocked";
 import { DataTableEditor, type EditorColumn } from "@/components/dashboard/DataTableEditor";
-import { Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
 
 /* ------------------------------------------------------------------ */
@@ -247,7 +246,6 @@ export default function RenewalsPage() {
       title="Renewals"
       railLabel="Renewals"
       description="renewal calendar"
-      icon={<Sparkles size={13} className="text-muted" />}
       columns={columns}
       rows={rows}
       defaultSort={{ key: "days", dir: 1 }}

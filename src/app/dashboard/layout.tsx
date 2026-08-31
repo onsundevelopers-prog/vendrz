@@ -8,7 +8,6 @@ import {
   CalendarClock,
   FileText,
   Grid3x3,
-  HelpCircle,
   Home,
   LogOut,
   Maximize2,
@@ -18,7 +17,6 @@ import {
   Search,
   Settings as SettingsIcon,
   ShieldAlert,
-  Ticket,
   Wallet,
 } from "lucide-react";
 import { useAuthUser, useAuthSignOut } from "@/lib/auth";
@@ -252,8 +250,7 @@ function WorkspaceShell({
               title="Redeem a code"
               className="flex h-7 items-center gap-1 rounded-md border border-line px-2.5 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
             >
-              <Ticket size={12} />
-              <span className="hidden sm:inline">Redeem</span>
+              <span>Redeem</span>
             </button>
 
             <span className="h-4 w-px bg-line" aria-hidden="true" />
@@ -271,9 +268,6 @@ function WorkspaceShell({
               <span className="kbd">⌘K</span>
             </button>
 
-            <button aria-label="Help" title="Help" className="flex size-7 items-center justify-center rounded-md text-muted hover:bg-hover hover:text-fg">
-              <HelpCircle size={15} />
-            </button>
             <button
               aria-label="Run review"
               title="Run review"

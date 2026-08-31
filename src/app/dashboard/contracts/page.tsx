@@ -13,7 +13,6 @@ import {
   DataTableEditor,
   type EditorColumn,
 } from "@/components/dashboard/DataTableEditor";
-import { FileText, Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
 
 /* ------------------------------------------------------------------ */
@@ -185,8 +184,7 @@ export default function ContractsPage() {
     <div className="h-full overflow-y-auto">
       <div className="border-b border-line">
         <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-2">
-          <FileText size={12} className="text-muted" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">
             Document library
           </span>
         </div>
@@ -205,7 +203,6 @@ export default function ContractsPage() {
             title="Contracts"
             railLabel="Contracts"
             description="contract register"
-            icon={<Sparkles size={13} className="text-muted" />}
             columns={columns}
             rows={contracts}
             defaultSort={{ key: "cost", dir: -1 }}

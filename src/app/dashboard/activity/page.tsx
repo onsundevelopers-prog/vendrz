@@ -7,7 +7,6 @@ import { formatDate, formatTime, timeAgo } from "@/lib/format";
 import type { ActivityRecord } from "@/lib/types";
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
 import { DataTableEditor, type EditorColumn } from "@/components/dashboard/DataTableEditor";
-import { Sparkles } from "lucide-react";
 import { tableTabs } from "@/components/dashboard/tableTabs";
 
 /* ------------------------------------------------------------------ */
@@ -227,7 +226,6 @@ export default function ActivityPage() {
       title="Activity"
       railLabel="Activity"
       description="workspace event log"
-      icon={<Sparkles size={13} className="text-muted" />}
       columns={columns}
       rows={rows}
       defaultSort={{ key: "date", dir: -1 }}

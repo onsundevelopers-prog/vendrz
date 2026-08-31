@@ -15,7 +15,6 @@ import {
   type EditorColumn,
 } from "@/components/dashboard/DataTableEditor";
 import { tableTabs } from "@/components/dashboard/tableTabs";
-import { Sparkles } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Vendors - Supabase-style table editor over the vendor register.    */
@@ -366,7 +365,6 @@ export default function CompaniesPage() {
         title="Vendors"
         railLabel="Vendors"
         description="vendors and their associated contracts"
-        icon={<Sparkles size={13} className="text-muted" />}
         columns={isSimple ? simpleColumns : columns}
         simple={isSimple}
         rows={scoped}
@@ -412,7 +410,6 @@ export default function CompaniesPage() {
                 onClick={() => setAdvisorOpen(true)}
                 className="flex h-7 items-center gap-1.5 rounded-md bg-white px-2.5 text-[12px] font-semibold text-black transition-opacity hover:opacity-90"
               >
-                <Sparkles size={12} />
                 Ask AI
               </button>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Trash2, ExternalLink, FileText } from "lucide-react";
+import { Loader2, Trash2, ExternalLink } from "lucide-react";
 import {
   fetchDocuments,
   getDocumentFileUrl,
@@ -115,9 +115,6 @@ export function DocumentsPanel() {
         <ul className="divide-y divide-line/60">
           {docs.map((doc) => (
             <li key={doc.id} className="flex items-center gap-3 px-4 py-2.5">
-              <span className="grid size-8 shrink-0 place-items-center rounded-md bg-white/[0.05] text-zinc-400">
-                <FileText size={14} />
-              </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[12.5px] font-medium text-fg">{doc.filename}</p>
                 <p className="text-[10.5px] tracking-tight text-muted">

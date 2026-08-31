@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Bell, ChevronRight, Download, Eye, Mail, RefreshCw, TrendingUp, XCircle, Upload, FileScan } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useAuthUser } from "@/lib/auth";
 import { planDef, useDisplayMode } from "@/lib/displayMode";
 import { SimpleOverview } from "@/components/dashboard/SimpleOverview";
@@ -24,17 +24,6 @@ import { BarChart, DonutChart } from "@/components/ui/charts";
 /*  processed by the extraction pipeline). With no contracts, an       */
 /*  honest empty state is shown - nothing is invented.                 */
 /* ------------------------------------------------------------------ */
-
-const ACT_ICON: Record<ActivityRecord["type"], typeof Bell> = {
-  alert: Bell,
-  import: Download,
-  review: Eye,
-  email_sent: Mail,
-  email_drafted: Mail,
-  cancellation: XCircle,
-  status_change: RefreshCw,
-  savings: TrendingUp,
-};
 
 const daysUntil = (iso: string, now: number) =>
   Math.ceil((new Date(iso + "T00:00:00").getTime() - now) / 86400000);
@@ -364,11 +353,9 @@ export default function DashboardPage() {
             Ask AI
           </button>
           <Link href="/upload" className="toolbar-btn">
-            <Upload size={13} />
             New upload
           </Link>
           <Link href="/audit" className="toolbar-btn">
-            <FileScan size={13} />
             Run review
           </Link>
         </div>
@@ -693,12 +680,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-12">
         <Panel title="Recent activity" className="col-span-6 border-r border-line" bodyClass="overflow-y-auto">
           {activity.slice(0, 7).map((a) => {
-            const Icon = ACT_ICON[a.type] ?? Bell;
             return (
               <div key={a.id} className="flex items-start gap-3 border-b border-line/50 px-4 py-2.5">
-                <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-zinc-400">
-                  <Icon size={12} />
-                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[12.5px] font-medium text-fg">{a.title}</p>
                   <p className="line-clamp-1 text-[11.5px] text-muted">{a.detail}</p>
@@ -715,9 +698,6 @@ export default function DashboardPage() {
         <Panel title="Correspondence" sub={`${threads.length} vendor threads`} className="col-span-6" bodyClass="overflow-y-auto">
           {threads.slice(0, 7).map((t) => (
             <div key={t.id} className="flex items-start gap-3 border-b border-line/50 px-4 py-2.5">
-              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-white/[0.05] text-zinc-400">
-                <Mail size={12} />
-              </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[12.5px] font-medium text-fg">{t.subject}</p>
                 <p className="line-clamp-1 text-[11.5px] text-muted">

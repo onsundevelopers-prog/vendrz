@@ -107,7 +107,7 @@ function TierCard({
       {/* Most popular banner - protrudes above the card, like the reference */}
       {card.featured && (
         <div className="absolute inset-x-0 -top-4 z-10 flex items-center justify-center">
-          <span className="rounded-full bg-white px-4 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-black shadow-md shadow-black/40">
+          <span className="rounded-full bg-white px-4 py-1 text-[10px] font-semibold tracking-[0.18em] text-black shadow-md shadow-black/40">
             Most popular
           </span>
         </div>
@@ -121,10 +121,7 @@ function TierCard({
         {/* price */}
         <div className="mt-5 flex items-baseline gap-1.5">
           {isCustom ? (
-            <span className="flex items-center gap-2 text-fg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-zinc-400" aria-hidden="true">
-                <path d="M4 21V9m5 12V5m5 16v-8m5 8V3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+            <span className="flex items-center text-fg">
               <span className="text-[26px] font-semibold tracking-[-0.03em]">Custom</span>
             </span>
           ) : (
@@ -175,7 +172,7 @@ export function Pricing() {
           transition={{ duration: 0.7, ease }}
           className="mx-auto max-w-2xl text-center"
         >
-          <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-muted">
+          <p className="text-[12px] font-medium tracking-[0.2em] text-muted">
             Pricing
           </p>
           <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">

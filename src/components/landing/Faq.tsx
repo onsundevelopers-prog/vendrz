@@ -40,7 +40,7 @@ export function Faq() {
           transition={{ duration: 0.7, ease }}
           className="text-center"
         >
-          <p className="text-[12px] font-medium uppercase tracking-[0.2em] text-muted">
+          <p className="text-[12px] font-medium tracking-[0.2em] text-muted">
             FAQ
           </p>
           <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">

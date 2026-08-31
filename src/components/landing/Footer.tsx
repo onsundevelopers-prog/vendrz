@@ -36,7 +36,7 @@ export function Footer() {
           <div className="flex gap-20">
             {COLUMNS.map((col) => (
               <div key={col.title}>
-                <p className="text-[10.5px] font-medium uppercase tracking-[0.16em] text-muted">
+                <p className="text-[10.5px] font-medium tracking-[0.16em] text-muted">
                   {col.title}
                 </p>
                 <ul className="mt-4 space-y-3">
