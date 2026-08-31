@@ -12,7 +12,7 @@
   --color-panel: #0d0d11; /* elevated frames / hero media card */
   --color-float: #121216; /* floating drawers                  */
   --color-fg: #f4f4f5; /* primary text                      */
-  --color-muted: #a1a1aa; /* secondary / muted text            */
+  --color-muted: #c8c8cd; /* secondary / muted text            */
 
   /* 1px hairlines - rgba(255,255,255,0.08) everywhere */
   --color-line: rgba(255, 255, 255, 0.08);
@@ -57,7 +57,7 @@
   --secondary: #1d1d23;
   --secondary-foreground: #f4f4f5;
   --muted: #1d1d23;
-  --muted-foreground: #a1a1aa;
+  --muted-foreground: #c8c8cd;
   --accent: #1d1d23;
   --accent-foreground: #f4f4f5;
   --destructive: #f4f4f5;
@@ -861,7 +861,7 @@ body {
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
+  --color-muted: var(--muted-foreground);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
