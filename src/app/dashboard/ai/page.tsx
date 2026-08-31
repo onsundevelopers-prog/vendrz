@@ -28,6 +28,7 @@ import {
 } from "@/lib/agentTaskStore";
 import { openAgentStream, openAgentStreamGet, type OpenStreamResult } from "@/lib/agentStream";
 import { TaskWorkspace } from "@/components/dashboard/ai/task-workspace";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /* ------------------------------------------------------------------ */
 /*  AI - the autonomous work agent workbench.                         */
@@ -456,8 +457,15 @@ export default function AIPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-full items-center justify-center bg-canvas">
-          <p className="text-[12px] text-muted">Loading agent workspace…</p>
+        <div className="flex h-full flex-col gap-4 bg-canvas p-4">
+          <div className="flex items-center justify-between gap-3">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-8 w-64" />
+          </div>
+          <div className="flex min-h-0 flex-1 gap-4">
+            <Skeleton className="hidden w-56 shrink-0 rounded-lg md:block" />
+            <Skeleton className="flex-1 rounded-lg" />
+          </div>
         </div>
       }
     >

@@ -13,13 +13,16 @@
     "@clerk/themes": "^2.4.57",
     "@napi-rs/canvas": "^0.1.80",
     "@supabase/supabase-js": "^2.112.4",
+    "clsx": "^2.1.1",
     "framer-motion": "^13.1.0",
     "lucide-react": "^1.34.0",
     "mammoth": "^1.12.1",
     "next": "16.3.1",
     "pdf-parse": "^2.4.5",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "recharts": "^3.8.0",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

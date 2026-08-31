@@ -42,6 +42,34 @@ interface OpenAIResponse {
   }[];
 }
 
+/**
+ * A provider HTTP error carrying the status code and whether retrying is
+ * worthwhile. Retrying a hard failure (auth, unknown model, quota, bad
+ * request) is pointless and just burns the pipeline deadline, so callers
+ * can fail fast on those instead of burning retries on a provider that
+ * will keep rejecting the same request.
+ */
+export class AIHttpError extends Error {
+  readonly status: number;
+  readonly retryable: boolean;
+
+  constructor(status: number, detail: string) {
+    super(detail);
+    this.name = "AIHttpError";
+    this.status = status;
+    // 5xx / network-ish server problems are worth retrying; 4xx are client
+    // errors that will keep failing (or auth/quota that must be fixed).
+    // 429 (rate limited / quota) is treated as non-retryable so a quota-
+    // exhausted provider surfaces the real reason quickly instead of
+    // hammering the endpoint and blowing the whole pipeline budget.
+    this.retryable = status >= 500 || status === 408 || status === 429;
+  }
+
+  static is(err: unknown): err is AIHttpError {
+    return err instanceof Error && (err as AIHttpError).name === "AIHttpError";
+  }
+}
+
 interface OpenAIWireToolCall {
   id?: string;
   function?: { name?: string; arguments?: string };
@@ -117,7 +145,8 @@ export class OpenAICompatClient {
 
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(
+      throw new AIHttpError(
+        res.status,
         `AI provider error (${this.config.model}) ${res.status}: ${text.slice(0, 400)}`
       );
     }

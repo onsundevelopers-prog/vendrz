@@ -56,6 +56,51 @@ async function installPdfGlobals(): Promise<void> {
 let resumeTriggered = false;
 const resuming = new Set<string>();
 
+/**
+ * Build an actionable "analysis unreachable" message. When every LLM task
+ * failed, the real cause (provider name and HTTP status - e.g. a Gemini
+ * quota 429, an invalid model 404, or a misconfigured key) is far more
+ * useful than a generic "not reachable". Falls back to the friendly generic
+ * copy when nothing useful can be parsed from the task errors.
+ */
+export function aiUnreachableMessage(taskErrors: string[]): string {
+  const causes: string[] = [];
+  const seen = new Set<string>();
+  for (const te of taskErrors) {
+    // task errors look like: "risks: AI provider error (gemini-3.6-flash) 429: ..."
+    const m = te.match(
+      /AI provider error \(([^)]+)\) (\d{3}):(.*)/
+    );
+    if (m) {
+      const [_, model, status, detail] = m;
+      const key = `${model} ${status}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const statusDesc = {
+        "401": "auth failed",
+        "402": "payment required",
+        "403": "forbidden",
+        "404": "model not found",
+        "429": "rate-limited / quota exhausted",
+        "5xx-like": "server error",
+      }[status] ?? `HTTP ${status}`;
+      const terse = detail.replace(/\s+/g, " ").slice(0, 140);
+      causes.push(`${model} (${statusDesc}): ${terse}`);
+    }
+  }
+  if (causes.length > 0) {
+    return (
+      `The AI analysis service couldn't process this file right now - the model ` +
+      `provider rejected the request: ${[...new Set(causes)].join("; ")}. ` +
+      `Check your AI provider setup (Ollama / Gemini) and try again.`
+    );
+  }
+  return (
+    "The AI analysis service isn't reachable right now. Check your AI provider setup (Ollama / Gemini) and try again."
+  );
+}
+
+
 /** Kick off resume of interrupted jobs - safe to call on every request. */
 export function triggerJobResume(): void {
   if (resumeTriggered) return;
@@ -122,8 +167,7 @@ export async function finishAnalysis(
     // When the LLM tasks all failed, the job should fail loudly with a real
     // reason instead of silently "completing" with a hollow extraction.
     if (pipelineResult.taskErrors.length >= 3) {
-      const reason =
-        "The AI analysis service isn't reachable right now. Check your AI provider setup (Ollama / Gemini) and try again.";
+      const reason = aiUnreachableMessage(pipelineResult.taskErrors);
       failJob(jobId, reason);
       console.error(
         `[extract] Job ${jobId}: LLM unreachable - ${pipelineResult.taskErrors.join("; ")}`

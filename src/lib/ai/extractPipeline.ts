@@ -17,18 +17,30 @@
 /* ------------------------------------------------------------------ */
 
 import type { RichContractExtraction } from "@/lib/types";
+import { AIHttpError } from "./openai-compat";
 import type { AIProvider } from "./provider";
 import { normalizeRichExtraction as normalizeExtraction } from "./base";
 
 const MAX_CHARS_PER_CHUNK = 15_000;
 
 /**
- * Hard ceiling for the whole pipeline (all four LLM tasks, including retries
- * and the Ollama→Gemini fallback). Kept safely under Vercel's function-time
- * limit so a hung provider fails with a clear reason instead of the whole
- * invocation silently being terminated mid-air. Surfaces a clear message.
+ * Deadline budget for the whole pipeline (all four LLM tasks, including
+ * retries and the Ollama→Gemini fallback). Kept under Vercel's PKG-wide
+ * function-time limit so a hung provider fails with a clear reason instead
+ * of the invocation silently being terminated mid-air.
  */
-const PIPELINE_DEADLINE_MS = Number(process.env.EXTRACT_PIPELINE_DEADLINE_MS ?? 100_000);
+// Serverless functions commonly cap at 60s (hobby) / 300s (pro). We budget
+// conservatively for the hosted case, but a local `ollama serve` on modest
+// hardware is far slower (a real contract across four parallel tasks can
+// take minutes), so a slow-but-working local model must not be killed by a
+// default tuned for fast hosted latency.
+function pipelineDeadlineMs(provider: AIProvider): number {
+  const configured = Number(process.env.EXTRACT_PIPELINE_DEADLINE_MS ?? NaN);
+  if (Number.isFinite(configured) && configured > 0) return configured;
+  // Local models run on shared CPU/GPU and are far slower than hosted ones.
+  if (provider.id === "ollama_local") return 300_000;
+  return 100_000;
+}
 
 /* ----------------------------- helpers ----------------------------- */
 
@@ -80,6 +92,12 @@ async function withRetry<T>(
     try {
       return await fn();
     } catch (err) {
+      if (AIHttpError.is(err) && !err.retryable) {
+        // A hard provider rejection (auth, unknown model, quota, bad request)
+        // won't succeed on retry - surface the real cause immediately instead
+        // of silently retrying the same doomed request.
+        throw err;
+      }
       lastError = err instanceof Error ? err : new Error(String(err));
       if (attempt < maxAttempts) {
         await new Promise((r) => setTimeout(r, delayMs * Math.pow(2, attempt - 1)));
@@ -264,7 +282,7 @@ export async function runExtractionPipeline(
     "termination", "savings", "negotiation", "discount",
   ], 3000, 4000);
 
-  const deadlineAt = Date.now() + PIPELINE_DEADLINE_MS;
+  const deadlineAt = Date.now() + pipelineDeadlineMs(provider);
   const tasks = [
     { name: "parties", chunk: partiesChunk, system: PARTIES_PROMPT, schema: PARTIES_SCHEMA },
     { name: "dates", chunk: datesChunk, system: DATES_PROMPT, schema: DATES_SCHEMA },

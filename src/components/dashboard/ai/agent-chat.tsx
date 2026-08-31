@@ -66,6 +66,53 @@ function Caret() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Typewriter - reveals assistant prose a few characters at a time   */
+/*  so the agent's reply reads like it is being written live.         */
+/*                                                                     */
+/*  "0.5x slower": the ms-per-character below is double a typical     */
+/*  fast typewriter (~17ms/char), giving a calmer, more deliberate     */
+/*  reveal than the default.                                          */
+/* ------------------------------------------------------------------ */
+
+const TYPEWRITER_SPEED_MS = 34;
+
+function Typewriter({
+  text,
+  render,
+  speedMs = TYPEWRITER_SPEED_MS,
+}: {
+  text: string;
+  /** Optional renderer so inline formatting (e.g. **bold**) survives typing. */
+  render?: (partial: string) => React.ReactNode;
+  speedMs?: number;
+}) {
+  const [count, setCount] = useState(0);
+  const [prevText, setPrevText] = useState(text);
+
+  // Restart from the top when the underlying text changes. Adjusting state
+  // during render is the sanctioned pattern for prop-derived state (and
+  // avoids a synchronous setState inside the effect below).
+  if (prevText !== text) {
+    setPrevText(text);
+    setCount(0);
+  }
+
+  useEffect(() => {
+    if (!text) return;
+    let n = 0;
+    const id = window.setInterval(() => {
+      n += 1;
+      setCount(n);
+      if (n >= text.length) window.clearInterval(id);
+    }, speedMs);
+    return () => window.clearInterval(id);
+  }, [text, speedMs]);
+
+  const partial = text.slice(0, count);
+  return <>{render ? render(partial) : partial}</>;
+}
+
 /** A natural-language opening line for each kind of job. */
 function conversationOpener(task: AgentTask): string {
   switch (task.plan.intent) {
@@ -410,7 +457,9 @@ function FinalSummary({ task }: { task: AgentTask }) {
         </p>
       ) : (
         <div className="border-sheen rounded-xl border border-line/70 bg-surface px-4 py-3">
-          <p className="text-[13.5px] leading-relaxed text-zinc-200">{renderInline(task.result)}</p>
+          <p className="text-[13.5px] leading-relaxed text-zinc-200">
+            <Typewriter text={task.result} render={renderInline} />
+          </p>
           <p className="mt-2 text-[11.5px] text-zinc-500">Let me know if you&apos;d like me to take any next step.</p>
         </div>
       )}
@@ -605,7 +654,7 @@ export function AgentChat({
         {/* the response */}
         <div className="mt-2.5">
           <p className="text-[14px] leading-[1.65] text-zinc-300">
-            {conversationOpener(task)}
+            <Typewriter text={conversationOpener(task)} />
             {running && <Caret />}
           </p>
 
@@ -626,7 +675,9 @@ export function AgentChat({
 
           {/* what I found (natural recap from the referenced contract) */}
           {recap && !running && task.status !== "failed" && task.status !== "cancelled" && (
-            <p className="mt-3 text-[14px] leading-[1.65] text-zinc-300">{renderInline(recap)}</p>
+            <p className="mt-3 text-[14px] leading-[1.65] text-zinc-300">
+              <Typewriter text={recap} render={renderInline} />
+            </p>
           )}
 
           {/* real clause findings */}

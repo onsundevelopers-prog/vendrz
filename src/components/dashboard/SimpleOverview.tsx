@@ -20,7 +20,23 @@ import { money, moneyShort, formatDateShort, timeAgo } from "@/lib/format";
 import { CountUp, useSpotlight } from "@/lib/motion";
 import type { ActivityRecord, ContractRecord } from "@/lib/types";
 import { riskLevel } from "@/components/dashboard/shared";
-import { AreaChart, Sparkline } from "@/components/ui/charts";
+import { Sparkline } from "@/components/ui/charts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardAction,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 /* ------------------------------------------------------------------ */
 /*  SimpleOverview - the Simple display mode's home.                  */
@@ -199,8 +215,9 @@ export function SimpleOverview({
           </FinCard>
 
           {/* ---- Savings ---- */}
-          <FinCard
-            label="POTENTIAL SAVINGS"
+          {/* The shadcn linear area chart over the real 12-month projection
+              of stated savings potential - no invented growth. */}
+          <SavingsTrendCard
             meta={`${contracts.filter((c) => c.opportunityHigh > 0).length} contracts`}
             value={
               <>
@@ -210,26 +227,9 @@ export function SimpleOverview({
               </>
             }
             delta={`${savingsPctOfSpend.toFixed(1)}% of spend`}
-            up
-            actionHref="/dashboard/savings"
-            hrefLabel="Opportunities"
-          >
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-[10.5px] tabular-nums text-muted">
-                <span>Range / yr</span>
-                <span className="text-fg">
-                  <CountUp target={opportunityLow} format={money} />–<CountUp target={opportunityHigh} format={money} />
-                </span>
-              </div>
-              <AreaChart
-                data={savingsSeries}
-                height={96}
-                color="#e4e4e7"
-                fillId="simple-savings"
-                format={moneyShort}
-              />
-            </div>
-          </FinCard>
+            data={savingsSeries}
+            pctOfSpend={savingsPctOfSpend}
+          />
 
           {/* ---- Renewals ---- */}
           <FinCard
@@ -375,6 +375,117 @@ function Tick({ label, value, tone, up }: { label: string; value: string; tone: 
         ) : value}
       </span>
     </span>
+  );
+}
+
+/* ------------------------- savings trend chart ------------------------- */
+
+/**
+ * The shadcn linear area chart, wired to the real 12-month projection of
+ * stated savings potential. Every value is derived (annual high ÷ 12); the
+ * footer says so plainly - no invented growth, no fake analytics.
+ */
+function SavingsTrendCard({
+  meta,
+  value,
+  delta,
+  data,
+  pctOfSpend,
+}: {
+  meta: string;
+  value: React.ReactNode;
+  delta: string;
+  data: { label: string; value: number }[];
+  pctOfSpend: number;
+}) {
+  const ref = useSpotlight<HTMLDivElement>();
+  const chartConfig = {
+    savings: { label: "Projected savings", color: "var(--chart-1)" },
+  } satisfies ChartConfig;
+
+  return (
+    <Card
+      ref={ref}
+      className="spotlight-card rounded-lg border-beam glass-glow overflow-visible p-0"
+    >
+      <div className="spotlight-glow" aria-hidden="true" />
+      <CardHeader className="min-h-10 items-center border-b border-line px-4">
+        <CardTitle className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted">
+          Potential savings
+        </CardTitle>
+        <CardDescription className="text-[11px] tabular-nums text-muted/70">
+          {meta}
+        </CardDescription>
+        <CardAction>
+          <Link
+            href="/dashboard/savings"
+            className="flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[11px] font-medium text-muted transition-colors hover:bg-white/[0.05] hover:text-fg"
+          >
+            Opportunities
+            <ArrowUpRight size={11} />
+          </Link>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="px-4 pt-3">
+        <div className="flex items-end justify-between gap-3">
+          <p className="min-w-0 truncate text-[26px] font-semibold leading-none tracking-[-0.02em] text-fg tabular-nums">
+            {value}
+          </p>
+          <span className="mb-0.5 flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-zinc-200">
+            <ArrowUpRight size={12} />
+            {delta}
+          </span>
+        </div>
+        <ChartContainer
+          config={chartConfig}
+          className="mt-3 aspect-auto h-24 w-full"
+        >
+          <AreaChart
+            accessibilityLayer
+            data={data}
+            margin={{ left: 12, right: 12 }}
+          >
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={(value) => value.slice(0, 3)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  indicator="dot"
+                  hideLabel
+                  formatter={(v) => moneyShort(Number(v))}
+                />
+              }
+            />
+            <Area
+              dataKey="value"
+              type="linear"
+              fill="var(--color-savings)"
+              fillOpacity={0.4}
+              stroke="var(--color-savings)"
+            />
+          </AreaChart>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="bg-transparent px-4 pb-3 pt-2">
+        <div className="flex w-full items-start gap-2 text-[11px]">
+          <div className="grid gap-1">
+            <div className="leading-none font-medium text-zinc-300">
+              Projected run-rate
+            </div>
+            <div className="leading-none text-muted/70">
+              {pctOfSpend.toFixed(1)}% of annual spend · evenly across 12 months, no growth assumed
+            </div>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
   );
 }
 

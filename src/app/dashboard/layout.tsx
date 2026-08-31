@@ -27,6 +27,7 @@ import { hydrateUserData, persistUserData } from "@/lib/sync";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
+import { Skeleton } from "@/components/ui/skeleton";
 import { RedeemCode } from "@/components/dashboard/RedeemCode";
 
 /* ------------------------------------------------------------------ */
@@ -158,11 +159,38 @@ function WorkspaceShell({
   );
 
   if (!ready) {
+    // Skeleton of the real shell so the transition into the workspace never
+    // causes a layout jump: header bar, icon rail, then panel blocks.
     return (
-      <main className="flex min-h-screen items-center justify-center bg-canvas">
-        <div className="flex flex-col items-center gap-4">
-          <div className="size-5 animate-spin rounded-full border-2 border-zinc-600 border-t-zinc-200" />
-          <p className="text-[12px] tracking-tight text-muted">Loading workspace…</p>
+      <main className="flex h-screen flex-col bg-canvas">
+        <div className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-3">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="ml-auto h-7 w-24" />
+          <Skeleton className="hidden h-7 w-40 sm:block" />
+          <Skeleton className="size-7" />
+        </div>
+        <div className="flex min-h-0 flex-1">
+          <aside className="flex w-[52px] shrink-0 flex-col items-center gap-2.5 border-r border-line bg-surface py-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="size-6 rounded-md" />
+            ))}
+          </aside>
+          <div className="min-w-0 flex-1 overflow-hidden p-4">
+            <div className="flex items-center gap-3 border-b border-line pb-3">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="ml-auto h-7 w-24" />
+            </div>
+            <div className="mt-4 flex gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 flex-1 rounded-md" />
+              ))}
+            </div>
+            <div className="mt-4 grid grid-cols-12 border border-line">
+              <Skeleton className="col-span-5 h-48 rounded-none border-r border-line" />
+              <Skeleton className="col-span-3 h-48 rounded-none border-r border-line" />
+              <Skeleton className="col-span-4 h-48 rounded-none" />
+            </div>
+          </div>
         </div>
       </main>
     );

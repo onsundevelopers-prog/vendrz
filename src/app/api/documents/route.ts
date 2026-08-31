@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getAIProvider } from "@/lib/ai";
-import { extractFileText } from "@/lib/extractResume";
+import { aiUnreachableMessage, extractFileText } from "@/lib/extractResume";
 import type { AnalysisResult } from "@/lib/types";
 import { rejectUnauthenticated } from "@/lib/serverAuth";
 import {
@@ -142,8 +142,7 @@ export async function POST(req: NextRequest) {
       () => {}
     );
     if (pipelineResult.taskErrors.length >= 3) {
-      const err =
-        "The AI analysis service isn't reachable right now. Check your AI provider setup and try again.";
+      const err = aiUnreachableMessage(pipelineResult.taskErrors);
       await updateDocumentRecord(doc.id, userId, { status: "failed", error: err });
       return NextResponse.json({ document: { ...doc, status: "failed", error: err }, analysis: null }, { status: 200 });
     }
