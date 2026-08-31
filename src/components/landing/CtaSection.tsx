@@ -15,26 +15,19 @@ export function CtaSection() {
         transition={{ duration: 0.7, ease }}
         className="relative mx-auto max-w-2xl px-5 text-center"
       >
-        <h2 className="max-w-xl text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-fg sm:text-5xl">
+        <h2 className="max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
           Know where your money&apos;s going. Find where you can save.
         </h2>
-        <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
+        <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
           Run a free vendor spend review and see the renewals, waste, and savings
           hiding in your spend - before the deadlines pass, not after.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          {/* Traveling grey border beam around the free audit CTA. */}
-          <div className="border-beam rounded-full p-[1.5px]">
-            <Button
-              href="/audit"
-              size="lg"
-              className="w-full px-8 sm:w-auto"
-            >
-              Run your free vendor spend review
-            </Button>
-          </div>
+          <Button href="/audit" size="lg" className="w-full px-8 sm:w-auto shadow-[inset_0_1px_1px_rgba(0,0,0,0.1),inset_0_0_0_1px_rgba(0,0,0,0.08)]">
+            Run your free vendor spend review
+          </Button>
         </div>
-        <p className="mt-5 text-[12px] tracking-tight text-muted">
+        <p className="mt-5 text-[12px] font-normal tracking-[-0.01em] text-ash">
           No signup · No credit card · First review in under two minutes
         </p>
       </motion.div>

@@ -34,13 +34,13 @@ export function ProblemSection() {
           transition={{ duration: 0.7, ease }}
           className="lg:sticky lg:top-28 lg:self-start"
         >
-          <p className="text-[12px] font-medium tracking-[0.2em] text-muted">
+          <p className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint">
             The problem
           </p>
-          <h2 className="mt-4 max-w-xl text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">
+          <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
             Vendor contracts are designed to be forgotten.
           </h2>
-          <p className="mt-5 max-w-md text-pretty text-[15.5px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
+          <p className="mt-5 max-w-md text-pretty text-[15px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
             Renewals renew themselves. Cancel-by dates hide in section 7.1.
             Escalations compound quietly. By the time anyone looks, you&apos;ve
             already agreed to next year&apos;s price.
@@ -58,12 +58,12 @@ export function ProblemSection() {
               transition={{ duration: 0.55, delay: i * 0.08, ease }}
               className="grid gap-4 py-8 first:pt-0 sm:grid-cols-[64px_1fr] sm:gap-8"
             >
-              <span className="text-sm font-medium text-zinc-600">{pain.num}</span>
+              <span className="font-mono text-[13px] tracking-[-0.013em] text-ash">{pain.num}</span>
               <div>
-                <h3 className="text-lg font-semibold tracking-[-0.015em] text-fg">
+                <h3 className="text-[15.5px] font-[510] tracking-[-0.014em] text-fg">
                   {pain.title}
                 </h3>
-                <p className="mt-2 max-w-md text-[14.5px] font-normal leading-[1.7] tracking-[-0.01em] text-muted">
+                <p className="mt-2 max-w-md text-[14px] font-normal leading-[1.65] tracking-[-0.011em] text-faint">
                   {pain.body}
                 </p>
               </div>

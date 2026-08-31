@@ -148,3 +148,42 @@ export class LocalOllamaWithCloudFallback extends LocalOllamaProvider {
     }
   }
 }
+
+/**
+ * Wraps any provider with a transparent Ollama Cloud fallback.
+ *
+ * When the primary provider fails (unreachable, auth error, model error),
+ * the request is retried against hosted ollama.com so document scanning
+ * and the AI assistant keep working through a Gemini outage. Only active
+ * when OLLAMA_API_KEY is set - otherwise the original error surfaces
+ * unchanged so misconfiguration still fails loudly.
+ */
+export class WithOllamaCloudFallback extends BaseAIProvider {
+  readonly id: AIProviderId;
+  readonly model: string;
+  private readonly primary: BaseAIProvider;
+  private readonly fallback: OllamaCloudProvider | null;
+
+  constructor(primary: BaseAIProvider) {
+    super();
+    this.primary = primary;
+    this.id = primary.id;
+    this.model = primary.model;
+    this.fallback = process.env.OLLAMA_API_KEY?.trim()
+      ? new OllamaCloudProvider()
+      : null;
+  }
+
+  public async complete(params: CompleteParams): Promise<CompleteResult> {
+    if (!this.fallback) return this.primary.complete(params);
+    try {
+      return await this.primary.complete(params);
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      console.warn(
+        `[ai] ${this.primary.id} unavailable (${reason}); falling back to ollama.com.`
+      );
+      return this.fallback.complete(params);
+    }
+  }
+}

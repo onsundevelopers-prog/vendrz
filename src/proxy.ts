@@ -6,6 +6,10 @@ import { NextResponse } from "next/server";
 /*  Active only when Clerk keys are configured; otherwise the app      */
 /*  runs in demo mode and every route is public (the dashboard then    */
 /*  falls back to the localStorage accounts / demo company).           */
+/*                                                                     */
+/*  Clerk's frontend API is NOT proxied here (no /__clerk matcher):    */
+/*  CLERK_DISABLE_AUTO_PROXY keeps Clerk loaded from its own CDN so    */
+/*  the auth script and session calls never hop through this server.   */
 /* ------------------------------------------------------------------ */
 
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
@@ -27,10 +31,6 @@ export default hasClerkKeys
 
 export const config = {
   matcher: [
-    // Clerk app-origin proxy: with the instance frontend API proxied at
-    // https://<host>/__clerk, these requests must reach clerkMiddleware so
-    // it can forward them to Clerk's backend.
-    "/__clerk/:path*",
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes

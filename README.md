@@ -9,8 +9,8 @@ invites the user to create an account to save and track it.
 
 Stack: Next.js (App Router) + TypeScript + Tailwind CSS + Framer Motion. Auth is
 **Clerk**; workspace data and uploaded documents persist in **Supabase**; subscriptions
-charge via **PayPal**; and the AI provider is **Ollama** with an automatic **Gemini**
-fallback.
+charge via **PayPal**; and the AI provider is **Gemini** (primary) with an automatic
+**Ollama Cloud** fallback.
 
 ## Run it
 
@@ -94,8 +94,8 @@ Clerk is the only auth path:
   mirrors each user's data to/from Supabase so it survives browsers, devices and
   logouts.
 - **`src/lib/ai/`** - provider abstraction (`provider.ts`), Ollama + Gemini transports,
-  and the staged parallel extraction pipeline (`extractPipeline.ts`), with an
-  automatic Ollama→Gemini fallback.
+  and the staged parallel extraction pipeline (`extractPipeline.ts`). Gemini is the
+  default primary provider with an automatic Ollama Cloud fallback (and vice versa).
 - **`src/lib/payments/`** - server-side payment records with idempotency + audit
   trail, and the RBC Move Money adapter (admin-gated, never fakes success).
 - **`src/app/api/`** - the server layer: extraction, documents (Supabase storage),
@@ -110,10 +110,18 @@ calling an API directly cannot bypass a plan lock.
 
 ## Design system
 
-- **Palette**: black/dark canvas with cool-gray surfaces and hairline borders; one
-  sharp accent - emerald (`#34D399`) - used only for savings/positive actions;
-  amber/red reserved for risk. No gradients-for-decoration, no decorative dots.
-- **Type**: Inter (400–700) for precision UI. No monospaced chrome - figures and
-  labels render in the same sans type.
-- **Texture**: flat surfaces, subtle borders, restrained motion (fade/rise only).
+- **Theme**: Linear-style midnight command center - void canvas (`#08090a`),
+  carbon surfaces (`#0f1011`), obsidian panels (`#161718`), and graphite
+  hairlines (`#23252a`). Elevation comes from 1px borders and inset shadows,
+  never drop-shadow stacks.
+- **Accent**: one chromatic action color - acid lime (`#e4f222`) - reserved for
+  the single primary CTA per view. Supporting accents (pulse green, coral,
+  signal teal, iris, lavender) are decorative/tag-only, never actions.
+- **Type**: Inter Variable at 400 / 510 / 590 with tight tracking
+  (-0.022em display, -0.011em body) and `cv01` / `ss03` / `zero` OpenType
+  features; Berkeley Mono stack (Geist Mono) for kbd hints and mono metadata.
+  No weights above 590.
+- **Radii**: 6px buttons/inputs, 12px cards, 9999px pills - the whole radius
+  vocabulary.
+- **Texture**: flat surfaces, hairline borders, restrained motion (fade/rise only).
   The product looks like a serious B2B procurement tool, not a template.

@@ -18,25 +18,31 @@ services:
     autoDeploy: true
     healthCheckPath: /
     envVars:
-      # AI inference provider (contract analysis).
+      # AI inference provider (contract analysis). Gemini is primary and
+      # rolls over to Ollama Cloud when unavailable/erroring.
       - key: AI_PROVIDER
-        value: ollama_cloud    # or ollama_local for a self-hosted `ollama serve`
-      - key: OLLAMA_BASE_URL
-        value: https://ollama.com/v1
-      - key: OLLAMA_API_KEY
-        sync: false            # set it in the Render dashboard
-      # Google Gemini - automatic fallback when Ollama is unavailable/errors.
+        value: gemini    # or ollama_cloud / ollama_local
+      # Google Gemini - primary inference provider.
       - key: GEMINI_API_KEY
-        sync: false
+        sync: false      # set it in the Render dashboard
       - key: GEMINI_MODEL
         sync: false
       - key: GOOGLE_API_KEY
         sync: false
-      # Clerk authentication.
+      # Ollama Cloud - automatic fallback when Gemini is unavailable/errors.
+      - key: OLLAMA_BASE_URL
+        value: https://ollama.com/v1
+      - key: OLLAMA_API_KEY
+        sync: false      # set it in the Render dashboard
+      # Clerk authentication. CLERK_DISABLE_AUTO_PROXY keeps Clerk's
+      # frontend API on its own CDN (no /__clerk proxy hop through this
+      # server); it only mattered on *.vercel.app production URLs.
       - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
         sync: false
       - key: CLERK_SECRET_KEY
         sync: false
+      - key: CLERK_DISABLE_AUTO_PROXY
+        value: "true"
       # Clerk route overrides (match .env.example defaults).
       - key: NEXT_PUBLIC_CLERK_SIGN_IN_URL
         value: /auth?mode=login

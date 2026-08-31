@@ -8,17 +8,37 @@ import "./globals.css";
    the app runs in demo mode with the localStorage accounts. */
 const isClerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
+/**
+ * Derive the Clerk instance origin from the publishable key so the browser
+ * can preconnect before Clerk's script tag is injected. Publishable keys
+ * encode `<frontend-api-host>$<instance-id>` as base64.
+ */
+const clerkOrigin = isClerkEnabled
+  ? (() => {
+      try {
+        const encoded = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!.replace(/^pk_(test|live)_/, "");
+        const decoded = Buffer.from(encoded, "base64").toString("utf-8");
+        const host = decoded.split("$")[0];
+        return host ? `https://${host}` : null;
+      } catch {
+        return null;
+      }
+    })()
+  : null;
+
+// Inter Variable - the full 100-900 axis, so the Linear weights (400 / 510 /
+// 590) exist alongside the classic ones. OpenType features (cv01 / ss03 / zero)
+// are enabled globally on body in globals.css.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
+// Berkeley Mono stand-in for code-adjacent metadata (kbd hints, mono labels).
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -38,30 +58,41 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${geistMono.variable} antialiased`}>
       <body>
         {isClerkEnabled ? (
-          <ClerkProvider
-            appearance={{
-              theme: dark,
+          <>
+            {/* Warn the browser about Clerk's origins up front so the auth
+                bundle, session calls, and avatar images don't pay a DNS +
+                TLS handshake on first use. Next.js hoists <link> tags from
+                anywhere in the tree into <head>. */}
+            {clerkOrigin && (
+              <link rel="preconnect" href={clerkOrigin} crossOrigin="anonymous" />
+            )}
+            <link rel="preconnect" href="https://img.clerk.com" crossOrigin="anonymous" />
+            <ClerkProvider
+              dynamic
+              appearance={{
+                theme: dark,
               variables: {
-                // Pure black surfaces - no grey panels anywhere in Clerk.
-                colorPrimary: "#ffffff",
-                colorBackground: "#000000",
+                // Linear midnight surfaces - no grey panels anywhere in Clerk.
+                colorPrimary: "#e4f222",
+                colorBackground: "#08090a",
                 colorForeground: "#ffffff",
-                colorMuted: "#d4d4d8",
-                colorMutedForeground: "#d4d4d8",
-                colorInput: "#000000",
+                colorMuted: "#d0d6e0",
+                colorMutedForeground: "#8a8f98",
+                colorInput: "#0f1011",
                 colorInputForeground: "#ffffff",
-                colorBorder: "rgba(255,255,255,0.18)",
-                borderRadius: "0.75rem",
+                colorBorder: "#23252a",
+                borderRadius: "0.375rem",
               },
               elements: {
-                footerActionLink: "text-white",
-                formButtonPrimary: "bg-white text-black hover:bg-zinc-200",
-                socialButtonsBlockButton: "border-white/15",
+                footerActionLink: "text-muted",
+                formButtonPrimary: "bg-acid text-[#08090a] hover:bg-[#eefc35]",
+                socialButtonsBlockButton: "border-line",
               },
             }}
           >
             {children}
           </ClerkProvider>
+          </>
         ) : (
           children
         )}

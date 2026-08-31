@@ -1,83 +1,97 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* ------------------------------------------------------------------ */
-  /*  Dark system - developer-grade (Linear / Vercel / Flask school)    */
+  /*  Linear midnight system - precision instrument, one acid accent.   */
+  /*  Surfaces step up in brightness (#08090a -> #0f1011 -> #161718),   */
+  /*  elevation comes from hairline borders, not shadows, and weights   */
+  /*  stay in the 400-590 band - never bold.                            */
   /* ------------------------------------------------------------------ */
-  --color-canvas: #08080a; /* page background (pitch dark)      */
-  --color-surface: #111115; /* container surfaces                */
-  --color-panel: #0d0d11; /* elevated frames / hero media card */
-  --color-float: #121216; /* floating drawers                  */
-  --color-fg: #f4f4f5; /* primary text                      */
-  --color-muted: #c8c8cd; /* secondary / muted text            */
+  --color-canvas: #08090a; /* void - page background              */
+  --color-surface: #0f1011; /* carbon - cards, nav, containers     */
+  --color-panel: #161718; /* obsidian - elevated frames/panels    */
+  --color-float: #161718; /* obsidian - floating drawers          */
+  --color-fg: #ffffff; /* paper - primary headings, emphasis  */
+  --color-muted: #d0d6e0; /* mist - secondary text, button text  */
+  --color-faint: #8a8f98; /* fog - tertiary text, placeholders   */
+  --color-ash: #62666d; /* ash - quiet metadata                */
 
-  /* 1px hairlines - rgba(255,255,255,0.08) everywhere */
-  --color-line: rgba(255, 255, 255, 0.08);
-  --color-line-strong: rgba(255, 255, 255, 0.15);
-  --color-rule-light: rgba(255, 255, 255, 0.08);
-  --color-rule-dark: rgba(255, 255, 255, 0.08);
+  /* 1px hairlines - graphite / smoke, no white washes */
+  --color-line: #23252a; /* graphite - subtle borders, dividers */
+  --color-line-strong: #383b3f; /* smoke - higher-contrast hairlines   */
+  --color-rule-light: #23252a;
+  --color-rule-dark: #383b3f;
+
+  /* Chromatic accents - one action color (acid), rest decorative */
+  --color-acid: #e4f222; /* the only action button color        */
+  --color-pulse: #27a644; /* ok / savings outline               */
+  --color-coral: #eb5757; /* risk / destructive                 */
+  --color-teal: #02b8cc; /* informational accents               */
+  --color-iris: #6366f1; /* tag / badge fills                   */
+  --color-lavender: #8b5cf6; /* secondary tag fills              */
+  --color-bone: #e5e5e6; /* near-white surface fills            */
 
   /* Legacy navy scale - kept for compatibility, replaced by surface tokens */
-  --color-navy-950: #0a0b0e;
-  --color-navy-900: #0d0e12;
-  --color-navy-850: #111115;
-  --color-navy-800: #15161b;
-  --color-navy-700: #1d1e24;
-  --color-navy-600: #2a2c34;
-  --color-navy-500: #3d4049;
+  --color-navy-950: #0a0b0d;
+  --color-navy-900: #0d0e10;
+  --color-navy-850: #101113;
+  --color-navy-800: #141518;
+  --color-navy-700: #1b1d21;
+  --color-navy-600: #26282e;
+  --color-navy-500: #383b41;
 
   --color-canvas-light: #f2f4f8; /* unused, kept for compat */
 
-  /* Semantic hover / selection washes - flip with the theme below */
-  --color-hover: rgba(255, 255, 255, 0.05); /* row / menu hover          */
+  /* Semantic hover / selection washes */
+  --color-hover: rgba(255, 255, 255, 0.045); /* row / menu hover        */
   --color-active: rgba(255, 255, 255, 0.08); /* pressed / active control */
-  --color-sel: rgba(255, 255, 255, 0.06); /* selected row background   */
-  --color-inset: rgba(255, 255, 255, 0.03); /* subtle inset surface     */
+  --color-sel: rgba(255, 255, 255, 0.055); /* selected row background   */
+  --color-inset: rgba(255, 255, 255, 0.025); /* subtle inset surface    */
 }
 
 :root {
   color-scheme: dark;
 
   /* ------------------------------------------------------------------ */
-  /*  shadcn/ui tokens - aligned to the app's dark palette so shadcn    */
-  /*  components (Card, Chart) render natively. The product is dark-    */
-  /*  only, so there is no light `.dark` variant to toggle.             */
+  /*  shadcn/ui tokens - aligned to the Linear midnight palette so     */
+  /*  shadcn components (Card, Chart) render natively. The product is   */
+  /*  dark-only, so there is no light `.dark` variant to toggle.        */
   /* ------------------------------------------------------------------ */
-  --background: #08080a;
-  --foreground: #f4f4f5;
-  --card: #111115;
-  --card-foreground: #f4f4f5;
-  --popover: #16161b;
-  --popover-foreground: #f4f4f5;
-  --primary: #f4f4f5;
-  --primary-foreground: #08080a;
-  --secondary: #1d1d23;
-  --secondary-foreground: #f4f4f5;
-  --muted: #1d1d23;
-  --muted-foreground: #c8c8cd;
-  --accent: #1d1d23;
-  --accent-foreground: #f4f4f5;
-  --destructive: #f4f4f5;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.15);
-  --ring: rgba(255, 255, 255, 0.35);
-  --chart-1: #e4e4e7;
-  --chart-2: #a1a1aa;
-  --chart-3: #71717a;
-  --chart-4: #52525b;
-  --chart-5: #3f3f46;
-  --radius: 0.5rem;
-  --sidebar: #111115;
-  --sidebar-foreground: #f4f4f5;
-  --sidebar-primary: #f4f4f5;
-  --sidebar-primary-foreground: #08080a;
-  --sidebar-accent: #1d1d23;
-  --sidebar-accent-foreground: #f4f4f5;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: rgba(255, 255, 255, 0.35);
+  --background: #08090a;
+  --foreground: #d0d6e0;
+  --card: #0f1011;
+  --card-foreground: #d0d6e0;
+  --popover: #161718;
+  --popover-foreground: #d0d6e0;
+  --primary: #e4f222;
+  --primary-foreground: #08090a;
+  --secondary: #161718;
+  --secondary-foreground: #d0d6e0;
+  --muted: #161718;
+  --muted-foreground: #8a8f98;
+  --accent: #161718;
+  --accent-foreground: #d0d6e0;
+  --destructive: #eb5757;
+  --border: #23252a;
+  --input: #23252a;
+  --ring: #e4f222;
+  --chart-1: #e5e5e6;
+  --chart-2: #d0d6e0;
+  --chart-3: #8a8f98;
+  --chart-4: #62666d;
+  --chart-5: #383b3f;
+  --radius: 0.375rem;
+  --sidebar: #0f1011;
+  --sidebar-foreground: #d0d6e0;
+  --sidebar-primary: #e4f222;
+  --sidebar-primary-foreground: #08090a;
+  --sidebar-accent: #161718;
+  --sidebar-accent-foreground: #d0d6e0;
+  --sidebar-border: #23252a;
+  --sidebar-ring: #e4f222;
 }
 
 html {
@@ -86,13 +100,18 @@ html {
 
 body {
   background: var(--color-canvas);
-  color: var(--color-fg);
+  color: var(--color-muted);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  letter-spacing: -0.011em;
+  font-feature-settings: "cv01" 1, "ss03" 1, "zero" 1;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgb(255 255 255 / 0.18);
+  background: var(--color-acid);
+  color: #08090a;
 }
 
 /* ---------- Apple-style press feedback (instant, no glow) ---------- */
@@ -121,7 +140,7 @@ body {
   border: 1px solid transparent;
   background:
     linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
-    linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) border-box;
+    linear-gradient(to right, #383b3f, #23252a) border-box;
 }
 
 /* Subtle border brighten on hover - the workhorse grey hover state. */
@@ -129,7 +148,7 @@ body {
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 .glass-glow:hover {
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: var(--color-line-strong);
 }
 
 /* Cursor-following soft spotlight for cards. Set --mouse-x / --mouse-y
@@ -151,7 +170,7 @@ body {
   transition: opacity 0.3s ease;
   background: radial-gradient(
     480px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.05),
     transparent 42%
   );
 }
@@ -178,10 +197,10 @@ body {
   background: conic-gradient(
     from var(--beam-angle, 0deg),
     transparent 0%,
-    rgba(255, 255, 255, 0.55) 9%,
+    rgba(255, 255, 255, 0.35) 9%,
     transparent 20%,
     transparent 55%,
-    rgba(255, 255, 255, 0.28) 68%,
+    rgba(255, 255, 255, 0.16) 68%,
     transparent 82%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -223,10 +242,10 @@ body {
   background: conic-gradient(
     from var(--sheen-angle, 0deg),
     transparent 0deg,
-    rgba(255, 255, 255, 0.2) 42deg,
+    rgba(255, 255, 255, 0.14) 42deg,
     transparent 96deg,
     transparent 225deg,
-    rgba(255, 255, 255, 0.1) 265deg,
+    rgba(255, 255, 255, 0.07) 265deg,
     transparent 315deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -250,9 +269,9 @@ body {
 .auth-input {
   width: 100%;
   height: 44px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  border: 1px solid var(--color-line);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--color-fg);
   font-size: 14px;
   padding: 0 12px;
@@ -260,11 +279,11 @@ body {
   transition: border-color 0.15s, background 0.15s;
 }
 .auth-input::placeholder {
-  color: #71717a;
+  color: var(--color-faint);
 }
 .auth-input:focus {
-  border-color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--color-muted);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* ---------- Rolling number cells (NumberFlow-style) ---------- */
@@ -325,8 +344,8 @@ body {
 }
 .panel-title {
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-weight: 510;
+  letter-spacing: -0.01em;
   color: var(--color-fg);
 }
 .panel-sub {
@@ -373,13 +392,13 @@ body {
   background: rgba(255, 255, 255, 0.08);
 }
 .toolbar-btn.primary {
-  background: var(--color-fg);
-  color: #000;
-  font-weight: 600;
+  background: var(--color-acid);
+  color: #08090a;
+  font-weight: 510;
 }
 .toolbar-btn.primary:hover {
-  background: #fff;
-  color: #000;
+  background: #eefc35;
+  color: #08090a;
 }
 .toolbar-sep {
   width: 1px;
@@ -412,7 +431,7 @@ body {
 .sidebar-group {
   padding: 14px 10px 6px;
   font-size: 10.5px;
-  font-weight: 600;
+  font-weight: 510;
   letter-spacing: 0.09em;
   color: var(--color-muted);
   opacity: 0.65;
@@ -464,11 +483,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 2;
-  background: #101014;
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-line-strong);
   color: var(--color-muted);
   font-size: 10.5px;
-  font-weight: 600;
+  font-weight: 510;
   letter-spacing: 0.08em;
   text-align: left;
   padding: 0 12px;
@@ -509,7 +528,8 @@ body {
   opacity: 0.5;
 }
 
-/* Chips / badges (flat, dense) - monochrome by default */
+/* Chips / badges (flat, dense) - monochrome by default, chroma only as
+   supporting accent on severity / category tags (never as actions). */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -520,16 +540,16 @@ body {
   border: 1px solid var(--color-line);
   background: rgba(255, 255, 255, 0.04);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--color-muted);
   white-space: nowrap;
 }
-.chip-green { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
-.chip-amber { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
-.chip-orange { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
-.chip-red { border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.1); color: #f4f4f5; }
-.chip-blue { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
-.chip-purple { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.06); color: var(--color-fg); }
+.chip-green { border-color: rgba(39, 166, 68, 0.35); background: rgba(39, 166, 68, 0.08); color: #5fd07a; }
+.chip-amber { border-color: rgba(235, 87, 87, 0.3); background: rgba(235, 87, 87, 0.07); color: #f0a2a2; }
+.chip-orange { border-color: rgba(235, 87, 87, 0.3); background: rgba(235, 87, 87, 0.07); color: #f0a2a2; }
+.chip-red { border-color: rgba(235, 87, 87, 0.5); background: rgba(235, 87, 87, 0.12); color: #f5b5b5; }
+.chip-blue { border-color: rgba(2, 184, 204, 0.3); background: rgba(2, 184, 204, 0.07); color: #58d6e4; }
+.chip-purple { border-color: rgba(139, 92, 246, 0.35); background: rgba(139, 92, 246, 0.09); color: #b494f7; }
 .chip-neutral { border-color: var(--color-line); background: rgba(255, 255, 255, 0.04); color: var(--color-muted); }
 
 /* Dot status indicator */
@@ -549,7 +569,7 @@ body {
   padding: 4px;
   border: 1px solid var(--color-line-strong);
   border-radius: 8px;
-  background: #16161b;
+  background: var(--color-panel);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.4);
   animation: menu-in 0.12s ease;
 }
@@ -579,7 +599,7 @@ body {
 .menu-label {
   padding: 6px 8px 4px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 510;
   letter-spacing: 0.1em;
   color: var(--color-muted);
   opacity: 0.6;
@@ -611,8 +631,8 @@ body {
 .palette {
   width: min(560px, calc(100vw - 32px));
   border: 1px solid var(--color-line-strong);
-  border-radius: 10px;
-  background: #141418;
+  border-radius: 12px;
+  background: var(--color-panel);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   animation: menu-in 0.14s ease;
@@ -628,11 +648,11 @@ body {
   font-size: 15px;
   border-bottom: 1px solid var(--color-line);
 }
-.palette-input::placeholder { color: #52525b; }
+.palette-input::placeholder { color: var(--color-faint); }
 .palette-group-label {
   padding: 8px 16px 4px;
   font-size: 10.5px;
-  font-weight: 600;
+  font-weight: 510;
   letter-spacing: 0.1em;
   color: var(--color-muted);
   opacity: 0.7;
@@ -671,7 +691,7 @@ body {
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--color-line-strong);
-  background: #101014;
+  background: var(--color-surface);
   box-shadow: -16px 0 40px rgba(0, 0, 0, 0.4);
   animation: inspector-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -684,7 +704,7 @@ body {
 .rail-label {
   padding: 0 8px 4px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 510;
   letter-spacing: 0.1em;
   color: var(--color-muted);
   opacity: 0.6;
@@ -713,7 +733,7 @@ body {
 .nav-section {
   padding: 12px 8px 4px 18px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 510;
   letter-spacing: 0.12em;
   color: var(--color-muted);
   opacity: 0.55;
@@ -748,12 +768,12 @@ body {
   transform: scale(0.97);
 }
 .tab.active {
-  background: #1d1d23;
+  background: var(--color-float);
   color: var(--color-fg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--color-line-strong);
 }
 
-/* Kbd hint */
+/* Kbd hint - Berkeley Mono stack, per the reference (issue IDs, shortcuts) */
 .kbd {
   display: inline-flex;
   align-items: center;
@@ -762,9 +782,11 @@ body {
   min-width: 18px;
   padding: 0 5px;
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-line-strong);
+  background: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
   font-size: 10.5px;
+  letter-spacing: -0.013em;
   color: var(--color-muted);
 }
 
@@ -778,8 +800,8 @@ body {
 }
 .page-title {
   font-size: 20px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-weight: 590;
+  letter-spacing: -0.022em;
   color: var(--color-fg);
 }
 .page-sub {
@@ -794,13 +816,13 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2b2b31;
+  background: #2e3135;
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3d3d45;
+  background: #3f4348;
   background-clip: content-box;
   border: 2px solid transparent;
 }

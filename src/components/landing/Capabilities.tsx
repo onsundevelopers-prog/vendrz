@@ -37,13 +37,13 @@ function CapabilityCard({
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.55, delay: index * 0.08, ease }}
       whileHover={{ y: -4 }}
-      className="border-sheen card-faded flex aspect-square flex-col items-center justify-center rounded-lg p-5 text-center"
+      className="flex aspect-square flex-col items-center justify-center rounded-md border border-line bg-surface p-5 text-center"
     >
-      <span className="text-[11px] font-medium tracking-[0.14em] text-zinc-500">
+      <span className="font-mono text-[11px] tracking-[-0.013em] text-ash">
         {String(index + 1).padStart(2, "0")}
       </span>
-      <p className="mt-3 text-[15px] font-semibold tracking-[-0.01em] text-fg">{item.label}</p>
-      <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted/60">{item.body}</p>
+      <p className="mt-3 text-[14px] font-[510] tracking-[-0.012em] text-fg">{item.label}</p>
+      <p className="mt-1.5 text-[11.5px] font-normal leading-relaxed tracking-[-0.01em] text-faint">{item.body}</p>
     </motion.div>
   );
 }
@@ -59,13 +59,13 @@ export function Capabilities() {
           transition={{ duration: 0.7, ease }}
           className="mx-auto max-w-2xl text-center"
         >
-          <p className="text-[12px] font-medium tracking-[0.2em] text-muted">
+          <p className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint">
             Capabilities
           </p>
-          <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">
+          <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
             Trust the clause, not the claim.
           </h2>
-          <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
+          <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
             Finance teams don&apos;t need more AI confidence. They need output they
             can verify - every feature points back to the source.
           </p>

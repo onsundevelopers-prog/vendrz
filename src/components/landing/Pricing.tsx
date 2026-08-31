@@ -98,16 +98,16 @@ function TierCard({
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay: index * 0.1, ease }}
       whileHover={{ y: -4 }}
-      className={`border-sheen relative flex flex-col rounded-xl border bg-surface transition-colors ${
+      className={`relative flex flex-col rounded-xl border bg-surface transition-colors ${
         card.featured
-          ? "mt-4 border-white/30 shadow-2xl shadow-black/50"
-          : "border-line shadow-lg shadow-black/20 hover:border-line-strong"
+          ? "mt-4 border-line-strong shadow-[0_24px_64px_rgba(0,0,0,0.4)]"
+          : "border-line hover:border-line-strong"
       }`}
     >
       {/* Most popular banner - protrudes above the card, like the reference */}
       {card.featured && (
         <div className="absolute inset-x-0 -top-4 z-10 flex items-center justify-center">
-          <span className="rounded-full bg-white px-4 py-1 text-[10px] font-semibold tracking-[0.18em] text-black shadow-md shadow-black/40">
+          <span className="rounded-full bg-white px-4 py-1 text-[10px] font-[510] tracking-[0.18em] text-black shadow-sm shadow-black/40">
             Most popular
           </span>
         </div>
@@ -115,17 +115,17 @@ function TierCard({
 
       <div className="flex flex-1 flex-col p-6">
         {/* plan name + description */}
-        <p className="text-[16px] font-semibold tracking-tight text-fg">{plan.name}</p>
+        <p className="text-[15px] font-[510] tracking-[-0.014em] text-fg">{plan.name}</p>
         <p className="mt-1 text-[12.5px] leading-relaxed text-muted">{plan.blurb}</p>
 
         {/* price */}
         <div className="mt-5 flex items-baseline gap-1.5">
           {isCustom ? (
             <span className="flex items-center text-fg">
-              <span className="text-[26px] font-semibold tracking-[-0.03em]">Custom</span>
+              <span className="text-[24px] font-[510] tracking-[-0.022em]">Custom</span>
             </span>
           ) : (
-            <span className="text-[34px] font-semibold tracking-[-0.04em] text-fg">{plan.price}</span>
+            <span className="text-[32px] font-[510] tracking-[-0.03em] text-fg">{plan.price}</span>
           )}
           <span className="text-[12.5px] text-muted">{plan.cadence}</span>
         </div>
@@ -135,7 +135,7 @@ function TierCard({
           <Button
             href={card.href}
             variant={card.featured ? "primary" : "outline"}
-            className="w-full rounded-full"
+            className="w-full"
           >
             {card.cta}
           </Button>
@@ -146,10 +146,10 @@ function TierCard({
 
         {/* features */}
         <div className="mt-7 flex-1">
-          <p className="text-[12px] font-semibold text-fg">{card.group}</p>
+          <p className="text-[12px] font-[510] tracking-[-0.01em] text-fg">{card.group}</p>
           <ul className="mt-3 space-y-2.5">
             {plan.features.map((f) => (
-              <li key={f} className="flex items-start gap-2.5 text-[13px] leading-snug text-muted">
+              <li key={f} className="flex items-start gap-2.5 text-[13px] font-normal leading-snug tracking-[-0.01em] text-faint">
                 <Check />
                 <span>{f}</span>
               </li>
@@ -172,13 +172,13 @@ export function Pricing() {
           transition={{ duration: 0.7, ease }}
           className="mx-auto max-w-2xl text-center"
         >
-          <p className="text-[12px] font-medium tracking-[0.2em] text-muted">
+          <p className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint">
             Pricing
           </p>
-          <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">
+          <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
             A plan for every organization&apos;s needs
           </h2>
-          <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.01em] text-muted">
+          <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
             Every plan includes unlimited reviews. No credit card required to see
             your first result - ever.
           </p>

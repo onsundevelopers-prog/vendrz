@@ -40,10 +40,10 @@ export function Faq() {
           transition={{ duration: 0.7, ease }}
           className="text-center"
         >
-          <p className="text-[12px] font-medium tracking-[0.2em] text-muted">
+          <p className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint">
             FAQ
           </p>
-          <h2 className="mt-4 text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-fg sm:text-5xl">
+          <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
             Questions, answered
           </h2>
         </motion.div>
@@ -64,7 +64,7 @@ export function Faq() {
                   aria-expanded={isOpen}
                   className="flex w-full items-center justify-between gap-4 py-5 text-left"
                 >
-                  <span className="text-[15.5px] font-medium tracking-[-0.01em] text-fg">
+                  <span className="text-[15px] font-[510] tracking-[-0.014em] text-fg">
                     {faq.q}
                   </span>
                   <span
@@ -88,7 +88,7 @@ export function Faq() {
                         initial={{ opacity: 0, scale: 0.98, y: -6 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ type: "spring", stiffness: 350, damping: 25, delay: 0.04 }}
-                        className="max-w-2xl pb-6 text-[14.5px] font-normal leading-[1.7] tracking-[-0.01em] text-muted"
+                        className="max-w-2xl pb-6 text-[14px] font-normal leading-[1.65] tracking-[-0.011em] text-faint"
                       >
                         {faq.a}
                       </motion.p>

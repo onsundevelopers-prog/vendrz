@@ -25,7 +25,7 @@ const MAX_CHARS_PER_CHUNK = 15_000;
 
 /**
  * Deadline budget for the whole pipeline (all four LLM tasks, including
- * retries and the Ollama→Gemini fallback). Kept under Vercel's PKG-wide
+ * retries and the cross-provider fallback). Kept under Vercel's PKG-wide
  * function-time limit so a hung provider fails with a clear reason instead
  * of the invocation silently being terminated mid-air.
  */

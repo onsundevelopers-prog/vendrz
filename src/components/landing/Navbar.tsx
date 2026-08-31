@@ -16,12 +16,26 @@ const LINKS = [
 ];
 
 const LOG_IN_LINK =
-  "text-[13.5px] font-medium text-muted transition-colors hover:text-fg";
+  "text-[13px] font-normal text-muted transition-colors hover:text-fg";
+
+/* White pill sign-up CTA - the second-highest contrast element in the
+   system, after the acid-lime primary action. */
+function SignUpPill({ href = "/auth?mode=signup", onClick }: { href?: string; onClick?: () => void }) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="inline-flex h-8 items-center rounded-full bg-white px-4 text-[13px] font-[510] tracking-[-0.011em] text-black transition-colors hover:bg-bone"
+    >
+      Sign up
+    </Link>
+  );
+}
 
 function ClerkDesktopAuth() {
   const { isLoaded, user } = useUser();
   if (!isLoaded) {
-    return <span className="size-4 animate-spin rounded-full border-2 border-muted border-t-fg" />;
+    return <span className="size-4 animate-spin rounded-full border-2 border-line border-t-fg" />;
   }
   return user ? (
     <UserButton />
@@ -36,19 +50,12 @@ function ClerkMobileAuth({ onNavigate }: { onNavigate: () => void }) {
   const { isLoaded, user } = useUser();
   if (!isLoaded) return null;
   return user ? (
-    <div className="flex items-center justify-between rounded-lg border border-line bg-surface px-3 py-2.5">
+    <div className="flex items-center justify-between rounded-md border border-line bg-surface px-3 py-2.5">
       <span className="text-[13.5px] font-medium text-fg">Account</span>
       <UserButton />
     </div>
   ) : (
-    <Button
-      href="/auth?mode=login"
-      variant="outline"
-      className="w-full"
-      onClick={onNavigate}
-    >
-      Log in
-    </Button>
+    <SignUpPill onClick={onNavigate} />
   );
 }
 
@@ -66,16 +73,7 @@ function DesktopAuth() {
 
 function MobileAuth({ onNavigate }: { onNavigate: () => void }) {
   if (!isClerkEnabled) {
-    return (
-      <Button
-        href="/auth?mode=login"
-        variant="outline"
-        className="w-full"
-        onClick={onNavigate}
-      >
-        Log in
-      </Button>
-    );
+    return <SignUpPill onClick={onNavigate} />;
   }
   return <ClerkMobileAuth onNavigate={onNavigate} />;
 }
@@ -83,7 +81,6 @@ function MobileAuth({ onNavigate }: { onNavigate: () => void }) {
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hovered, setHovered] = useState<number | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -103,48 +100,36 @@ export function Navbar() {
           : "border-b border-transparent bg-transparent"
       }`}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">
+      <nav className="mx-auto flex h-14 max-w-[1200px] items-center justify-between px-5 lg:px-8">
         <Link href="/" aria-label="n4ma home" className="shrink-0">
-          <Logo className="[&_span:last-child]:text-[15px]" />
+          <Logo />
         </Link>
 
-        {/* center links - sliding hover pill */}
-        <div className="hidden items-center gap-1 md:flex">
-          {LINKS.map((link, i) => (
+        {/* center links - pure typographic, underline on hover */}
+        <div className="hidden items-center gap-4 md:flex">
+          {LINKS.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              onFocus={() => setHovered(i)}
-              onBlur={() => setHovered(null)}
-              className="relative rounded-full px-3.5 py-1.5 text-[13.5px] font-medium text-muted transition-colors hover:text-fg"
+              className="group relative px-2 py-1.5 text-[13px] font-normal text-muted transition-colors hover:text-fg"
             >
-              {hovered === i && (
-                <motion.span
-                  layoutId="nav-pill"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="absolute inset-0 rounded-full bg-white/[0.06]"
-                />
-              )}
-              <span className="relative z-10">{link.label}</span>
+              {link.label}
+              <span className="absolute inset-x-2 -bottom-px h-px scale-x-0 bg-muted transition-transform duration-200 group-hover:scale-x-100" />
             </a>
           ))}
         </div>
 
         {/* right actions */}
-        <div className="hidden items-center gap-4 md:flex">
+        <div className="hidden items-center gap-5 md:flex">
           <DesktopAuth />
-          <Button href="/audit" size="sm">
-            Run free review
-          </Button>
+          <SignUpPill href="/auth?mode=signup" />
         </div>
 
         {/* mobile toggle */}
         <button
           onClick={() => setOpen(!open)}
           aria-label={open ? "Close menu" : "Open menu"}
-          className="flex size-10 items-center justify-center rounded-lg text-fg hover:bg-white/5 md:hidden"
+          className="flex size-10 items-center justify-center rounded-md text-fg hover:bg-white/5 md:hidden"
         >
           {open ? (
             <span aria-hidden="true" className="relative block size-4">
@@ -177,7 +162,7 @@ export function Navbar() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-[15px] font-medium text-muted hover:bg-white/5 hover:text-fg"
+                  className="block rounded-md px-3 py-2.5 text-[15px] font-normal text-muted hover:bg-white/5 hover:text-fg"
                 >
                   {link.label}
                 </a>

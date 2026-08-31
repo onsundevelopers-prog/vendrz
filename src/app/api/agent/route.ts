@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
       });
     } catch {
       return NextResponse.json(
-        { error: "The AI provider is unavailable right now. Check OLLAMA_API_KEY / AI_PROVIDER." },
+        { error: "The AI provider is unavailable right now. Check GEMINI_API_KEY / AI_PROVIDER." },
         { status: 502 }
       );
     }

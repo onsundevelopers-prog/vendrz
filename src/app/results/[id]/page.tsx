@@ -65,7 +65,7 @@ export default function ResultsPage() {
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 lg:px-8">
           <Link href="/">
-            <Logo className="[&_span:last-child]:text-[15px]" />
+            <Logo />
           </Link>
           <div className="flex items-center gap-3">
             {auth.id && (

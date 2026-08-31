@@ -28,7 +28,7 @@ export function Footer() {
         <div className="flex flex-col justify-between gap-12 md:flex-row">
           <div className="max-w-xs">
             <Logo />
-            <p className="mt-4 text-[13px] font-normal leading-relaxed tracking-[-0.01em] text-muted">
+            <p className="mt-4 text-[13px] font-normal leading-relaxed tracking-[-0.011em] text-faint">
               Vendor spend analysis. Find the money hiding in your vendor
               contracts.
             </p>
@@ -36,7 +36,7 @@ export function Footer() {
           <div className="flex gap-20">
             {COLUMNS.map((col) => (
               <div key={col.title}>
-                <p className="text-[10.5px] font-medium tracking-[0.16em] text-muted">
+                <p className="text-[10.5px] font-[510] uppercase tracking-[0.14em] text-faint">
                   {col.title}
                 </p>
                 <ul className="mt-4 space-y-3">
@@ -44,7 +44,7 @@ export function Footer() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="text-[13.5px] text-muted transition-colors hover:text-fg"
+                        className="text-[13px] text-faint transition-colors hover:text-fg"
                       >
                         {link.label}
                       </Link>
@@ -55,7 +55,7 @@ export function Footer() {
             ))}
           </div>
         </div>
-        <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-[11.5px] tracking-tight text-muted/60 sm:flex-row">
+        <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-[11.5px] font-normal tracking-[-0.01em] text-ash sm:flex-row">
           <p>© {new Date().getFullYear()} n4ma. All rights reserved.</p>
           <p>Encrypted in transit and at rest · Your contract is never shared or sold</p>
         </div>

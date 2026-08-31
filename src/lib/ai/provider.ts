@@ -6,7 +6,7 @@
 /*  getAIProvider() in src/lib/ai/index.ts - the app never imports a   */
 /*  concrete provider.                                                 */
 /*                                                                     */
-/*  Supported today: ollama_cloud, ollama_local, gemini.               */
+/*  Supported today: gemini (default), ollama_cloud, ollama_local.     */
 /*  Future values: vllm.                                               */
 /* ------------------------------------------------------------------ */
 
