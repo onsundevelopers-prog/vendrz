@@ -27,7 +27,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
     <main className="grid min-h-screen bg-canvas lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       {/* brand panel */}
       <div className="relative hidden flex-col justify-between border-r border-line bg-[#0a0a0d] p-12 lg:flex">
-        <Link href="/" aria-label="Noma home" className="w-fit">
+        <Link href="/" aria-label="n4ma home" className="w-fit">
           <Logo />
         </Link>
 
@@ -59,7 +59,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
         </div>
 
         <p className="text-[12px] tracking-tight text-muted/50">
-          © {new Date().getFullYear()} Noma
+          © {new Date().getFullYear()} n4ma
         </p>
       </div>
 
@@ -72,7 +72,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
           className="w-full max-w-[420px]"
         >
           <div className="mb-8 flex justify-center lg:hidden">
-            <Link href="/" aria-label="Noma home">
+            <Link href="/" aria-label="n4ma home">
               <Logo />
             </Link>
           </div>
@@ -119,7 +119,7 @@ function SessionBanner({ sessionId, mode }: { sessionId: string | null; mode: "l
 }
 
 /* ------------------------------------------------------------------ */
-/*  Clerk mode - hosted components styled to match Noma.               */
+/*  Clerk mode - hosted components styled to match n4ma.               */
 /* ------------------------------------------------------------------ */
 
 const clerkAppearance = {

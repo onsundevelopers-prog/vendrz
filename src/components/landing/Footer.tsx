@@ -56,7 +56,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-[11.5px] tracking-tight text-muted/60 sm:flex-row">
-          <p>© {new Date().getFullYear()} Noma. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} n4ma. All rights reserved.</p>
           <p>Encrypted in transit and at rest · Your contract is never shared or sold</p>
         </div>
       </div>

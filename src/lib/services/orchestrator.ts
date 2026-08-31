@@ -571,7 +571,7 @@ function cancellationNotice(contract: Contract, senderName: string): { subject: 
   return {
     subject: `Notice of cancellation - ${vendor} agreement`,
     reason: `Contract requires notice before its cancellation deadline (${deadline}).`,
-    body: `Hi ${vendor} team,\n\nWe are providing notice of cancellation of our agreement (${value}/yr), effective at the end of the current term.\n\nAs stated in our agreement, this notice is sent ahead of the cancellation deadline (${deadline}). Please confirm receipt and outline closing steps, including final billing and data export.\n\nPlease do not auto-renew this agreement.\n\nThanks,\n${senderName}\nNoma · Procurement`,
+    body: `Hi ${vendor} team,\n\nWe are providing notice of cancellation of our agreement (${value}/yr), effective at the end of the current term.\n\nAs stated in our agreement, this notice is sent ahead of the cancellation deadline (${deadline}). Please confirm receipt and outline closing steps, including final billing and data export.\n\nPlease do not auto-renew this agreement.\n\nThanks,\n${senderName}\nn4ma · Procurement`,
   };
 }
 
@@ -793,11 +793,11 @@ export async function executeTaskPlan(
             await sleep(PACE);
             await emit(ev(taskId, "tool.failed", { stepId: step.id, tool: "send_email", detail: "No email delivery connection configured" }));
             const result =
-              `**${approval.actionType === "cancellation" ? "Cancellation request" : "Reply"} prepared for ${approval.vendorName}** — reviewed and approved in Noma.\n\n` +
+              `**${approval.actionType === "cancellation" ? "Cancellation request" : "Reply"} prepared for ${approval.vendorName}** — reviewed and approved in n4ma.\n\n` +
               (approval.to
                 ? `The message is ready to send to ${approval.to}.`
                 : `No sender address is on file for ${approval.vendorName}, so the message can't be delivered yet - add the address before sending.`) +
-              ` Noma has no email delivery connection configured, so nothing was sent automatically.\n\n` +
+              ` n4ma has no email delivery connection configured, so nothing was sent automatically.\n\n` +
               `**Status: prepared — waiting for vendor confirmation (email not delivered).**`;
             task.result = result;
             await emit(ev(taskId, "step.completed", { stepId: step.id, detail: "Prepared — requires a connected inbox to deliver" }));

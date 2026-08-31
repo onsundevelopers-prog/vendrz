@@ -1,8 +1,8 @@
-# Noma
+# n4ma
 
 > Find the money hiding in your vendor contracts.
 
-Noma is a spend-management app that lets anyone upload a vendor contract with **no
+n4ma is a spend-management app that lets anyone upload a vendor contract with **no
 signup**, instantly surfaces renewal dates, cancellation deadlines, auto-renewal terms,
 price escalations, and dollar-quantified savings opportunities **with evidence** - then
 invites the user to create an account to save and track it.
@@ -68,7 +68,7 @@ Clerk is the only auth path:
 1. **Push to git** - the repo is initialized already:
    ```bash
    git add .
-   git commit -m "Noma"
+   git commit -m "n4ma"
    git branch -M main
    git remote add origin https://github.com/<you>/noma.git
    git push -u origin main

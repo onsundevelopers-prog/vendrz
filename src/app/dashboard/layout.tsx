@@ -126,7 +126,7 @@ function WorkspaceShell({
     () => [
       ...NAV.filter((n) => !isSectionLocked(n.href, lockedSections)).map((n) => ({
         id: n.href,
-        group: "Noma",
+        group: "n4ma",
         label: n.label,
         keywords: n.label,
         onSelect: () => router.push(n.href),
@@ -206,13 +206,13 @@ function WorkspaceShell({
         {/* ---------------------------- top header ---------------------------- */}
         <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-3">
           {/* brand + workspace */}
-          <Link href="/" aria-label="Noma home" className="flex shrink-0 items-center rounded-md px-1.5 py-1 hover:bg-hover">
+          <Link href="/" aria-label="n4ma home" className="flex shrink-0 items-center rounded-md px-1.5 py-1 hover:bg-hover">
             <Logo className="[&_span:last-child]:text-[14px]" />
           </Link>
 
           <span className="hidden h-4 w-px bg-line sm:block" aria-hidden="true" />
           <span className="hidden truncate text-[12.5px] font-medium text-fg sm:block">
-            {auth.name || "Noma"}
+            {auth.name || "n4ma"}
           </span>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">

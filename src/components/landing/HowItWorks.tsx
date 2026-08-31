@@ -10,7 +10,7 @@ const STEPS = [
   },
   {
     num: "02",
-    title: "Noma analyzes spend",
+    title: "n4ma analyzes spend",
     body: "Transactions are normalized, vendors matched, and spend is computed across categories, trends, renewals, usage, and billing anomalies - by rules, not guesses.",
   },
   {

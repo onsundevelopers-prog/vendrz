@@ -3,7 +3,7 @@
 /*  on an off-white #efefef tile. Solid black core at the center      */
 /*  fades into a stippled / halftone dot texture toward the curved    */
 /*  edge, matching the reference mark. Rendered as inline SVG so it   */
-/*  stays crisp at every size; the "Noma" wordmark follows in the     */
+/*  stays crisp at every size; the "n4ma" wordmark follows in the     */
 /*  readable light tone.                                              */
 /* ------------------------------------------------------------------ */
 
@@ -71,7 +71,7 @@ export function Logo({
         </svg>
       </span>
       <span className="text-[17px] font-semibold tracking-[-0.02em] text-fg">
-        Noma
+        n4ma
       </span>
     </span>
   );

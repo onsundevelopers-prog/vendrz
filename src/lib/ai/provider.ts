@@ -1,7 +1,7 @@
 /* ------------------------------------------------------------------ */
 /*  AI provider abstraction.                                           */
 /*                                                                     */
-/*  The rest of Noma talks ONLY to this interface. The                 */
+/*  The rest of n4ma talks ONLY to this interface. The                 */
 /*  active implementation is chosen by the AI_PROVIDER env var via     */
 /*  getAIProvider() in src/lib/ai/index.ts - the app never imports a   */
 /*  concrete provider.                                                 */

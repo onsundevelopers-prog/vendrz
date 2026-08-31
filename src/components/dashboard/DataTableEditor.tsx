@@ -28,7 +28,7 @@ import Link from "next/link";
 
 /* ------------------------------------------------------------------ */
 /*  Supabase-style Table Editor (dark-adapted).                       */
-/*  Recreates the reference table-editor anatomy within noma's dark  */
+/*  Recreates the reference table-editor anatomy within n4ma's dark  */
 /*  terminal shell: a left "tables" rail, a tab bar with a close tab,  */
 /*  a filter/ask-AI toolbar, a data grid whose header shows each       */
 /*  column with a data-type badge + sort arrow, and a pagination       */

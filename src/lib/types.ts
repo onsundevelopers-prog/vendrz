@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  Noma - domain types                                      */
+/*  n4ma - domain types                                      */
 /*  Mirrors the PRD data model: User, Organization, Vendor, Contract,  */
 /*  Finding, Opportunity, SavingsOutcome, AnonymousSession,            */
 /*  GmailConnection, DiscoveredDocument.                               */
@@ -282,7 +282,7 @@ export interface DashboardStats {
 }
 
 /* ================================================================== */
-/*  Noma - domain types                                              */
+/*  n4ma - domain types                                              */
 /* ================================================================== */
 
 export type AlertSeverity = "low" | "medium" | "high" | "critical";

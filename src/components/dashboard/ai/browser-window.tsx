@@ -7,7 +7,7 @@ import type { AgentClauseFinding } from "@/lib/agentTask";
 import { money, formatDate } from "@/lib/format";
 
 /* ------------------------------------------------------------------ */
-/*  Record window - noma's dark analogue of an opened browser page.  */
+/*  Record window - n4ma's dark analogue of an opened browser page.  */
 /*  Shows a REAL contract record and, when the agent analyzed its      */
 /*  clauses, the REAL extracted findings with evidence. Nothing here   */
 /*  is fabricated.                                                     */

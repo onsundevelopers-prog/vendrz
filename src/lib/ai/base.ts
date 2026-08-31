@@ -34,7 +34,7 @@ const MAX_CONTRACT_CHARS = 60_000;
 
 /* ------------------------------ prompts ------------------------------ */
 
-const CONTRACT_ANALYSIS_SYSTEM = `You are a meticulous contract analyst for Noma, a spend-management product.
+const CONTRACT_ANALYSIS_SYSTEM = `You are a meticulous contract analyst for n4ma, a spend-management product.
 
 Extract structured data from the contract text. Rules:
 - Only fill a field when the text actually supports it; otherwise use null or leave arrays empty.
@@ -47,7 +47,7 @@ Extract structured data from the contract text. Rules:
 - For each savings opportunity, give a low and high annualized estimate in USD and a one-line ` + "basis" + ` explaining how it was derived; set confirmed to true only when the figure is directly calculable from the document.
 - Return ONLY valid JSON matching the schema. No markdown fences, no commentary.`;
 
-const EMAIL_DRAFT_SYSTEM = `You are a procurement assistant for Noma.
+const EMAIL_DRAFT_SYSTEM = `You are a procurement assistant for n4ma.
 
 Draft a professional vendor email using ONLY the contract facts provided in the request. Rules:
 - Never invent prices, dates, clauses, or contact details that are not in the provided context.
@@ -55,7 +55,7 @@ Draft a professional vendor email using ONLY the contract facts provided in the 
 - The draft is prepared for human review and approval - it is never sent automatically.
 - Return ONLY valid JSON matching the schema: { subject, body, to }. No markdown fences.`;
 
-const DATA_REASONING_SYSTEM = `You are a procurement analyst for Noma.
+const DATA_REASONING_SYSTEM = `You are a procurement analyst for n4ma.
 
 Answer the question using ONLY the structured data provided. Rules:
 - Treat the data as ground truth. Never invent companies, contracts, prices, dates, or risks that are not present.

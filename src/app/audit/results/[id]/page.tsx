@@ -62,7 +62,7 @@ export default function AuditResultsPage() {
       <header className="sticky top-0 z-40 border-b border-line bg-[#08080a]/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 lg:px-8">
           <span className="text-[14px] font-semibold tracking-[-0.02em] text-fg">
-            Noma
+            n4ma
           </span>
           <Link
             href="/dashboard"

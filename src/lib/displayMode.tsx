@@ -3,7 +3,7 @@
 /* ------------------------------------------------------------------ */
 /*  Dashboard plan + display mode.                                    */
 /*                                                                     */
-/*  noma has four tiers:                                              */
+/*  n4ma has four tiers:                                              */
 /*    - Free ($0)        - Simple workspace, savings page, 5 AI msgs/mo */
 /*    - Team ($20/mo)    - Business workspace, Gmail, unlimited AI      */
 /*    - Business ($999 + $1/yr) - + team/roles, automations, support    */
@@ -52,7 +52,7 @@ export const PLANS: PlanDef[] = [
     name: "Free",
     price: "$0",
     cadence: "forever",
-    blurb: "For individuals just getting started with Noma.",
+    blurb: "For individuals just getting started with n4ma.",
     features: [
       "What needs attention, at a glance",
       "Upcoming renewals, risks & savings",
@@ -490,7 +490,7 @@ function UpgradeOverlay() {
 
         {selected === "enterprise" ? (
           <a
-            href="mailto:sales@noma.app?subject=Enterprise%20plan"
+            href="mailto:sales@n4ma.app?subject=Enterprise%20plan"
             className="mt-5 flex h-10 w-full items-center justify-center rounded-md bg-white text-[13px] font-semibold text-black transition-opacity hover:opacity-90"
           >
             Contact sales

@@ -50,7 +50,7 @@ const CARDS: {
     id: "enterprise",
     group: "Everything in Business, plus:",
     cta: "Contact Sales",
-    href: "mailto:sales@noma.app?subject=Enterprise%20plan",
+    href: "mailto:sales@n4ma.app?subject=Enterprise%20plan",
     featured: false,
   },
 ];

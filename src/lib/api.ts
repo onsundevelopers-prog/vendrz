@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------ */
-/*  API contract - Noma                                      */
+/*  API contract - n4ma                                      */
 /*                                                                     */
 /*  The UI talks to these functions. Today they are backed by a        */
 /*  localStorage store so the entire flow works with zero backend.     */

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Privacy policy for Noma - how we collect, use, and protect your data.",
+    "Privacy policy for n4ma - how we collect, use, and protect your data.",
 };
 
 const sections = [
@@ -32,7 +32,7 @@ const sections = [
   {
     title: "4. Data processors",
     body: [
-      "We use trusted third-party services to operate Noma: Clerk (authentication), Supabase (data storage), Google AI (document analysis), PayPal (payments), and Vercel (hosting). Each processor handles data only to provide its service to us.",
+      "We use trusted third-party services to operate n4ma: Clerk (authentication), Supabase (data storage), Google AI (document analysis), PayPal (payments), and Vercel (hosting). Each processor handles data only to provide its service to us.",
     ],
   },
   {
@@ -56,7 +56,7 @@ const sections = [
   {
     title: "8. Contact",
     body: [
-      "Questions about this policy or your data? Email us at privacy@noma.app.",
+      "Questions about this policy or your data? Email us at privacy@n4ma.app.",
     ],
   },
 ];
@@ -66,7 +66,7 @@ export default function PrivacyPage() {
     <main className="min-h-screen bg-black text-white">
       <div className="mx-auto max-w-3xl px-6 py-20">
         <p className="text-sm tracking-widest text-zinc-500">
-          Noma
+          n4ma
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight">
           Privacy Policy

@@ -11,7 +11,7 @@ import { BrowserTab, BrowserWindow } from "./browser-window";
 import { ChatComposer } from "./composer";
 
 /* ------------------------------------------------------------------ */
-/*  AI chat workspace - noma's dark adaptation of the reference      */
+/*  AI chat workspace - n4ma's dark adaptation of the reference      */
 /*  chat:                                                              */
 /*    - "Chats" aside (persistent history, each task = its own chat)   */
 /*    - center: greeting when no chat is open, else the live thread    */

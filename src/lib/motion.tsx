@@ -1,7 +1,7 @@
 "use client";
 
 /* ------------------------------------------------------------------ */
-/*  noma motion language - Apple-style springs, no glow.            */
+/*  n4ma motion language - Apple-style springs, no glow.            */
 /*                                                                     */
 /*  Restrained, physical-feeling motion: everything eases on a soft    */
 /*  spring (deceleration-style, not bounce), reveals travel a few      */
@@ -13,7 +13,7 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
-/* The signature noma easing - Apple's "decelerate" spring sampled
+/* The signature n4ma easing - Apple's "decelerate" spring sampled
    with a near-flat settle. Used everywhere we need a soft ease. */
 export const SPRING = [0.22, 1, 0.36, 1] as const;
 

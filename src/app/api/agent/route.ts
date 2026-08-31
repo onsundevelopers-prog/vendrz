@@ -11,7 +11,7 @@ export const maxDuration = 120;
 
 /* ------------------------------------------------------------------ */
 /*  POST /api/agent                                                    */
-/*  NomaAI with real tool-calling.                                     */
+/*  n4maAI with real tool-calling.                                     */
 /*                                                                     */
 /*  Flow:                                                              */
 /*  1. Build system prompt + user question                             */
@@ -32,7 +32,7 @@ interface AgentRequest {
   senderName?: string;
 }
 
-const AGENT_SYSTEM = `You are Noma's assistant, a procurement analyst.
+const AGENT_SYSTEM = `You are n4ma's assistant, a procurement analyst.
 
 You have access to the user's real vendor contracts, email threads, and activity data.
 You MUST use the available tools to answer questions. Do NOT make up data.

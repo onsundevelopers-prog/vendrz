@@ -24,11 +24,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Noma - Vendor Spend Analysis",
-    template: "%s · Noma",
+    default: "n4ma - Vendor Spend Analysis",
+    template: "%s · n4ma",
   },
   description:
-    "Know where your company's money is going - and find where you can save. Noma turns transactions, invoices, and contracts into spend analysis: renewals, waste, billing anomalies, and savings opportunities. Run a free review, no signup required.",
+    "Know where your company's money is going - and find where you can save. n4ma turns transactions, invoices, and contracts into spend analysis: renewals, waste, billing anomalies, and savings opportunities. Run a free review, no signup required.",
 };
 
 export default function RootLayout({

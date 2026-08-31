@@ -5,7 +5,7 @@ import { ArrowUp, Check, Mail, Radar, X } from "lucide-react";
 import type { AgentMessage } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
-/*  NomaAI - a query panel over the user's real contract data via     */
+/*  n4maAI - a query panel over the user's real contract data via     */
 /*  the rule-based query engine. Evidence chips open the underlying   */
 /*  contract; prepared emails/cancellations render as approval cards  */
 /*  that are never sent until the user confirms.                      */

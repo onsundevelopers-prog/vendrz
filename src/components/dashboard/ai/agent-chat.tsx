@@ -640,9 +640,9 @@ export function AgentChat({
         {/* identity row */}
         <div className="flex items-center gap-2.5">
           <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-[10px] font-semibold text-zinc-200">
-            {initials("Noma AI")}
+            {initials("n4ma AI")}
           </span>
-          <span className="text-[13px] font-medium text-zinc-100">Noma AI</span>
+          <span className="text-[13px] font-medium text-zinc-100">n4ma AI</span>
           {running && (
             <span className="flex items-center gap-1.5 text-[12px] text-zinc-500">
               <Loader2 size={11} className="animate-spin" />

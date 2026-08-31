@@ -2,7 +2,7 @@ import type { ActivityRecord, ContractRecord, EmailThread } from "./types";
 import { money, formatDate, daysUntil, timeAgo } from "./format";
 
 /* ------------------------------------------------------------------ */
-/*  NomaAI - procurement query engine.                                */
+/*  n4maAI - procurement query engine.                                */
 /*                                                                     */
 /*  A deterministic query engine over the user's REAL contract data.   */
 /*  Every answer is computed from actual ContractRecords, email        */
@@ -457,7 +457,7 @@ Please confirm receipt and let us know the next steps for closing the account, i
 
 Thanks,
 ${senderName}
-Noma · Procurement`;
+n4ma · Procurement`;
     return {
       text: `**${vendor.vendorName} - cancellation review**\n\n- Annual value: ${money(vendor.annualSpend)}/yr (FACT)\n- Auto-renew: ${vendor.autoRenew ? "ON - no action means renewed" : "OFF"} (FACT)\n- Cancellation deadline: ${fmtDate(vendor.cancellationDeadline)} (FACT)\n- Days left: ${dl != null ? `${dl}d` : "not stated"}\n\nI've drafted the notice below - **nothing is sent until you approve it.**`,
       contractIds: [vendor.id],
