@@ -78,7 +78,7 @@ export default function ProcessingPage() {
       >
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl border border-line bg-surface">
-            <span className="text-[10px] font-semibold tracking-wide text-zinc-400">
+            <span className="text-[10px] font-semibold tracking-[-0.01em] text-zinc-400">
               {session.fileKind === "pdf" ? "PDF" : session.fileKind === "docx" ? "DOCX" : "DOC"}
             </span>
           </div>

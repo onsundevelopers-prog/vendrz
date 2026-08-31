@@ -19,7 +19,7 @@ const LOG_IN_LINK =
   "text-[13px] font-normal text-muted transition-colors hover:text-fg";
 
 /* White pill sign-up CTA - the second-highest contrast element in the
-   system, after the acid-lime primary action. */
+   system, after the neutral primary action. */
 function SignUpPill({ href = "/auth?mode=signup", onClick }: { href?: string; onClick?: () => void }) {
   return (
     <Link

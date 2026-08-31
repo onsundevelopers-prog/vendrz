@@ -66,7 +66,7 @@ export function KpiBlock({
 }) {
   return (
     <div className="min-w-0 px-4 py-3">
-      <p className="truncate text-[10px] font-semibold tracking-[0.1em] text-muted">
+      <p className="truncate text-[10px] font-semibold tracking-[-0.01em] text-muted">
         {label}
       </p>
       <p className={`mt-1.5 truncate text-[19px] font-semibold leading-none tracking-tight ${accent}`}>
@@ -108,7 +108,7 @@ export function PanelEmpty({
 /** Section label inside inspectors / dense panels. */
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="px-4 pb-1 pt-3 text-[10px] font-semibold tracking-[0.12em] text-muted/60">
+    <p className="px-4 pb-1 pt-3 text-[10px] font-semibold tracking-[-0.01em] text-muted/60">
       {children}
     </p>
   );

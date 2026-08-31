@@ -107,7 +107,7 @@ function TierCard({
       {/* Most popular banner - protrudes above the card, like the reference */}
       {card.featured && (
         <div className="absolute inset-x-0 -top-4 z-10 flex items-center justify-center">
-          <span className="rounded-full bg-white px-4 py-1 text-[10px] font-[510] tracking-[0.18em] text-black shadow-sm shadow-black/40">
+          <span className="rounded-full bg-white px-4 py-1 text-[10.5px] font-[510] tracking-[-0.01em] text-black shadow-sm shadow-black/40">
             Most popular
           </span>
         </div>
@@ -172,7 +172,7 @@ export function Pricing() {
           transition={{ duration: 0.7, ease }}
           className="mx-auto max-w-2xl text-center"
         >
-          <p className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint">
+          <p className="text-[12px] font-[510] tracking-[-0.01em] text-faint">
             Pricing
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">

@@ -114,7 +114,7 @@ calling an API directly cannot bypass a plan lock.
   carbon surfaces (`#0f1011`), obsidian panels (`#161718`), and graphite
   hairlines (`#23252a`). Elevation comes from 1px borders and inset shadows,
   never drop-shadow stacks.
-- **Accent**: one chromatic action color - acid lime (`#e4f222`) - reserved for
+- **Accent**: one neutral action color - grey (`#e4e4e7`) - reserved for
   the single primary CTA per view. Supporting accents (pulse green, coral,
   signal teal, iris, lavender) are decorative/tag-only, never actions.
 - **Type**: Inter Variable at 400 / 510 / 590 with tight tracking

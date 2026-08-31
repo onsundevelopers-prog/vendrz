@@ -438,7 +438,7 @@ function UpgradeOverlay() {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
       <div className="border-sheen w-full max-w-2xl rounded-xl border border-line-strong bg-surface p-6 shadow-2xl shadow-black/60">
-        <p className="text-[10.5px] font-semibold tracking-[0.2em] text-muted">Upgrade your plan</p>
+        <p className="text-[10.5px] font-semibold tracking-[-0.01em] text-muted">Upgrade your plan</p>
         <h2 className="mt-2 text-[22px] font-semibold tracking-tight text-fg">
           {selectedDef.name} · {selectedDef.price}
           <span className="text-[13px] font-normal text-muted"> {selectedDef.cadence}</span>

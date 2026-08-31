@@ -116,7 +116,7 @@ export default function AuditPage() {
               01
             </div>
             <div className="flex flex-1 flex-col">
-              <span className="mt-5 w-fit rounded-md border border-white/20 bg-white/[0.06] px-2 py-0.5 text-[10px] tracking-wider text-zinc-300">
+              <span className="mt-5 w-fit rounded-md border border-white/20 bg-white/[0.06] px-2 py-0.5 text-[10px] tracking-[-0.01em] text-zinc-300">
                 Recommended
               </span>
               <h3 className="text-[17px] font-semibold tracking-[-0.02em] text-fg">

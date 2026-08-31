@@ -400,7 +400,7 @@ export function DataTable<T>({
       {/* filter panel */}
       {menu === "filter" && filterableColumns.length > 0 && (
         <div className="border-b border-line bg-canvas/60 px-3 py-2.5">
-          <div className="flex items-center gap-2 text-[10.5px] font-semibold tracking-[0.1em] text-muted/70">
+          <div className="flex items-center gap-2 text-[10.5px] font-semibold tracking-[-0.01em] text-muted/70">
             <Filter size={11} /> Column filters
             <span className="ml-auto normal-case tracking-normal">
               values match in any column

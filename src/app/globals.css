@@ -25,8 +25,8 @@
   --color-rule-light: #23252a;
   --color-rule-dark: #383b3f;
 
-  /* Chromatic accents - one action color (acid), rest decorative */
-  --color-acid: #e4f222; /* the only action button color        */
+  /* Neutral accents - one grey action color, rest soft decorative hues */
+  --color-acid: #e4e4e7; /* grey - the only action button color        */
   --color-pulse: #27a644; /* ok / savings outline               */
   --color-coral: #eb5757; /* risk / destructive                 */
   --color-teal: #02b8cc; /* informational accents               */
@@ -66,7 +66,7 @@
   --card-foreground: #d0d6e0;
   --popover: #161718;
   --popover-foreground: #d0d6e0;
-  --primary: #e4f222;
+  --primary: #e4e4e7;
   --primary-foreground: #08090a;
   --secondary: #161718;
   --secondary-foreground: #d0d6e0;
@@ -77,7 +77,7 @@
   --destructive: #eb5757;
   --border: #23252a;
   --input: #23252a;
-  --ring: #e4f222;
+  --ring: #e4e4e7;
   --chart-1: #e5e5e6;
   --chart-2: #d0d6e0;
   --chart-3: #8a8f98;
@@ -86,12 +86,12 @@
   --radius: 0.375rem;
   --sidebar: #0f1011;
   --sidebar-foreground: #d0d6e0;
-  --sidebar-primary: #e4f222;
+  --sidebar-primary: #e4e4e7;
   --sidebar-primary-foreground: #08090a;
   --sidebar-accent: #161718;
   --sidebar-accent-foreground: #d0d6e0;
   --sidebar-border: #23252a;
-  --sidebar-ring: #e4f222;
+  --sidebar-ring: #e4e4e7;
 }
 
 html {
@@ -397,7 +397,7 @@ body {
   font-weight: 510;
 }
 .toolbar-btn.primary:hover {
-  background: #eefc35;
+  background: #ececef;
   color: #08090a;
 }
 .toolbar-sep {
@@ -430,11 +430,11 @@ body {
 /* ---------------------------------------------------------------- */
 .sidebar-group {
   padding: 14px 10px 6px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 510;
-  letter-spacing: 0.09em;
+  letter-spacing: -0.01em;
   color: var(--color-muted);
-  opacity: 0.65;
+  opacity: 0.75;
 }
 .sidebar-item {
   display: flex;
@@ -486,9 +486,9 @@ body {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-line-strong);
   color: var(--color-muted);
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 510;
-  letter-spacing: 0.08em;
+  letter-spacing: -0.01em;
   text-align: left;
   padding: 0 12px;
   height: 34px;
@@ -598,11 +598,11 @@ body {
 .menu-item.danger:hover { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
 .menu-label {
   padding: 6px 8px 4px;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 510;
-  letter-spacing: 0.1em;
+  letter-spacing: -0.01em;
   color: var(--color-muted);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 .menu-sep {
   height: 1px;
@@ -651,11 +651,11 @@ body {
 .palette-input::placeholder { color: var(--color-faint); }
 .palette-group-label {
   padding: 8px 16px 4px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 510;
-  letter-spacing: 0.1em;
+  letter-spacing: -0.01em;
   color: var(--color-muted);
-  opacity: 0.7;
+  opacity: 0.75;
 }
 .palette-item {
   display: flex;
@@ -703,11 +703,11 @@ body {
 /* Filter rail label (refine-with-filters panel) */
 .rail-label {
   padding: 0 8px 4px;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 510;
-  letter-spacing: 0.1em;
+  letter-spacing: -0.01em;
   color: var(--color-muted);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 /* Sidebar rail */
@@ -732,11 +732,11 @@ body {
 }
 .nav-section {
   padding: 12px 8px 4px 18px;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 510;
-  letter-spacing: 0.12em;
+  letter-spacing: -0.01em;
   color: var(--color-muted);
-  opacity: 0.55;
+  opacity: 0.7;
 }
 
 /* Tabs (panel tab bars) */

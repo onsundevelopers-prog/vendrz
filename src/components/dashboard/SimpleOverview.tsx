@@ -126,7 +126,7 @@ export function SimpleOverview({
         {/* ------------------------------ header ------------------------------ */}
         <div className="flex items-end gap-3">
           <div>
-            <p className="text-[10.5px] font-semibold tracking-[0.14em] text-muted/70">
+            <p className="text-[11px] font-medium tracking-[-0.01em] text-muted/70">
               {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
             </p>
             <h1 className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-fg">
@@ -151,19 +151,19 @@ export function SimpleOverview({
         {/* ------------------------------ ticker strip ------------------------------ */}
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {renewalsSoon.length > 0 && (
-            <Tick label="RENEWING <90D" value={fin(renewalsSoon.length)} tone="text-zinc-200" />
+            <Tick label="Renewing <90d" value={fin(renewalsSoon.length)} tone="text-zinc-200" />
           )}
           {atRisk.length > 0 && (
-            <Tick label="AT RISK" value={fin(atRisk.length)} tone="text-zinc-100" />
+            <Tick label="At risk" value={fin(atRisk.length)} tone="text-zinc-100" />
           )}
           {autoRenewCount > 0 && (
-            <Tick label="AUTO-RENEW" value={fin(autoRenewCount)} tone="text-zinc-200" />
+            <Tick label="Auto-renew" value={fin(autoRenewCount)} tone="text-zinc-200" />
           )}
           {opportunityHigh > 0 && (
-            <Tick label="SAVINGS POT." value={moneyShort(opportunityHigh)} tone="text-fg" up />
+            <Tick label="Savings potential" value={moneyShort(opportunityHigh)} tone="text-fg" up />
           )}
           {totalSpend > 0 && (
-            <Tick label="TOTAL SPEND" value={moneyShort(totalSpend)} tone="text-fg" />
+            <Tick label="Total spend" value={moneyShort(totalSpend)} tone="text-fg" />
           )}
         </div>
 
@@ -171,7 +171,7 @@ export function SimpleOverview({
         <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
           {/* ---- Contracts / spend ---- */}
           <FinCard
-            label="CONTRACTS"
+            label="Contracts"
             meta={`${contracts.length} analyzed`}
             value={moneyShort(totalSpend)}
             actionHref="/dashboard/contracts"
@@ -186,7 +186,7 @@ export function SimpleOverview({
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <Sparkline data={spendSeries} width={120} height={34} color="#a1a1aa" />
-                <span className="text-[9px] tracking-[0.1em] text-muted/60">spend · $/yr</span>
+                <span className="text-[10px] tracking-[-0.01em] text-muted/60">spend · $/yr</span>
               </div>
             </div>
           </FinCard>
@@ -210,7 +210,7 @@ export function SimpleOverview({
 
           {/* ---- Renewals ---- */}
           <FinCard
-            label="UPCOMING RENEWALS"
+            label="Upcoming renewals"
             meta={`${renewalsSoon.length} in 90d`}
             value={moneyShort(renewalExposure)}
             delta={nextRenewal ? `${nextRenewal.vendor} · ${nextRenewal.days}d` : "—"}
@@ -228,7 +228,7 @@ export function SimpleOverview({
                       onClick={() => onSelectContract(r as unknown as ContractRecord)}
                       className="flex w-full items-center gap-2 group/row"
                     >
-                      <span className="w-8 shrink-0 truncate text-[10px] tracking-wide text-muted">{r.label}</span>
+                      <span className="w-8 shrink-0 truncate text-[10px] tracking-[-0.01em] text-muted">{r.label}</span>
                       <span className="h-[6px] flex-1 overflow-hidden rounded-sm bg-white/[0.06]">
                         <span
                           className="block h-full rounded-sm transition-all group-hover/row:opacity-80"
@@ -251,7 +251,7 @@ export function SimpleOverview({
 
           {/* ---- Risks ---- */}
           <FinCard
-            label="RISK"
+            label="Risk"
             meta={`${exposurePct.toFixed(0)}% of spend exposed`}
             value={moneyShort(exposure)}
             delta={atRisk.length > 0 ? `${fin(atRisk.length)} contracts` : "clear"}
@@ -271,7 +271,7 @@ export function SimpleOverview({
                       onClick={() => onSelectContract(c)}
                       className="flex w-full items-center gap-2 group/row"
                     >
-                      <span className="w-8 shrink-0 truncate text-[10px] tracking-wide text-muted">{c.vendorName.slice(0, 3).toUpperCase()}</span>
+                      <span className="w-8 shrink-0 truncate text-[10px] tracking-[-0.01em] text-muted">{c.vendorName.slice(0, 3).toUpperCase()}</span>
                       <span className={`font-semibold tabular-nums text-[11px] w-7 shrink-0 text-right ${tone}`}>{c.riskScore}</span>
                       <span className="h-[6px] flex-1 overflow-hidden rounded-sm bg-white/[0.06]">
                         <span
@@ -295,7 +295,7 @@ export function SimpleOverview({
 
         {/* ------------------------------ recent activity ------------------------------ */}
         <FinCard
-          label="RECENT ACTIVITY"
+          label="Recent activity"
           meta={`event log`}
           value={<>{fin(activity.length)}</>}
           actionHref="/dashboard/activity"
@@ -317,7 +317,7 @@ export function SimpleOverview({
                   <p className="truncate text-[12.5px] font-medium text-fg">{a.title}</p>
                   {a.vendorName && <p className="truncate text-[10.5px] text-muted">{a.vendorName}</p>}
                 </div>
-                <span className="hidden shrink-0 text-[10px] tracking-wide text-muted/60 sm:block">
+                <span className="hidden shrink-0 text-[10px] tracking-[-0.01em] text-muted/60 sm:block">
                   {a.actor === "agent" ? "AI" : a.actor}
                 </span>
                 <span className="w-16 shrink-0 text-right text-[10.5px] text-muted">{timeAgo(a.createdAt)}</span>
@@ -342,7 +342,7 @@ export function SimpleOverview({
 function Tick({ label, value, tone, up }: { label: string; value: string; tone: string; up?: boolean }) {
   return (
     <span className="glass-glow inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 py-1 text-[11px] tabular-nums">
-      <span className="text-[9px] font-semibold tracking-[0.12em] text-muted/70">{label}</span>
+      <span className="text-[10px] font-semibold tracking-[-0.01em] text-muted/70">{label}</span>
       <span className={`font-semibold ${tone}`}>
         {up ? (
           <span className="inline-flex items-center gap-0.5"><ArrowUpRight size={11} className="text-zinc-200" />{value}</span>
@@ -384,7 +384,7 @@ function SavingsTrendCard({
     >
       <div className="spotlight-glow" aria-hidden="true" />
       <CardHeader className="min-h-10 items-center border-b border-line px-4">
-        <CardTitle className="text-[10.5px] font-semibold tracking-[0.14em] text-muted">
+        <CardTitle className="text-[11px] font-medium tracking-[-0.01em] text-muted">
           Potential savings
         </CardTitle>
         <CardDescription className="text-[11px] tabular-nums text-muted/70">
@@ -520,7 +520,7 @@ function FinCard({
       <div className="spotlight-glow" aria-hidden="true" />
       {/* header */}
       <div className="flex h-10 items-center gap-2 border-b border-line px-4">
-        <h2 className="text-[10.5px] font-semibold tracking-[0.14em] text-muted">{label}</h2>
+        <h2 className="text-[11px] font-medium tracking-[-0.01em] text-muted">{label}</h2>
         {meta && <span className="truncate text-[11px] tabular-nums text-muted/70">{meta}</span>}
         {actionHref && (
           <Link

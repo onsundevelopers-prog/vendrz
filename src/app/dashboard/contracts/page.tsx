@@ -184,7 +184,7 @@ export default function ContractsPage() {
     <div className="h-full overflow-y-auto">
       <div className="border-b border-line">
         <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-2">
-          <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">
+          <span className="text-[11px] font-semibold tracking-[-0.01em] text-muted">
             Document library
           </span>
         </div>

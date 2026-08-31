@@ -17,7 +17,7 @@ export function TrustStrip() {
   return (
     <div className="border-y border-line bg-canvas">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-7 gap-y-1.5 border-b border-line/60 px-5 py-3 lg:px-8">
-        <span className="shrink-0 text-[10.5px] font-[510] uppercase tracking-[0.14em] text-ash">
+        <span className="shrink-0 text-[12px] font-[510] tracking-[-0.01em] text-ash">
           Reads your own
         </span>
         {SOURCES.map((v) => (

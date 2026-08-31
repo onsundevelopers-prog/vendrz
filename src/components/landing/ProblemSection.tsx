@@ -34,7 +34,7 @@ export function ProblemSection() {
           transition={{ duration: 0.7, ease }}
           className="lg:sticky lg:top-28 lg:self-start"
         >
-          <p className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint">
+          <p className="text-[12px] font-[510] tracking-[-0.01em] text-faint">
             The problem
           </p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">

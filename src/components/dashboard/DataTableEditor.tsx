@@ -197,13 +197,13 @@ function DefinitionView<T>({
       <table className="w-full border-collapse">
         <thead className="sticky top-0 z-[2]">
           <tr>
-            <th className="h-[34px] border-b border-line-strong bg-float px-4 text-left text-[10.5px] font-semibold tracking-[0.08em] text-muted">
+            <th className="h-[34px] border-b border-line-strong bg-float px-4 text-left text-[10.5px] font-semibold tracking-[-0.01em] text-muted">
               Column
             </th>
-            <th className="h-[34px] border-b border-line-strong bg-float px-4 text-left text-[10.5px] font-semibold tracking-[0.08em] text-muted">
+            <th className="h-[34px] border-b border-line-strong bg-float px-4 text-left text-[10.5px] font-semibold tracking-[-0.01em] text-muted">
               Type
             </th>
-            <th className="h-[34px] border-b border-line-strong bg-float px-4 text-left text-[10.5px] font-semibold tracking-[0.08em] text-muted">
+            <th className="h-[34px] border-b border-line-strong bg-float px-4 text-left text-[10.5px] font-semibold tracking-[-0.01em] text-muted">
               Description
             </th>
           </tr>
@@ -582,7 +582,7 @@ export function DataTableEditor<T extends { id: string }>({
               <>
                 <div className="fixed inset-0 z-[3]" onClick={() => setSortOpen(false)} />
                 <div className="absolute right-0 top-full z-[4] mt-1 w-60 rounded-md border border-line bg-surface p-1 shadow-xl shadow-black/50">
-                  <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold tracking-[0.08em] text-muted">
+                  <p className="px-2 pb-1 pt-1.5 text-[10px] font-semibold tracking-[-0.01em] text-muted">
                     Sort by column
                   </p>
                   {columns.map((col) => {

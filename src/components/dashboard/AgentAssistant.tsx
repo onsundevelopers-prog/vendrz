@@ -92,7 +92,7 @@ function ApprovalCard({
   const actionable = typeof pa.action_id === "string" && pa.action_id.length > 0;
   return (
     <div className="mt-2.5 border-t border-line pt-2.5">
-      <p className="flex items-center gap-1.5 text-[10.5px] font-semibold tracking-[0.1em] text-muted/70">
+      <p className="flex items-center gap-1.5 text-[10.5px] font-semibold tracking-[-0.01em] text-muted/70">
         <Mail size={10} />
         {typeLabel} · requires approval
       </p>
@@ -281,7 +281,7 @@ export function AgentAssistant({
         {/* suggestions */}
         {messages.length === 0 && (
           <div className="shrink-0 border-t border-line px-3 py-2.5">
-            <p className="mb-2 text-[10px] font-semibold tracking-[0.1em] text-muted/60">
+            <p className="mb-2 text-[10px] font-semibold tracking-[-0.01em] text-muted/60">
               Suggested
             </p>
             <div className="flex flex-wrap gap-1.5">

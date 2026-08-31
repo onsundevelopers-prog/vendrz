@@ -63,7 +63,7 @@ export function RedeemCode({
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
       <div className="border-sheen w-full max-w-sm rounded-xl border border-line-strong bg-surface p-6 shadow-2xl shadow-black/60">
-        <p className="text-[10.5px] font-semibold tracking-[0.2em] text-muted">Redeem a code</p>
+        <p className="text-[10.5px] font-semibold tracking-[-0.01em] text-muted">Redeem a code</p>
         <h2 className="mt-2 text-[20px] font-semibold tracking-tight text-fg">Unlock a plan</h2>
         <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
           Enter a redemption code to activate its plan on your account. Codes are
@@ -79,7 +79,7 @@ export function RedeemCode({
               placeholder="Enter code"
               autoComplete="off"
               spellCheck={false}
-              className="h-11 w-full bg-transparent text-[14px] font-medium tracking-wide text-fg outline-none placeholder:text-zinc-600 placeholder:normal-case"
+              className="h-11 w-full bg-transparent text-[14px] font-medium tracking-[-0.01em] text-fg outline-none placeholder:text-zinc-600 placeholder:normal-case"
             />
           </div>
 

@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/Button";
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /* ------------------------------------------------------------------ */
-/*  Linear-style headline - words roll up out of their masks onto a     */
-/*  510-weight, tightly-tracked display line.                           */
+/*  Headline                                                            */
 /* ------------------------------------------------------------------ */
 
 function StaggeredWords({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -32,53 +31,6 @@ function StaggeredWords({ text, delay = 0 }: { text: string; delay?: number }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Product screenshot frame - the app's real UI language (hairline     */
-/*  table, chips, tabular figures) shown inside a carbon card.          */
-/* ------------------------------------------------------------------ */
-
-const MOCK_ROWS = [
-  { vendor: "Acme Analytics", spend: "$84,200", renews: "Jan 12", state: "Renewal window open", tone: "chip-green" },
-  { vendor: "Northwind Cloud", spend: "$43,500", renews: "Feb 3", state: "Auto-renews", tone: "chip-red" },
-  { vendor: "Corvid Legal", spend: "$28,900", renews: "Mar 17", state: "5% escalation", tone: "chip-amber" },
-];
-
-function ProductFrame() {
-  return (
-    <div className="border border-line bg-surface p-2 sm:p-2.5">
-      {/* toolbar */}
-      <div className="flex items-center gap-2 border-b border-line px-2.5 pb-2 pt-1">
-        <span className="size-2 rounded-full bg-faint/40" />
-        <span className="text-[11px] font-[510] tracking-[-0.01em] text-muted">
-          Contract register
-        </span>
-        <span className="ml-auto rounded px-1.5 py-0.5 text-[10px] font-[510] tracking-[0.08em] text-faint">
-          12 contracts
-        </span>
-      </div>
-      {/* table head */}
-      <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-6 border-b border-line px-2.5 py-1.5 text-[10px] font-[510] uppercase tracking-[0.09em] text-faint">
-        <span>Vendor</span>
-        <span>Annual spend</span>
-        <span>Renews</span>
-        <span className="text-right">Status</span>
-      </div>
-      {/* rows */}
-      {MOCK_ROWS.map((row) => (
-        <div
-          key={row.vendor}
-          className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-6 border-b border-line/60 px-2.5 py-2 last:border-0"
-        >
-          <span className="truncate text-[12.5px] text-fg">{row.vendor}</span>
-          <span className="text-[12.5px] tabular-nums text-muted">{row.spend}</span>
-          <span className="text-[12.5px] tabular-nums text-muted">{row.renews}</span>
-          <span className={`chip justify-self-end ${row.tone}`}>{row.state}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 
 export function Hero() {
   return (
@@ -97,7 +49,7 @@ export function Hero() {
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint"
+            className="text-[12px] font-[510] tracking-[-0.01em] text-faint"
           >
             Vendor spend intelligence
           </motion.p>
@@ -161,19 +113,6 @@ export function Hero() {
             Read-only · no signup · first review in under two minutes
           </motion.p>
         </div>
-
-        {/* product frame */}
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease }}
-          viewport={{ once: true }}
-          className="mt-14 sm:mt-16"
-        >
-          <div className="mx-auto max-w-[860px] rounded-xl border border-line bg-surface shadow-[inset_0_0_0_1px_rgba(35,37,42,0.6),0_24px_64px_rgba(0,0,0,0.45)]">
-            <ProductFrame />
-          </div>
-        </motion.div>
       </div>
     </section>
   );

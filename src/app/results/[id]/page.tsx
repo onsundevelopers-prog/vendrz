@@ -101,7 +101,7 @@ export default function ResultsPage() {
             {/* Batch navigator - every analysis from a multi-file upload. */}
             {batchLinks.length > 0 && (
               <div className="w-full sm:w-auto">
-                <p className="text-[10.5px] font-semibold tracking-[0.14em] text-muted">
+                <p className="text-[10.5px] font-semibold tracking-[-0.01em] text-muted">
                   {batchLinks.length + 1} analyses in this batch
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">

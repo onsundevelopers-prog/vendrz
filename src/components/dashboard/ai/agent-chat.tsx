@@ -385,7 +385,7 @@ function ApprovalGate({
             <ChevronDown size={12} className="transition-transform duration-200 group-open:rotate-180" />
           </summary>
           <div className="border-sheen mt-2 overflow-hidden rounded-lg border border-line bg-[#0a0a0e] p-3">
-            <p className="text-[10.5px] tracking-[0.06em] text-zinc-600">
+            <p className="text-[10.5px] tracking-[-0.01em] text-zinc-600">
               To · {approval.to || "address not on file"}
             </p>
             <p className="mt-1 text-[13px] font-medium text-zinc-100">{approval.subject}</p>
@@ -512,7 +512,7 @@ export function AgentEventLogLight({
         className="flex w-full items-center gap-2 px-4 py-1.5 text-left"
         disabled={!onToggle}
       >
-        <span className="text-[10px] font-medium tracking-[0.08em] text-zinc-500">
+        <span className="text-[10px] font-medium tracking-[-0.01em] text-zinc-500">
           Activity log · {events.length}
         </span>
         {running && (

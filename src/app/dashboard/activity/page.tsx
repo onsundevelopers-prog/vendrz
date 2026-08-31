@@ -131,7 +131,7 @@ export default function ActivityPage() {
       label: "Changed By",
       type: "chip",
       description: "Who caused the event.",
-      render: (r) => <span className="capitalize text-zinc-300">{r.record.actor}</span>,
+      render: (r) => <span className="text-zinc-300">{r.record.actor}</span>,
       value: (r) => r.record.actor,
     },
     {
@@ -156,7 +156,7 @@ export default function ActivityPage() {
       type: "chip",
       description: "Where the event originated.",
       render: (r) => (
-        <span className="capitalize text-zinc-400">{r.record.actor === "agent" ? "AI" : r.record.actor}</span>
+        <span className="text-zinc-400">{r.record.actor === "agent" ? "AI" : r.record.actor}</span>
       ),
       value: (r) => r.record.actor,
     },

@@ -65,7 +65,7 @@ export function StatCard({
   return (
     <Panel className="p-5">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-medium tracking-[0.1em] text-muted">
+        <span className="text-[11px] font-medium tracking-[-0.01em] text-muted">
           {label}
         </span>
         {icon && <span className={accent}>{icon}</span>}
@@ -90,7 +90,7 @@ export function SeverityBadge({ severity }: { severity: AlertSeverity }) {
     low: "border-white/10 bg-white/[0.03] text-muted",
   };
   return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-[0.06em] ${styles[severity]}`}>
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-[-0.01em] ${styles[severity]}`}>
       {severity}
     </span>
   );
@@ -131,7 +131,7 @@ export function HealthScore({
   return (
     <div className="inline-flex items-center gap-3">
       <span className={`font-semibold tracking-tight ${text} ${color}`}>{score}</span>
-      <span className="text-[10px] tracking-[0.12em] text-muted">/100</span>
+      <span className="text-[10px] tracking-[-0.01em] text-muted">/100</span>
       <div className="h-1.5 w-16 overflow-hidden rounded-full bg-white/[0.08]">
         <div className="h-full rounded-full" style={{ width: `${score}%`, background: bar }} />
       </div>

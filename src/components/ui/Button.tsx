@@ -13,9 +13,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  /* Primary - the single chromatic action: acid lime, void text, 6px radius */
+  /* Primary - the single neutral action: grey, void text, 6px radius */
   primary:
-    "bg-acid text-[#08090a] hover:bg-[#eefc35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid",
+    "bg-acid text-[#08090a] hover:bg-[#ececef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acid",
   /* Secondary - transparent, graphite hairline, mist text, hover fills */
   outline:
     "border border-line text-muted hover:border-line-strong hover:bg-white/[0.04] hover:text-fg",

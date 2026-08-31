@@ -65,7 +65,7 @@ export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="mx-auto max-w-3xl px-6 py-20">
-        <p className="text-sm tracking-widest text-zinc-500">
+        <p className="text-sm tracking-[-0.01em] text-zinc-500">
           n4ma
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight">

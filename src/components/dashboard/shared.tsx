@@ -44,7 +44,7 @@ export function Kpi({
 }) {
   return (
     <div className="px-4 py-3">
-      <p className="text-[10px] font-semibold tracking-[0.1em] text-muted">{label}</p>
+      <p className="text-[10px] font-semibold tracking-[-0.01em] text-muted">{label}</p>
       <p className={`mt-1 text-[20px] font-semibold leading-none tracking-tight ${accent}`}>
         {format ? format(value) : Math.round(value).toLocaleString("en-US")}
       </p>
@@ -175,7 +175,7 @@ export function EmptyState({
 export function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-line/60 px-4 py-2.5">
-      <span className="shrink-0 text-[10.5px] font-semibold tracking-[0.08em] text-muted/70">
+      <span className="shrink-0 text-[10.5px] font-semibold tracking-[-0.01em] text-muted/70">
         {label}
       </span>
       <span className="min-w-0 text-right text-[12.5px] font-medium text-fg">{children}</span>

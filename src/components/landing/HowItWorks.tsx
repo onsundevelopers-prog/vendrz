@@ -36,7 +36,7 @@ export function HowItWorks() {
           transition={{ duration: 0.7, ease }}
           className="mx-auto max-w-2xl text-center"
         >
-          <p className="text-[11px] font-[510] uppercase tracking-[0.16em] text-faint">
+          <p className="text-[12px] font-[510] tracking-[-0.01em] text-faint">
             How it works
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">

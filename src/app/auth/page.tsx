@@ -128,14 +128,14 @@ const clerkAppearance = {
     card: "rounded-xl border border-line bg-black p-6 sm:p-7",
     header: "hidden",
     formButtonPrimary:
-      "h-11 rounded-md bg-acid text-sm font-[510] text-[#08090a] hover:bg-[#eefc35] shadow-none",
+      "h-11 rounded-md bg-acid text-sm font-[510] text-[#08090a] hover:bg-[#ececef] shadow-none",
     socialButtonsBlockButton:
       "h-11 rounded-md border border-line bg-black text-sm font-normal text-muted hover:bg-white/[0.05]",
     socialButtonsBlockButtonText: "text-muted font-normal",
     socialButtonsIconButton:
       "h-11 rounded-md border border-line bg-black hover:bg-white/[0.05]",
     dividerLine: "bg-line",
-    dividerText: "text-[11px] tracking-[0.1em] text-ash",
+    dividerText: "text-[11px] tracking-[-0.01em] text-ash",
     formFieldLabel: "text-[12px] font-[510] text-faint",
     formFieldInput:
       "h-11 rounded-md border border-line bg-black text-[14px] text-fg transition-colors focus:border-muted",
@@ -150,7 +150,7 @@ const clerkAppearance = {
     identityPreviewEditButton: "text-faint",
   },
   variables: {
-    colorPrimary: "#e4f222",
+    colorPrimary: "#e4e4e7",
     colorForeground: "#ffffff",
     colorMuted: "#d0d6e0",
     colorMutedForeground: "#8a8f98",

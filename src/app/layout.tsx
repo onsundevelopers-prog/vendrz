@@ -73,7 +73,7 @@ export default function RootLayout({
                 theme: dark,
               variables: {
                 // Linear midnight surfaces - no grey panels anywhere in Clerk.
-                colorPrimary: "#e4f222",
+                colorPrimary: "#e4e4e7",
                 colorBackground: "#08090a",
                 colorForeground: "#ffffff",
                 colorMuted: "#d0d6e0",
@@ -85,7 +85,7 @@ export default function RootLayout({
               },
               elements: {
                 footerActionLink: "text-muted",
-                formButtonPrimary: "bg-acid text-[#08090a] hover:bg-[#eefc35]",
+                formButtonPrimary: "bg-acid text-[#08090a] hover:bg-[#ececef]",
                 socialButtonsBlockButton: "border-line",
               },
             }}
