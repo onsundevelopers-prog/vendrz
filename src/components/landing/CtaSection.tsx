@@ -9,7 +9,7 @@ export function CtaSection() {
   return (
     <section className="relative overflow-hidden border-t border-line bg-canvas py-24 lg:py-32">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={false}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.7, ease }}
