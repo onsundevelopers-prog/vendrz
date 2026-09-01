@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { SITE, FAQS } from "@/lib/site";
+import { JsonLd } from "@/components/seo/JsonLd";
 import "./globals.css";
 
 /* When Clerk keys are present the app is Clerk-authenticated; without them
@@ -43,12 +45,85 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE.url),
   title: {
-    default: "n4ma - Vendor Spend Analysis",
-    template: "%s · n4ma",
+    default: `${SITE.name} - ${SITE.tagline}`,
+    template: `%s · ${SITE.name}`,
   },
-  description:
-    "Know where your company's money is going - and find where you can save. n4ma turns transactions, invoices, and contracts into spend analysis: renewals, waste, billing anomalies, and savings opportunities. Run a free review, no signup required.",
+  description: SITE.description,
+  keywords: SITE.keywords,
+  alternates: {
+    canonical: "/",
+  },
+  // Googlebot and every crawler are explicitly allowed to index and follow.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: SITE.url,
+    siteName: SITE.name,
+    title: `${SITE.name} - ${SITE.tagline}`,
+    description: SITE.description,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} - ${SITE.tagline}`,
+    description: SITE.description,
+  },
+};
+
+/* ------------------------------------------------------------------ */
+/*  Structured data (JSON-LD) - plain-language facts about the product  */
+/*  that Googlebot can read without any JavaScript.                    */
+/* ------------------------------------------------------------------ */
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE.name,
+  url: SITE.url,
+  slogan: SITE.tagline,
+  description: SITE.description,
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.name,
+  url: SITE.url,
+  description: SITE.description,
+  publisher: { "@type": "Organization", name: SITE.name },
+};
+
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: SITE.name,
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  url: SITE.url,
+  description: SITE.description,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
 };
 
 export default function RootLayout({
@@ -57,6 +132,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable} antialiased`}>
       <body>
+        <JsonLd data={organizationJsonLd} />
+        <JsonLd data={websiteJsonLd} />
+        <JsonLd data={softwareJsonLd} />
+        <JsonLd data={faqJsonLd} />
         {isClerkEnabled ? (
           <>
             {/* Warn the browser about Clerk's origins up front so the auth

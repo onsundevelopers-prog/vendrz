@@ -56,12 +56,13 @@ const CARDS: {
 ];
 
 /**
- * Sign-up link that lands the user on the dashboard with the upgrade
- * screen pre-opened for the chosen plan, so the next step is payment
- * (not a bare redirect to the dashboard).
+ * Plan link that lands the user on the Clerk auth page (sign-in by
+ * default; account creation is one click away inside it), then opens the
+ * dashboard with the upgrade screen pre-opened for the chosen plan so the
+ * next step is payment - not a bare redirect to the dashboard.
  */
 function signupHref(plan: Plan): string {
-  return `/auth?mode=signup&next=${encodeURIComponent(`/dashboard?upgrade=${plan}`)}`;
+  return `/auth?mode=login&next=${encodeURIComponent(`/dashboard?upgrade=${plan}`)}`;
 }
 
 const ease = [0.22, 1, 0.36, 1] as const;

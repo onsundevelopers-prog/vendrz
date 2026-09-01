@@ -37,9 +37,13 @@ const MAX_CHARS_PER_CHUNK = 15_000;
 function pipelineDeadlineMs(provider: AIProvider): number {
   const configured = Number(process.env.EXTRACT_PIPELINE_DEADLINE_MS ?? NaN);
   if (Number.isFinite(configured) && configured > 0) return configured;
-  // Local models run on shared CPU/GPU and are far slower than hosted ones.
-  if (provider.id === "ollama_local") return 300_000;
-  return 100_000;
+  // Local models run on shared CPU/GPU and are far slower than hosted ones,
+  // but the deadline still bounds the worst case so a review never silently
+  // runs for many minutes. 75s suits hosted providers with 45s per-call
+  // timeouts and one retry round; local gets a longer (but still bounded)
+  // budget.
+  if (provider.id === "ollama_local") return 180_000;
+  return 75_000;
 }
 
 /* ----------------------------- helpers ----------------------------- */
@@ -310,7 +314,7 @@ export async function runExtractionPipeline(
           schema: task.schema,
           temperature: 0.1,
         });
-      }, 3, 2000);
+      }, 2, 2000);
       llmCalls++;
       tokensEstimate += Math.ceil(task.chunk.length / 4); // rough token estimate
       return { name: task.name, result };

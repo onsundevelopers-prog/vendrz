@@ -6,6 +6,7 @@ import { Capabilities } from "@/components/landing/Capabilities";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Pricing } from "@/components/landing/Pricing";
 import { Faq } from "@/components/landing/Faq";
+import { LearnMore } from "@/components/landing/LearnMore";
 import { CtaSection } from "@/components/landing/CtaSection";
 import { Footer } from "@/components/landing/Footer";
 
@@ -20,6 +21,7 @@ export default function Home() {
       <HowItWorks />
       <Pricing />
       <Faq />
+      <LearnMore />
       <CtaSection />
       <Footer />
     </main>

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Privacy policy for n4ma - how we collect, use, and protect your data.",
+    "How n4ma handles your data: your contracts are encrypted, never shared or sold, and never used to train AI models. Read the full privacy policy for how we collect, use, and protect your information.",
+  alternates: { canonical: "/privacy" },
 };
 
 const sections = [

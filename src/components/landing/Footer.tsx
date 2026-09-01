@@ -29,8 +29,9 @@ export function Footer() {
           <div className="max-w-xs">
             <Logo />
             <p className="mt-4 text-[13px] font-normal leading-relaxed tracking-[-0.011em] text-faint">
-              Vendor spend analysis. Find the money hiding in your vendor
-              contracts.
+              n4ma is the AI that finds hidden fees and wasted spending in the
+              everyday tools your business already pays for - so you can cancel
+              what you don&apos;t need and negotiate the rest.
             </p>
           </div>
           <div className="flex gap-20">

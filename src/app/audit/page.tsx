@@ -4,7 +4,7 @@ import { useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { createAuditSession, updateAuditSession } from "@/lib/store";
-import { analyzeFile } from "@/lib/extract";
+import { startExtraction } from "@/lib/extract";
 import { Navbar } from "@/components/landing/Navbar";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -32,7 +32,7 @@ export default function AuditPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
 
-  /** Analyze each selected file and open the first successful review. */
+  /** Start every selected file's analysis and open the review. */
   const onFileSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
@@ -40,38 +40,68 @@ export default function AuditPage() {
     setUploading(true);
     setNotice(null);
 
-    const sessionIds: string[] = [];
-    let failed = false;
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      setUploadProgress(files.length > 1 ? `Analyzing ${file.name} (${i + 1} of ${files.length})…` : `Analyzing ${file.name}…`);
-      try {
-        // The shared helper uploads the file, polls until the analysis
-        // finishes, and retries when a job is lost - it throws only with a
-        // message safe to show the user.
-        const { extraction } = await analyzeFile(file);
-        const session = createAuditSession("manual");
+    // Kick off every file in parallel. On persistent servers the POST
+    // answers in under 2 seconds with a queued job id and the analysis runs
+    // in the background; on serverless it returns the finished result
+    // directly. Either way the page never blocks for minutes.
+    const started = await Promise.allSettled(
+      files.map(async (file) => {
+        const outcome = await startExtraction(file);
+        return { file, outcome };
+      })
+    );
+
+    const readySessions: { id: string; file: File }[] = [];
+    const queued: { sessionId: string; jobId: string }[] = [];
+    let firstError: string | null = null;
+
+    for (const result of started) {
+      if (result.status === "rejected") {
+        firstError ??=
+          result.reason instanceof Error
+            ? result.reason.message
+            : "Something went wrong. Try again.";
+        continue;
+      }
+      const { file, outcome } = result.value;
+      const session = createAuditSession("manual");
+      if (outcome.done) {
+        if (outcome.failure) {
+          firstError ??= outcome.failure;
+          continue;
+        }
         updateAuditSession(session.id, {
-          extraction,
+          extraction: outcome.extraction,
           documentName: file.name,
           pipelineStatus: "complete",
         });
-        sessionIds.push(session.id);
-      } catch (err) {
-        failed = true;
-        setNotice(
-          `Couldn't analyze ${file.name}: ${err instanceof Error ? err.message : "Something went wrong."}`
-        );
-        break;
+        readySessions.push({ id: session.id, file });
+      } else {
+        updateAuditSession(session.id, {
+          jobId: outcome.jobId,
+          documentName: file.name,
+          pipelineStatus: "analyze",
+        });
+        queued.push({ sessionId: session.id, jobId: outcome.jobId });
       }
     }
     setUploadProgress(null);
     setUploading(false);
 
-    if (sessionIds.length > 0) {
-      router.push(`/audit/results/${sessionIds[0]}`);
-    } else if (!failed) {
-      setNotice("No files were selected. Choose a PDF or DOCX to get started.");
+    if (readySessions.length > 0) {
+      // Finished inside the POST (serverless) - open the first result now.
+      router.push(`/audit/results/${readySessions[0].id}`);
+    } else if (queued.length > 0) {
+      // Analysis is running in the background - show live progress, then
+      // route to the first finished report.
+      const jobs = Object.fromEntries(queued.map((q) => [q.sessionId, q.jobId]));
+      router.push(
+        `/audit/processing/${queued[0].sessionId}?jobs=${encodeURIComponent(JSON.stringify(jobs))}`
+      );
+    } else {
+      setNotice(
+        firstError ?? "No files were selected. Choose a PDF or DOCX to get started."
+      );
     }
   };
 

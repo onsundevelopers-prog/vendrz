@@ -2,29 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const FAQS = [
-  {
-    q: "Do I really not need an account to get results?",
-    a: "Correct. Upload a PDF or DOCX and you get the full analysis - risk score, findings with evidence, and a savings range - with no name, email, or signup. We only ask you to create an account if you want us to keep monitoring that contract.",
-  },
-  {
-    q: "Where do the savings numbers come from?",
-    a: "Deterministic rules applied to terms extracted from your document - escalation rates, auto-renewal status, annual value - combined with conservative market benchmarks. The LLM never outputs the final dollar figure, and every estimate carries a not-guaranteed disclaimer with its full methodology.",
-  },
-  {
-    q: "Is my contract shared or used to train models?",
-    a: "Never. Your documents are encrypted in transit and at rest, are never shared or sold, and are never used to train models. Analyses expire after 14 days unless you create an account and claim them.",
-  },
-  {
-    q: "What happens to my scan if I don't sign up?",
-    a: "Your anonymous session and its results are retained for 14 days, then deleted. If you create an account before then, the exact analysis is transferred to your account so nothing is lost.",
-  },
-  {
-    q: "What does the Gmail integration actually do?",
-    a: "It's optional and read-only. Connect it from the workspace (never during signup) and n4ma proposes contract-related emails and attachments for you to review. Nothing is imported until you explicitly select it, and you can disconnect anytime.",
-  },
-];
+import { FAQS } from "@/lib/site";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 

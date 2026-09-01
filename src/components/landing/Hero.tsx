@@ -51,7 +51,7 @@ export function Hero() {
             transition={{ duration: 0.4 }}
             className="text-[12px] font-[510] tracking-[-0.01em] text-faint"
           >
-            Vendor spend intelligence
+            AI that finds hidden fees in everyday tools
           </motion.p>
 
           <motion.h1
@@ -72,9 +72,10 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.55, ease }}
             className="mt-6 max-w-xl text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint"
           >
-            n4ma turns your contracts, invoices and transactions into spend
-            analysis: renewals, waste, billing anomalies, and the savings hiding
-            inside them.
+            n4ma reads your contracts, invoices, and subscriptions and points out
+            where you&apos;re overpaying - hidden fees, automatic renewals, and price
+            increases you didn&apos;t notice. Upload a document and see what&apos;s costing
+            you, in plain English.
           </motion.p>
 
           <motion.div

@@ -40,7 +40,9 @@ export class ExtractionError extends Error {
 
 const TERMINAL = new Set(["complete", "failed"]);
 const POLL_MS = 2000;
-const MAX_WAIT_MS = 20 * 60 * 1000;
+// Bounded worst case: with 45s per-call timeouts and 2 attempts per task,
+// a review finishes well inside 5 minutes on a healthy provider.
+const MAX_WAIT_MS = 5 * 60 * 1000;
 const MAX_POST_RETRIES = 2;
 const MAX_JOB_REPOSTS = 2;
 
@@ -60,6 +62,19 @@ interface StartJobOutcome {
   extraction?: ContractExtraction;
   analysis?: RichContractExtraction | null;
   failure?: string;
+}
+
+/**
+ * POST the file and return the job id, retrying transient failures.
+ *
+ * On persistent servers the POST answers in under 2 seconds with a queued
+ * job id and the analysis continues in the background; on serverless it
+ * runs the pipeline inline and returns the finished result directly
+ * (`done: true`). Use this when you want to show a progress page instead
+ * of blocking on the full analysis.
+ */
+export async function startExtraction(file: File): Promise<StartJobOutcome> {
+  return startJob(file);
 }
 
 /** POST the file and return the job id, retrying transient failures. */

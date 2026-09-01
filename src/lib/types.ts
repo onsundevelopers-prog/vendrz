@@ -528,6 +528,9 @@ export interface AuditSession {
   documentName?: string | null;
   /** Set for manual uploads - structured extraction from the uploaded file. */
   extraction?: ContractExtraction | null;
+  /** Set for manual uploads while the analysis runs in the background - the
+      server job id polled by the processing page. */
+  jobId?: string | null;
   result: CompanyAudit | null;
   unlockedToUserId: string | null;
 }

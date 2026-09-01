@@ -66,11 +66,10 @@ export class LocalOllamaProvider extends BaseAIProvider {
       model: this.model,
       // Local models run on the machine's CPU/GPU and are far slower than
       // hosted endpoints, especially when the four pipeline tasks run in
-      // parallel and contend for the same hardware. A 2-minute default
-      // timeout made the slowest task fall back to Gemini (or fail) under
-      // load, so local requests get a much longer budget. Override with
-      // OLLAMA_LOCAL_TIMEOUT_MS when tuning.
-      timeoutMs: opts.timeoutMs ?? Number(process.env.OLLAMA_LOCAL_TIMEOUT_MS ?? 300_000),
+      // parallel and contend for the same hardware. 90s per call keeps the
+      // worst-case review bounded while still leaving slow hardware room to
+      // finish. Override with OLLAMA_LOCAL_TIMEOUT_MS when tuning.
+      timeoutMs: opts.timeoutMs ?? Number(process.env.OLLAMA_LOCAL_TIMEOUT_MS ?? 90_000),
     });
   }
 

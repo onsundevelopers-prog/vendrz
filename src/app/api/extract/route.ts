@@ -6,6 +6,16 @@ import { extractFileText, finishAnalysis, triggerJobResume } from "@/lib/extract
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
+// On a long-running server (Render, local dev) the analysis can continue in
+// the background after the response is sent, so the upload answers in under
+// 2 seconds with a queued job id and the client shows a live progress page
+// while polling /api/extract/status. On serverless (Vercel) the process is
+// torn down when the response returns, so the pipeline must run inline and
+// the finished result is returned with the POST - the client's polling path
+// never starts because the job is already complete.
+const canRunBackground =
+  process.env.RENDER === "true" || process.env.NODE_ENV !== "production";
+
 const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 // Multipart overhead (boundaries + other fields) on top of the raw file.
 const MAX_BODY_BYTES = MAX_BYTES + 1024 * 1024;
@@ -79,10 +89,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create the job and run the pipeline to completion. Awaiting keeps the
-    // response (and therefore the result) alive on serverless platforms.
+    // Create the job. On persistent servers kick the pipeline off in the
+    // background and answer immediately with a queued job id; on serverless
+    // run it inline (awaiting keeps the response - and therefore the result -
+    // alive on platforms that tear down the process after replying).
     const job = createJob("anonymous", file.name);
     setJobStage(job.id, "queued", 100);
+
+    if (canRunBackground) {
+      void processExtraction(job.id, file, name).catch((err) => {
+        console.error(`[extract] background job ${job.id} crashed:`, err);
+      });
+      return NextResponse.json({ jobId: job.id, status: "queued" });
+    }
 
     const startedAt = Date.now();
     await processExtraction(job.id, file, name);

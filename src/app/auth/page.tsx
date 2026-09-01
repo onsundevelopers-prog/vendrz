@@ -28,7 +28,7 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
       {/* brand panel */}
       <div className="relative hidden flex-col justify-between border-r border-line bg-[#0a0a0d] p-12 lg:flex">
         <Link href="/" aria-label="n4ma home" className="w-fit">
-          <Logo />
+          <Logo size="lg" />
         </Link>
 
         <div>
@@ -165,7 +165,9 @@ const clerkAppearance = {
 function ClerkAuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const mode = searchParams.get("mode") === "login" ? "login" : "signup";
+  // Default to sign-in so a bare /auth link (e.g. from a pricing plan)
+  // shows the Clerk auth page; account creation is one click away inside it.
+  const mode = searchParams.get("mode") === "signup" ? "signup" : "login";
   const sessionId = searchParams.get("session");
   const next = searchParams.get("next") ?? "/dashboard";
 

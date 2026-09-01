@@ -140,7 +140,7 @@ export class OpenAICompatClient {
         ...(this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {}),
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(this.config.timeoutMs ?? 120_000),
+      signal: AbortSignal.timeout(this.config.timeoutMs ?? 45_000),
     });
 
     if (!res.ok) {
