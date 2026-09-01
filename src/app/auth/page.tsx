@@ -1,26 +1,23 @@
 "use client";
 
-import { Suspense, useEffect, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ShieldCheck } from "lucide-react";
-import { SignIn, SignUp, useUser } from "@clerk/nextjs";
-import { getSession, transferSessionToAccount, unlockAuditSessionToUser, getAuditSession, claimOrphanedSessions } from "@/lib/store";
 import { isClerkEnabled } from "@/lib/auth";
 import { Logo } from "@/components/brand/Logo";
 
-const ease = [0.22, 1, 0.36, 1] as const;
+/* ------------------------------------------------------------------ */
+/*  Split shell - brand panel left, auth card right.                  */
+/*  This shell contains no Clerk imports, so it renders and hydrates   */
+/*  before any Clerk JavaScript loads. The Clerk widget (SignIn /      */
+/*  SignUp) is lazy-loaded below into the right column.                */
+/* ------------------------------------------------------------------ */
 
 const TRUST_POINTS = [
   "Read-only access - we can never move money or touch your accounts",
   "Contracts encrypted in transit and at rest, never shared",
   "Renewal, risk and savings analysis with evidence for every finding",
 ];
-
-/* ------------------------------------------------------------------ */
-/*  Split shell - brand panel left, auth card right                    */
-/* ------------------------------------------------------------------ */
 
 function AuthSplit({ children }: { children: React.ReactNode }) {
   return (
@@ -65,167 +62,48 @@ function AuthSplit({ children }: { children: React.ReactNode }) {
 
       {/* auth column */}
       <div className="flex items-center justify-center px-5 py-12 sm:px-10">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease }}
-          className="w-full max-w-[420px]"
-        >
+        <div className="fade-rise w-full max-w-[420px]">
           <div className="mb-8 flex justify-center lg:hidden">
             <Link href="/" aria-label="n4ma home">
               <Logo />
             </Link>
           </div>
           {children}
-        </motion.div>
+        </div>
       </div>
     </main>
   );
 }
 
-function AuthHeader({ mode }: { mode: "login" | "signup" }) {
+/* Skeleton shown in the card slot while the Clerk widget chunk and
+   clerk-js are loading - the shell paints immediately, this fills the
+   empty column so the page never looks broken. */
+function AuthCardSkeleton() {
   return (
-    <div className="text-center lg:text-left">
-      <h2 className="text-[26px] font-semibold leading-[1.1] tracking-[-0.03em] text-fg">
-        {mode === "signup" ? "Create your account" : "Welcome back"}
-      </h2>
-      <p className="mt-2 text-[14px] leading-[1.5] tracking-[-0.01em] text-muted">
-        {mode === "signup"
-          ? "Save analyses, track renewals, and get alerts before deadlines slip."
-          : "Log in to your workspace."}
-      </p>
-    </div>
-  );
-}
-
-function SessionBanner({ sessionId, mode }: { sessionId: string | null; mode: "login" | "signup" }) {
-  const session = useMemo(
-    () => (sessionId ? getSession(sessionId) : null),
-    [sessionId]
-  );
-  if (!session?.result || mode !== "signup") return null;
-  return (
-    <div className="mb-5 flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
-      <ShieldCheck className="mt-0.5 size-4 shrink-0 text-zinc-400" />
-      <div>
-        <p className="text-[13px] font-semibold text-fg">Don&apos;t lose this analysis</p>
-        <p className="mt-0.5 text-[12.5px] leading-relaxed text-zinc-400">
-          Your scan of <span className="font-medium text-fg">{session.documentName}</span> will be
-          transferred to your new account the moment you sign up.
-        </p>
+    <div className="w-full" aria-hidden="true">
+      <div className="h-[26px] w-44 rounded-md bg-white/[0.06]" />
+      <div className="mt-2 h-4 w-64 max-w-full rounded-md bg-white/[0.04]" />
+      <div className="mt-8 space-y-4">
+        <div className="h-11 w-full rounded-md bg-white/[0.05]" />
+        <div className="h-11 w-full rounded-md bg-white/[0.05]" />
+        <div className="h-11 w-full rounded-md bg-white/[0.05]" />
+        <div className="h-11 w-full rounded-md bg-white/[0.08]" />
       </div>
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  Clerk mode - hosted components styled to match n4ma.               */
+/*  Clerk widget - everything touching @clerk/nextjs is bundled into   */
+/*  its own chunk and fetched only after the shell has rendered, so    */
+/*  the page paints before any Clerk JavaScript is on screen.          */
 /* ------------------------------------------------------------------ */
 
-const clerkAppearance = {
-  elements: {
-    // Pure black card and inputs - no grey surfaces in the Clerk flow.
-    card: "rounded-xl border border-line bg-black p-6 sm:p-7",
-    header: "hidden",
-    formButtonPrimary:
-      "h-11 rounded-md bg-acid text-sm font-[510] text-[#08090a] hover:bg-[#ececef] shadow-none",
-    socialButtonsBlockButton:
-      "h-11 rounded-md border border-line bg-black text-sm font-normal text-muted hover:bg-white/[0.05]",
-    socialButtonsBlockButtonText: "text-muted font-normal",
-    socialButtonsIconButton:
-      "h-11 rounded-md border border-line bg-black hover:bg-white/[0.05]",
-    dividerLine: "bg-line",
-    dividerText: "text-[11px] tracking-[-0.01em] text-ash",
-    formFieldLabel: "text-[12px] font-[510] text-faint",
-    formFieldInput:
-      "h-11 rounded-md border border-line bg-black text-[14px] text-fg transition-colors focus:border-muted",
-    formFieldInputPlaceholder: "text-ash",
-    footerActionLink: "font-[510] text-muted hover:text-fg",
-    footerActionText: "text-[12.5px] text-faint",
-    footer: "text-center text-[12.5px] text-faint",
-    formFieldError: "text-[12px] text-coral",
-    alert: "rounded-md border border-line bg-black text-faint",
-    alertText: "text-faint",
-    identityPreviewText: "text-fg",
-    identityPreviewEditButton: "text-faint",
-  },
-  variables: {
-    colorPrimary: "#e4e4e7",
-    colorForeground: "#ffffff",
-    colorMuted: "#d0d6e0",
-    colorMutedForeground: "#8a8f98",
-    colorBackground: "#08090a",
-    colorInput: "#0f1011",
-    colorInputForeground: "#ffffff",
-    colorBorder: "#23252a",
-    borderRadius: "0.375rem",
-  },
-};
-
-function ClerkAuthPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  // Default to sign-in so a bare /auth link (e.g. from a pricing plan)
-  // shows the Clerk auth page; account creation is one click away inside it.
-  const mode = searchParams.get("mode") === "signup" ? "signup" : "login";
-  const sessionId = searchParams.get("session");
-  const next = searchParams.get("next") ?? "/dashboard";
-
-  const { isLoaded, user } = useUser();
-
-  // Once signed in: claim any anonymous session, then head to `next`.
-  useEffect(() => {
-    if (!isLoaded || !user) return;
-    if (sessionId) {
-      // A document-analysis session (upload flow) transfers to the account.
-      const session = getSession(sessionId);
-      if (session && !session.transferredToUserId) {
-        transferSessionToAccount(sessionId, user.id);
-      }
-      // A free review (audit flow) is unlocked for the account too.
-      const audit = getAuditSession(sessionId);
-      if (audit && audit.unlockedToUserId !== user.id) {
-        unlockAuditSessionToUser(sessionId, user.id);
-      }
-    } else {
-      // No specific session in the URL: still bind any anonymous uploads on
-      // this device so a logged-out upload followed by a normal sign-in is
-      // not lost in the user's new workspace.
-      claimOrphanedSessions(user.id);
-    }
-    router.replace(next);
-  }, [isLoaded, user, sessionId, next, router]);
-
-  const afterAuth = sessionId
-    ? `/auth?mode=${mode}&session=${sessionId}&next=${encodeURIComponent(next)}`
-    : next;
-
-  const toggleParams = sessionId ? `&session=${sessionId}` : "";
-
-  return (
-    <AuthSplit>
-      <SessionBanner sessionId={sessionId} mode={mode} />
-      <AuthHeader mode={mode} />
-      <div className="mt-6">
-        {mode === "signup" ? (
-          <SignUp
-            routing="hash"
-            signInUrl={`/auth?mode=login${toggleParams}`}
-            fallbackRedirectUrl={afterAuth}
-            appearance={clerkAppearance}
-          />
-        ) : (
-          <SignIn
-            routing="hash"
-            signUpUrl={`/auth?mode=signup${toggleParams}`}
-            fallbackRedirectUrl={afterAuth}
-            appearance={clerkAppearance}
-          />
-        )}
-      </div>
-    </AuthSplit>
-  );
-}
+const LazyClerkAuthCard = dynamic(
+  () =>
+    import("@/components/auth/ClerkAuthCard").then((m) => m.ClerkAuthCard),
+  { ssr: false }
+);
 
 /* ------------------------------------------------------------------ */
 /*  No Clerk keys configured - show a clear state instead of a fake    */
@@ -250,9 +128,12 @@ function UnconfiguredPage() {
 /* ------------------------------------------------------------------ */
 
 export default function AuthPage() {
+  if (!isClerkEnabled) return <UnconfiguredPage />;
   return (
-    <Suspense>
-      {isClerkEnabled ? <ClerkAuthPage /> : <UnconfiguredPage />}
-    </Suspense>
+    <AuthSplit>
+      <Suspense fallback={<AuthCardSkeleton />}>
+        <LazyClerkAuthCard />
+      </Suspense>
+    </AuthSplit>
   );
 }
