@@ -47,6 +47,81 @@ export const SITE = {
 };
 
 /* ------------------------------------------------------------------ */
+/*  Pricing plans - mirrored from the client PLAN_MAP so server        */
+/*  components can emit OfferCatalog structured data without importing  */
+/*  a "use client" module. Keep in sync with src/lib/displayMode.tsx.  */
+/* ------------------------------------------------------------------ */
+
+export interface PricingPlan {
+  id: "free" | "team" | "business" | "enterprise";
+  name: string;
+  /** Numeric price in USD; null for custom-priced plans. */
+  price: string | null;
+  /** Human cadence label, e.g. "/month", "then $1/yr", "forever". */
+  cadence: string;
+  blurb: string;
+  features: string[];
+}
+
+export const PRICING_PLANS: PricingPlan[] = [
+  {
+    id: "free",
+    name: "Free",
+    price: "0",
+    cadence: "forever",
+    blurb: "For individuals just getting started with n4ma.",
+    features: [
+      "What needs attention, at a glance",
+      "Upcoming renewals, risks & savings",
+      "Savings page with every opportunity",
+      "5 AI messages per month",
+    ],
+  },
+  {
+    id: "team",
+    name: "Team",
+    price: "20",
+    cadence: "/month",
+    blurb: "For teams building a shared view of every contract and vendor.",
+    features: [
+      "Gmail integration - read vendor correspondence",
+      "Renewal & cancellation-deadline alerts",
+      "Price-increase detection & risk scoring",
+      "Business workspace - dense tables, filters, schema view",
+      "Complete activity log & Business dashboard",
+      "Unlimited AI messages",
+      "Export to CSV / PDF",
+    ],
+  },
+  {
+    id: "business",
+    name: "Business",
+    price: "999",
+    cadence: "then $1/yr",
+    blurb: "For companies that need advanced features and administration. $999 upfront, then $1 per year to keep it.",
+    features: [
+      "Team members, roles & permissions",
+      "Advanced automations",
+      "Priority AI processing",
+      "Dedicated support",
+    ],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise Scale",
+    price: null,
+    cadence: "pricing",
+    blurb: "For organizations building scalable, flexible workflows with powerful governance.",
+    features: [
+      "Custom onboarding & migration",
+      "Dedicated success manager",
+      "Custom contracts & SLA",
+      "Advanced governance & audit",
+    ],
+  },
+];
+
+/* ------------------------------------------------------------------ */
 /*  FAQ - plain-language Q&A, also emitted as FAQPage structured data. */
 /* ------------------------------------------------------------------ */
 

@@ -19,6 +19,13 @@ const COLUMNS = [
       { label: "Log in", href: "/auth?mode=login" },
     ],
   },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
+  },
 ];
 
 export function Footer() {

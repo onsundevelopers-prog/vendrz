@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/audit", priority: 0.9, changefreq: "weekly" as const },
     { path: "/upload", priority: 0.8, changefreq: "monthly" as const },
     { path: "/privacy", priority: 0.3, changefreq: "yearly" as const },
+    { path: "/terms", priority: 0.3, changefreq: "yearly" as const },
   ];
   return pages.map((p) => ({
     url: `${SITE.url}${p.path}`,
