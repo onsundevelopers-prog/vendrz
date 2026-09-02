@@ -7,11 +7,11 @@
 /*  spring (deceleration-style, not bounce), reveals travel a few      */
 /*  px with a subtle fade, and numbers roll up rather than pop.        */
 /*  Nothing glows, nothing bounces badly, nothing over-animates.       */
-/*  Respect props-reduced-motion via the global CSS override.          */
+/*  Implemented with CSS keyframes + transitions (no framer-motion)    */
+/*  so the dashboard ships zero motion-library JS.                     */
 /* ------------------------------------------------------------------ */
 
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
 
 /* The signature n4ma easing - Apple's "decelerate" spring sampled
    with a near-flat settle. Used everywhere we need a soft ease. */
@@ -22,28 +22,21 @@ export const PRESS_SPRING = { type: "spring", stiffness: 500, damping: 30 } as c
 export const HOVER_SPRING = { type: "spring", stiffness: 380, damping: 28 } as const;
 
 /** Short, restrained fade + rise reveal (8px). For cards, rows, panels. */
-export const fadeUp = (delay = 0): Variants => ({
+export const fadeUp = (delay = 0) => ({
   hidden: { opacity: 0, y: 8 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, delay, ease: SPRING },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, delay, ease: SPRING } },
 });
 
 /** Micro-reveal for list children - a touch less travel (4px). */
-export const microUp = (delay = 0): Variants => ({
+export const microUp = (delay = 0) => ({
   hidden: { opacity: 0, y: 4 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.32, delay, ease: SPRING },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.32, delay, ease: SPRING } },
 });
 
 /**
  * Reveal - drop-in `<div>` that fades/rises when it enters the viewport.
  * `once` defaults true (element animates only the first time it appears).
+ * Uses IntersectionObserver + a CSS transition (framer-free).
  */
 export function Reveal({
   children,
@@ -60,14 +53,43 @@ export function Reveal({
   y?: number;
   as?: "div" | "section" | "li";
 }) {
-  const Comp = motion[as] as typeof motion.div;
+  const ref = useRef<HTMLElement | null>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setInView(true);
+            if (once) obs.disconnect();
+          } else if (!once) {
+            setInView(false);
+          }
+        }
+      },
+      { threshold: 0.1, rootMargin: "-60px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [once]);
+
+  const Comp = as as "div";
   return (
     <Comp
+      ref={ref as never}
       className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once, margin: "-60px" }}
-      transition={{ duration: 0.5, delay, ease: SPRING }}
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "none" : `translateY(${y}px)`,
+        transition: `opacity 0.5s cubic-bezier(0.22,1,0.36,1) ${delay}s, transform 0.5s cubic-bezier(0.22,1,0.36,1) ${delay}s`,
+        willChange: "opacity, transform",
+      }}
     >
       {children}
     </Comp>
@@ -85,13 +107,12 @@ export function LiftCard({
   hoverLift?: number;
 }) {
   return (
-    <motion.div
-      className={className}
-      whileHover={{ y: -hoverLift, transition: HOVER_SPRING }}
-      style={{ willChange: "transform" }}
+    <div
+      className={`lift-card ${className ?? ""}`}
+      style={{ ["--lift" as string]: `${-hoverLift}px` }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -196,9 +217,9 @@ export function useSpotlight<T extends HTMLElement = HTMLDivElement>() {
 /* ---------------------------------- layout transitions ---------------------------------- */
 
 /**
- * FadeSwap - crossfade between two roots (mode="wait" by default) with a
- * short 150-200ms transition. Use for filter changes, page details, any
- * "the interface changed instantly and naturally" moment.
+ * FadeSwap - crossfade between two children by remounting with a short
+ * 150-200ms CSS fade. Simplifies the old AnimatePresence swap - the key
+ * change remounts, and `.fade-rise` plays the entrance.
  */
 export function FadeSwap({
   children,
@@ -208,32 +229,20 @@ export function FadeSwap({
   delay?: number;
 }) {
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={delay}
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -4 }}
-        transition={{ duration: 0.18, ease: SPRING }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div key={delay} className="fade-rise" style={{ animationDuration: "0.2s" }}>
+      {children}
+    </div>
   );
 }
 
-/** Page entrance - a restrained fade/rise applied once when the page mounts. */
-export const pageEnter = {
-  initial: { opacity: 0, y: 6 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.24, ease: SPRING },
-} as const;
+/** Page entrance - CSS class applied once when the page mounts. */
+export const pageEnter = {} as const;
 
 /* ---------------------------------- pressable button ---------------------------------- */
 
 /**
- * PressableButton - wraps any element with Apple's instant-feedback press:
- * scale ~0.97 while held, back to 1 on release. No glow, no shadow change.
+ * Pressable - wraps any element with Apple's instant-feedback press:
+ * scale ~0.97 while held, back to 1 on release. Pure CSS (no motion lib).
  */
 export function Pressable({
   children,
@@ -250,25 +259,20 @@ export function Pressable({
   disabled?: boolean;
   scale?: number;
 }) {
-  const Comp = motion[as];
+  const Comp = as;
   return (
     <Comp
-      className={className}
+      className={`pressable ${className ?? ""}`}
       onClick={onClick}
       disabled={as === "button" ? disabled : undefined}
-      whileTap={{ scale, transition: { duration: 0.08 } }}
-      whileHover={{ scale: 1.015, transition: HOVER_SPRING }}
-      style={{ willChange: "transform" }}
+      style={{ ["--press-scale" as string]: String(scale) }}
     >
       {children}
     </Comp>
   );
 }
 
-/** Re-export so consumers don't need to import framer-motion directly. */
-export { motion, AnimatePresence };
-
 /* eslint-disable react/display-name */
 export const RevealForward = forwardRef<HTMLDivElement, Parameters<typeof Reveal>[0]>(
-  (props, ref) => <motion.div ref={ref} {...(props as object)} />
+  (props, ref) => <div ref={ref} {...(props as object)} />
 );

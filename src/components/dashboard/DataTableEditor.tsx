@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import {
   ArrowDown,
   ArrowUp,
@@ -671,12 +670,8 @@ export function DataTableEditor<T extends { id: string }>({
               </thead>
               <tbody>
                 {pageRows.map((row, ri) => (
-                  <motion.tr
+                  <tr
                     key={row.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileTap={{ scale: 0.994, transition: { duration: 0.08 } }}
-                    transition={{ duration: 0.24, delay: Math.min(ri * 0.02, 0.4), ease: [0.22, 1, 0.36, 1] }}
                     onClick={() => onRowClick?.(row)}
                     className={`cursor-pointer border-b border-line/60 transition-colors ${
                       selectedId === row.id ? "bg-sel" : "hover:bg-inset"
@@ -709,7 +704,7 @@ export function DataTableEditor<T extends { id: string }>({
                         <span className="cursor-default text-muted/50">…</span>
                       </td>
                     )}
-                  </motion.tr>
+                  </tr>
                 ))}
                 {sortedRows.length === 0 && (
                   <tr>

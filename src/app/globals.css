@@ -582,9 +582,74 @@ body {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: none; }
 }
+/* Framer-free chart + UI entrances - replace framer-motion so the
+   dashboard doesn't ship the ~120KB motion library. Bars grow from
+   their baseline, the area/donut fade+sweep in, progress fills. */
+.chart-bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: chart-bar-grow 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes chart-bar-grow {
+  from { transform: scaleY(0); }
+}
+.chart-fade {
+  animation: chart-fade 0.7s ease-out both;
+}
+@keyframes chart-fade {
+  from { opacity: 0; }
+}
+.chart-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: chart-dot-in 0.4s ease-out both;
+}
+@keyframes chart-dot-in {
+  from { opacity: 0; transform: scale(0); }
+}
+.chart-donut {
+  animation: chart-donut-sweep 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes chart-donut-sweep {
+  from { stroke-dasharray: 0 9999; opacity: 0; }
+}
+.chart-progress {
+  animation: chart-progress-fill 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes chart-progress-fill {
+  from { width: 0; }
+}
+.lift-card {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.lift-card:hover {
+  transform: translateY(var(--lift, -3px));
+}
+.pressable {
+  transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.pressable:hover {
+  transform: scale(1.015);
+}
+.pressable:active {
+  transform: scale(0.97);
+}
 @keyframes menu-in {
   from { opacity: 0; transform: translateY(-3px) scale(0.98); }
   to { opacity: 1; transform: none; }
+}
+.menu-rise {
+  animation: menu-in 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* AI assistant narration caret - blinks while the agent is working. */
+.caret-blink {
+  animation: caret-blink 1.1s ease-in-out infinite;
+}
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 .menu-item {
   display: flex;

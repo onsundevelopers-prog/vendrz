@@ -10,7 +10,7 @@ import { money, moneyShort, formatDateShort, timeAgo } from "@/lib/format";
 import { CountUp, useSpotlight } from "@/lib/motion";
 import type { ActivityRecord, ContractRecord } from "@/lib/types";
 import { riskLevel } from "@/components/dashboard/shared";
-import { Sparkline } from "@/components/ui/charts";
+import { Sparkline, AreaChart as SvgAreaChart } from "@/components/ui/charts";
 import {
   Card,
   CardContent,
@@ -20,13 +20,6 @@ import {
   CardTitle,
   CardAction,
 } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 /* ------------------------------------------------------------------ */
 /*  SimpleOverview - the Simple display mode's home.                  */
@@ -373,9 +366,6 @@ function SavingsTrendCard({
   pctOfSpend: number;
 }) {
   const ref = useSpotlight<HTMLDivElement>();
-  const chartConfig = {
-    savings: { label: "Projected savings", color: "var(--chart-1)" },
-  } satisfies ChartConfig;
 
   return (
     <Card
@@ -410,42 +400,13 @@ function SavingsTrendCard({
             {delta}
           </span>
         </div>
-        <ChartContainer
-          config={chartConfig}
-          className="mt-3 aspect-auto h-24 w-full"
-        >
-          <AreaChart
-            accessibilityLayer
-            data={data}
-            margin={{ left: 12, right: 12 }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  indicator="dot"
-                  hideLabel
-                  formatter={(v) => moneyShort(Number(v))}
-                />
-              }
-            />
-            <Area
-              dataKey="value"
-              type="linear"
-              fill="var(--color-savings)"
-              fillOpacity={0.4}
-              stroke="var(--color-savings)"
-            />
-          </AreaChart>
-        </ChartContainer>
+        <SvgAreaChart
+          data={data}
+          height={96}
+          color="var(--chart-1)"
+          fillId="savings-trend-fill"
+          format={(v) => moneyShort(v)}
+        />
       </CardContent>
       <CardFooter className="bg-transparent px-4 pb-3 pt-2">
         <div className="flex w-full items-start gap-2 text-[11px]">

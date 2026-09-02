@@ -15,7 +15,7 @@ import {
   BadgeCheck,
   Wrench,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import {
   type AgentApprovalRequest,
   type AgentClauseFinding,
@@ -56,12 +56,9 @@ function toolIconEl(name: string, size: number) {
 /** Blinking caret shown on live narration while the agent is working. */
 function Caret() {
   return (
-    <motion.span
+    <span
       aria-hidden="true"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: [1, 0, 1] }}
-      transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-      className="ml-0.5 inline-block h-[13px] w-[7px] translate-y-[2px] rounded-[1px] bg-zinc-500"
+      className="caret-blink ml-0.5 inline-block h-[13px] w-[7px] translate-y-[2px] rounded-[1px] bg-zinc-500"
     />
   );
 }
@@ -227,25 +224,12 @@ function ActivityStrip({ task }: { task: AgentTask }) {
           className={`shrink-0 text-zinc-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <motion.div
-              initial="hidden"
-              animate="show"
-              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.04 } } }}
-              className="divide-y divide-line/40 border-t border-line/60"
-            >
+      {open && (
+        <div className="overflow-hidden">
+          <div className="fade-rise divide-y divide-line/40 border-t border-line/60">
               {views.map((v, i) => (
-                  <motion.div
+                  <div
                     key={i}
-                    variants={{ hidden: { opacity: 0, y: 4 }, show: { opacity: 1, y: 0, transition: { duration: 0.16, ease: "easeOut" } } }}
                     className={`flex items-start gap-2.5 px-3.5 py-2 transition-opacity duration-200 ${v.status === "running" ? "" : "opacity-60"}`}
                   >
                     <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center">
@@ -279,12 +263,11 @@ function ActivityStrip({ task }: { task: AgentTask }) {
                     {!anyActive && (
                       <span className="shrink-0 text-[10px] tabular-nums text-zinc-600">{formatTime(v.at)}</span>
                     )}
-                  </motion.div>
+                  </div>
               ))}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -365,12 +348,7 @@ function ApprovalGate({
   onDeny: () => void;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="border-sheen mt-3 overflow-hidden rounded-xl border border-white/15 bg-surface"
-    >
+    <div className="fade-rise border-sheen mt-3 overflow-hidden rounded-xl border border-white/15 bg-surface">
       <div className="px-3.5 py-2.5">
         <p className="text-[12.5px] font-medium text-fg">
           I&apos;ve drafted a {approval.actionType.replace("_", " ")} notice for {approval.vendorName}.
@@ -416,7 +394,7 @@ function ApprovalGate({
           </p>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -447,7 +425,7 @@ function FinalSummary({ task }: { task: AgentTask }) {
     );
   }
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
+    <div className="fade-rise mt-4">
       {task.status === "failed" ? (
         <p className="flex items-start gap-2 text-[13px] leading-relaxed text-zinc-400">
           <ShieldAlert size={15} className="mt-0.5 shrink-0 text-zinc-300" />
@@ -463,7 +441,7 @@ function FinalSummary({ task }: { task: AgentTask }) {
           <p className="mt-2 text-[11.5px] text-zinc-500">Let me know if you&apos;d like me to take any next step.</p>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -615,28 +593,14 @@ export function AgentChat({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-4 pb-2 pt-5">
       {/* USER message - right aligned bubble */}
-      <motion.div
-        initial={{ opacity: 0, x: 14 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="flex justify-end"
-      >
-        <motion.div
-          whileHover={{ scale: 1.01 }}
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
-          className="max-w-[78%] rounded-xl rounded-br-sm border border-white/10 bg-white/[0.07] px-4 py-2.5"
-        >
+      <div className="fade-rise flex justify-end">
+        <div className="max-w-[78%] rounded-xl rounded-br-sm border border-white/10 bg-white/[0.07] px-4 py-2.5 transition-transform duration-150 hover:scale-[1.01]">
           <p className="text-[14px] leading-relaxed text-fg">{task.request}</p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* AGENT response */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
-        className="mt-6 flex flex-col"
-      >
+      <div className="fade-rise mt-6 flex flex-col">
         {/* identity row */}
         <div className="flex items-center gap-2.5">
           <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-[10px] font-semibold text-zinc-200">
@@ -659,15 +623,12 @@ export function AgentChat({
           </p>
 
           {running && (
-            <motion.p
+            <p
               key={task.events.length}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              className="mt-2 text-[13.5px] leading-relaxed text-zinc-400"
+              className="fade-rise mt-2 text-[13.5px] leading-relaxed text-zinc-400"
             >
               Looks like a solid match — checking the details now.
-            </motion.p>
+            </p>
           )}
 
           {/* compact live activity */}
@@ -703,7 +664,7 @@ export function AgentChat({
           {/* result / failure */}
           <FinalSummary task={task} />
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

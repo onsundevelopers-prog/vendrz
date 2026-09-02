@@ -22,7 +22,6 @@ import {
 import { AuthProvider, useAuthUser, useAuthSignOut, type ServerAuthUser } from "@/lib/auth";
 import { DashboardModeProvider, useDisplayMode } from "@/lib/displayMode";
 import { hydrateUserData, persistUserData } from "@/lib/sync";
-import { motion } from "framer-motion";
 import { Logo } from "@/components/brand/Logo";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -378,15 +377,13 @@ function WorkspaceShell({
               </button>
             )}
             <main className="min-h-0 flex-1 overflow-hidden">
-              <motion.div
+              <div
                 key={`${pathname}-${dataVersion}`}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full"
+                className="fade-rise h-full"
+                style={{ animationDuration: "0.2s" }}
               >
                 {children}
-              </motion.div>
+              </div>
             </main>
           </div>
         </div>

@@ -4,14 +4,23 @@
 /*  Analytical SVG charts - axes, gridlines, labels, tooltips.        */
 /*  These are data instruments, not decoration: every mark maps to    */
 /*  a real value from the user's records.                             */
-/*  Motion follows the Apple language: marks grow into place on a     */
-/*  soft ease (bars rise from zero, the area line draws left→right,   */
-/*  donut segments sweep) - restrained, no glow.                      */
+/*  Motion comes from CSS keyframes (no framer-motion): bars grow     */
+/*  from zero, the area line fades in, donut segments sweep.          */
 /* ------------------------------------------------------------------ */
 
-import { motion } from "framer-motion";
+/* ---------------------------------------------------------------- */
+/*  CSS keyframe helpers, kept here so the markup stays legible.    */
+/* ---------------------------------------------------------------- */
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+const growStyle = (delay: number) =>
+  ({
+    animationDelay: `${(delay * 0.03).toFixed(2)}s`,
+  }) as React.CSSProperties;
+
+const fadeStyle = (delay: number) =>
+  ({
+    animationDelay: `${delay.toFixed(2)}s`,
+  }) as React.CSSProperties;
 
 export function BarChart({
   data,
@@ -20,8 +29,9 @@ export function BarChart({
   highlightLast = true,
   format = (v: number) => String(v),
 }: {
-  data: { label: string; value: number }[];
+  data: { label: string; value: number; color?: string }[];
   height?: number;
+  /** Fallback bar color when a datum has no `color`. */
   color?: string;
   highlightLast?: boolean;
   format?: (v: number) => string;
@@ -70,15 +80,17 @@ export function BarChart({
           const x = padL + i * bw + bw * 0.2;
           const w = bw * 0.6;
           const last = highlightLast && i === data.length - 1;
+          const fill = d.color ?? (last ? color : "rgba(255,255,255,0.16)");
           return (
             <g key={i}>
-              <motion.rect
+              <rect
                 x={x}
+                y={padT + plotH - h}
                 width={w}
-                fill={last ? color : "rgba(255,255,255,0.16)"}
-                initial={{ height: 0, y: padT + plotH }}
-                animate={{ height: h, y: padT + plotH - h }}
-                transition={{ duration: 0.65, delay: i * 0.03, ease: EASE }}
+                height={h}
+                fill={fill}
+                className="chart-bar"
+                style={growStyle(i)}
               />
               <title>{`${d.label}: ${format(d.value)}`}</title>
             </g>
@@ -159,34 +171,31 @@ export function AreaChart({
             </text>
           </g>
         ))}
-        <motion.path
+        <path
           d={area}
           fill={`url(#${fillId})`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.25, ease: "easeOut" }}
+          className="chart-fade"
+          style={fadeStyle(0.25)}
         />
-        <motion.path
+        <path
           d={line}
           fill="none"
           stroke={color}
           strokeWidth="1.75"
           strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
+          className="chart-fade"
+          style={fadeStyle(0.15)}
         />
-        <motion.circle
+        <circle
           cx={last[0]}
           cy={last[1]}
           r="3"
           fill={color}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.75, type: "spring", stiffness: 500, damping: 28 }}
+          className="chart-dot"
+          style={fadeStyle(0.75)}
         >
           <title>{`${data[data.length - 1]?.label}: ${format(data[data.length - 1]?.value ?? 0)}`}</title>
-        </motion.circle>
+        </circle>
       </svg>
       <div className="mt-1 flex justify-between border-t border-line/60 pt-1 text-[9.5px] tracking-tight text-muted/80">
         {data.map((d, i) => (
@@ -249,7 +258,7 @@ export function DonutChart({
         {data.map((d, i) => {
           const len = (d.value / total) * CIRC;
           return (
-            <motion.circle
+            <circle
               key={i}
               cx={size / 2}
               cy={size / 2}
@@ -257,15 +266,13 @@ export function DonutChart({
               fill="none"
               stroke={d.color}
               strokeWidth={thickness}
-              initial={{ strokeDasharray: `0 ${CIRC}` }}
-              animate={{
-                strokeDasharray: `${len} ${CIRC - len}`,
-                strokeDashoffset: -offsets[i],
-              }}
-              transition={{ duration: 0.7, delay: i * 0.1, ease: EASE }}
+              strokeDasharray={`${len} ${CIRC - len}`}
+              strokeDashoffset={-offsets[i]}
+              className="chart-donut"
+              style={{ animationDelay: `${(i * 0.1).toFixed(1)}s` }}
             >
               <title>{`${d.name}: ${d.value}`}</title>
-            </motion.circle>
+            </circle>
           );
         })}
       </svg>
@@ -295,12 +302,9 @@ export function ProgressBar({
   const pctW = Math.max(0, Math.min(100, (value / max) * 100));
   return (
     <div className={`h-1 w-full overflow-hidden rounded-sm bg-white/[0.08] ${className}`}>
-      <motion.div
-        className="h-full"
-        style={{ background: color }}
-        initial={{ width: 0 }}
-        animate={{ width: `${pctW}%` }}
-        transition={{ duration: 0.7, ease: EASE }}
+      <div
+        className="chart-progress h-full"
+        style={{ background: color, width: `${pctW}%` }}
       />
     </div>
   );

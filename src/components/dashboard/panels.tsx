@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { CountUp } from "@/lib/motion";
 
 /* ------------------------------------------------------------------ */
@@ -9,8 +8,6 @@ import { CountUp } from "@/lib/motion";
 /*  Animations follow the Apple language: panels reveal on a soft      */
 /*  ease as they enter, KPI numbers count up from 0, no glow.         */
 /* ------------------------------------------------------------------ */
-
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 export function Panel({
   title,
@@ -28,12 +25,8 @@ export function Panel({
   bodyClass?: string;
 }) {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 8 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.4, ease: EASE }}
-      className={`panel-surface border-sheen flex min-h-0 flex-col ${className}`}
+    <section
+      className={`panel-surface border-sheen flex min-h-0 flex-col fade-rise ${className}`}
     >
       <header className="panel-header">
         <div className="min-w-0">
@@ -43,7 +36,7 @@ export function Panel({
         {right && <div className="flex shrink-0 items-center gap-1.5">{right}</div>}
       </header>
       <div className={`min-h-0 flex-1 ${bodyClass}`}>{children}</div>
-    </motion.section>
+    </section>
   );
 }
 

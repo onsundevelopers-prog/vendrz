@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, ChevronDown, Search } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import type { AgentApprovalRequest, AgentContractAnalysis, AgentTask } from "@/lib/agentTask";
 import type { ContractRecord } from "@/lib/types";
 import { timeAgo } from "@/lib/format";
@@ -77,12 +76,7 @@ function Greeting({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col items-center justify-center px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="flex flex-col items-center text-center"
-      >
+      <div className="fade-rise flex flex-col items-center text-center">
         <h2 className="text-[24px] font-semibold tracking-[-0.02em] text-fg">
           How can I help, {name}?
         </h2>
@@ -90,37 +84,26 @@ function Greeting({
           Ask me to work across your contracts, renewals and mail. A new chat
           opens and you can watch what I&apos;m doing as I go.
         </p>
-      </motion.div>
+      </div>
 
       {!hasContracts && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.15 }}
-          className="mt-4 max-w-sm text-center text-[11.5px] leading-relaxed text-zinc-600"
-        >
+        <p className="fade-rise mt-4 max-w-sm text-center text-[11.5px] leading-relaxed text-zinc-600">
           No contracts yet — upload and analyze one, then give me a task.
-        </motion.p>
+        </p>
       )}
 
-      <motion.div
-        initial="hidden"
-        animate="show"
-        variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.12 } } }}
-        className="mt-6 flex max-w-xl flex-wrap items-center justify-center gap-2"
-      >
+      <div className="fade-rise mt-6 flex max-w-xl flex-wrap items-center justify-center gap-2">
         {SUGGESTIONS.map((s) => (
-          <motion.button
+          <button
             key={s}
-            variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] } } }}
             onClick={() => !atCap && onAsk(s)}
             disabled={atCap}
             className="rounded-md border border-line bg-surface px-3 py-1.5 text-[12px] text-zinc-300 transition-colors hover:border-white/25 hover:bg-white/[0.05] hover:text-fg disabled:opacity-40"
           >
             {s}
-          </motion.button>
+          </button>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -204,14 +187,9 @@ export function TaskWorkspace({
   return (
     <div className="relative flex h-full min-h-0">
       {/* Chats aside - persistent history, each task is its own chat */}
-      <AnimatePresence initial={false}>
         {asideOpen && (
-          <motion.aside
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 232, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="flex shrink-0 flex-col overflow-hidden border-r border-line bg-[#101014]"
+          <aside
+            className="fade-rise flex w-[232px] shrink-0 flex-col overflow-hidden border-r border-line bg-[#101014]"
           >
             <div className="flex h-11 shrink-0 items-center justify-between border-b border-line px-3">
               <span className="truncate text-[12px] font-medium text-zinc-200">Chats</span>
@@ -245,16 +223,10 @@ export function TaskWorkspace({
                 )}
               </label>
             </div>
-            <motion.div
-              initial="hidden"
-              animate="show"
-              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.03 } } }}
-              className="min-h-0 flex-1 overflow-y-auto px-1.5 pb-2"
-            >
+            <div className="min-h-0 flex-1 overflow-y-auto px-1.5 pb-2">
               {visibleTasks.map((t) => (
-                <motion.button
+                <button
                   key={t.id}
-                  variants={{ hidden: { opacity: 0, x: -6 }, show: { opacity: 1, x: 0, transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } } }}
                   onClick={() => onSelectTask(t.id)}
                   className={`mb-0.5 flex w-full flex-col rounded-md px-2 py-1.5 text-left transition-colors ${
                     task?.id === t.id ? "bg-white/[0.08]" : "hover:bg-white/[0.04]"
@@ -276,17 +248,16 @@ export function TaskWorkspace({
                     </span>
                     <span className="shrink-0 text-[9.5px] text-zinc-600">{shortTime(t.updatedAt)}</span>
                   </span>
-                </motion.button>
+                </button>
               ))}
               {visibleTasks.length === 0 && (
                 <p className="px-2 py-4 text-[11px] text-zinc-600">
                   {tasks.length === 0 ? "No chats yet." : "No chats match."}
                 </p>
               )}
-            </motion.div>
-          </motion.aside>
+            </div>
+          </aside>
         )}
-      </AnimatePresence>
 
       {/* center chat */}
       <div className="flex min-w-0 flex-1 flex-col bg-canvas">
@@ -318,15 +289,10 @@ export function TaskWorkspace({
 
         {/* thread / greeting */}
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-          <AnimatePresence mode="wait">
-            {task ? (
-              <motion.div
+          {task ? (
+              <div
                 key={task.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="flex h-full flex-col"
+                className="fade-rise flex h-full flex-col"
               >
                 <div className="min-h-0 flex-1">
                   <AgentChat
@@ -343,15 +309,11 @@ export function TaskWorkspace({
                   open={logOpen || running}
                   onToggle={() => setLogOpen((v) => !v)}
                 />
-              </motion.div>
+              </div>
             ) : (
-              <motion.div
+              <div
                 key="greeting"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
-                className="h-full"
+                className="fade-rise h-full"
               >
                 <Greeting
                   name={userName}
@@ -359,9 +321,8 @@ export function TaskWorkspace({
                   hasContracts={hasContracts}
                   onAsk={onSendMessage}
                 />
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
         </div>
 
         {/* docked composer */}

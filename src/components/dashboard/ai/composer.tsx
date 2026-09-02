@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { ArrowUp, Globe, Loader2, Mail } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 
 /* ------------------------------------------------------------------ */
 /*  AI composer - a single docked chat bar.                           */
@@ -119,14 +118,9 @@ export function ChatComposer({
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-1.5">
         {/* bar */}
         <div className="relative">
-          <AnimatePresence>
-            {showMenu && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-full left-0 z-20 mb-2 w-64 overflow-hidden rounded-lg border border-line bg-[#14141a] shadow-[0_12px_32px_rgba(0,0,0,0.55)]"
+          {showMenu && (
+              <div
+                className="menu-rise absolute bottom-full left-0 z-20 mb-2 w-64 overflow-hidden rounded-lg border border-line bg-[#14141a] shadow-[0_12px_32px_rgba(0,0,0,0.55)]"
               >
                 <p className="border-b border-line px-3 py-1.5 text-[10px] font-semibold tracking-[-0.01em] text-zinc-500">
                   Add context
@@ -144,9 +138,8 @@ export function ChatComposer({
                     </span>
                   </button>
                 ))}
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
 
           <div className="flex items-center gap-1.5 rounded-md border border-white/10 bg-[#16161b] px-2.5 py-1.5 transition-colors focus-within:border-white/25">
             <input
@@ -170,18 +163,15 @@ export function ChatComposer({
               disabled={blocked}
               className="min-w-0 flex-1 bg-transparent text-[13px] text-fg outline-none placeholder:text-zinc-600 disabled:opacity-50"
             />
-            <motion.button
+            <button
               type="button"
               onClick={submit}
               disabled={!trimmed || blocked}
               aria-label="Start task"
-              whileHover={!blocked && trimmed ? { scale: 1.05 } : undefined}
-              whileTap={!blocked && trimmed ? { scale: 0.92 } : undefined}
-              transition={{ type: "spring", stiffness: 500, damping: 25 }}
-              className="flex size-7 shrink-0 items-center justify-center rounded-md border border-white/15 bg-white/[0.06] text-zinc-300 transition-colors hover:bg-white/[0.1] hover:text-white disabled:opacity-40"
+              className="pressable flex size-7 shrink-0 items-center justify-center rounded-md border border-white/15 bg-white/[0.06] text-zinc-300 transition-colors hover:bg-white/[0.1] hover:text-white disabled:opacity-40"
             >
               <ArrowUp size={14} />
-            </motion.button>
+            </button>
           </div>
         </div>
 
