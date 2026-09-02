@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { getAuditSession } from "@/lib/store";
 import { generateAnalysis } from "@/lib/pipeline";
 import type { AnalysisResult } from "@/lib/types";
-import { useAuthUser } from "@/lib/auth";
+import { useAuthUser } from "@/lib/auth-hooks";
 import { ResultsPreview } from "@/components/results/ResultsPreview";
 import { ReviewBlur } from "@/components/results/ReviewBlur";
 

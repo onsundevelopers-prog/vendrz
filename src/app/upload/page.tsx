@@ -14,7 +14,7 @@ import {
   registerDocumentSession,
   uploadDocument,
 } from "@/lib/clientDocuments";
-import { useAuthUser } from "@/lib/auth";
+import { useAuthUser } from "@/lib/auth-hooks";
 import type { ContractExtraction, RichContractExtraction } from "@/lib/types";
 import { Navbar } from "@/components/landing/Navbar";
 

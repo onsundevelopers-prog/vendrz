@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { useUser, UserButton } from "@clerk/nextjs";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
-import { isClerkEnabled } from "@/lib/auth";
+import { isClerkEnabled, useClerkMounted } from "@/lib/auth";
 
 const LINKS = [
   { label: "Product", href: "#product" },
@@ -32,37 +32,39 @@ function SignUpPill({ href = "/auth?mode=signup", onClick }: { href?: string; on
   );
 }
 
-function ClerkDesktopAuth() {
-  const { isLoaded, user } = useUser();
-  if (!isLoaded) {
-    return <span className="size-4 animate-spin rounded-full border-2 border-line border-t-fg" />;
-  }
-  return user ? (
-    <UserButton />
-  ) : (
-    <Link href="/auth?mode=login" className={LOG_IN_LINK}>
-      Log in
-    </Link>
-  );
-}
+/* The Clerk-backed auth controls (spinner -> UserButton / Log in) live in
+   ClerkNavAuth.tsx and are dynamic-imported, so this module never ships
+   the @clerk/nextjs runtime to pages without a <ClerkProvider>. */
+const ClerkDesktopAuth = dynamic(
+  () => import("./ClerkNavAuth").then((m) => m.ClerkDesktopAuth),
+  { ssr: false }
+);
+const ClerkMobileAuth = dynamic(
+  () => import("./ClerkNavAuth").then((m) => m.ClerkMobileAuth),
+  { ssr: false }
+);
 
-function ClerkMobileAuth({ onNavigate }: { onNavigate: () => void }) {
-  const { isLoaded, user } = useUser();
-  if (!isLoaded) return null;
-  return user ? (
-    <div className="flex items-center justify-between rounded-md border border-line bg-surface px-3 py-2.5">
-      <span className="text-[13.5px] font-medium text-fg">Account</span>
-      <UserButton />
-    </div>
-  ) : (
-    <SignUpPill onClick={onNavigate} />
-  );
-}
-
-/* Sign in / account controls - Clerk when configured, plain link otherwise. */
-function DesktopAuth() {
+/* Sign in / account controls.
+   - Clerk disabled: plain link.
+   - Inside a <ClerkProvider> (upload / audit routes): live session via
+     Clerk hooks (spinner, then UserButton or Log in).
+   - Public pages with no provider (landing): render from the `signedIn`
+     boolean the server resolved from the request cookie - no Clerk JS. */
+function DesktopAuth({ signedIn }: { signedIn?: boolean }) {
+  const mounted = useClerkMounted();
   if (!isClerkEnabled) {
     return (
+      <Link href="/auth?mode=login" className={LOG_IN_LINK}>
+        Log in
+      </Link>
+    );
+  }
+  if (!mounted) {
+    return signedIn ? (
+      <Link href="/dashboard" className={LOG_IN_LINK}>
+        Open dashboard
+      </Link>
+    ) : (
       <Link href="/auth?mode=login" className={LOG_IN_LINK}>
         Log in
       </Link>
@@ -71,14 +73,22 @@ function DesktopAuth() {
   return <ClerkDesktopAuth />;
 }
 
-function MobileAuth({ onNavigate }: { onNavigate: () => void }) {
+function MobileAuth({ onNavigate, signedIn }: { onNavigate: () => void; signedIn?: boolean }) {
+  const mounted = useClerkMounted();
   if (!isClerkEnabled) {
     return <SignUpPill onClick={onNavigate} />;
+  }
+  if (!mounted) {
+    return signedIn ? (
+      <SignUpPill href="/dashboard" onClick={onNavigate} />
+    ) : (
+      <SignUpPill onClick={onNavigate} />
+    );
   }
   return <ClerkMobileAuth onNavigate={onNavigate} />;
 }
 
-export function Navbar() {
+export function Navbar({ signedIn }: { signedIn?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -121,7 +131,7 @@ export function Navbar() {
 
         {/* right actions */}
         <div className="hidden items-center gap-5 md:flex">
-          <DesktopAuth />
+          <DesktopAuth signedIn={signedIn} />
           <SignUpPill href="/auth?mode=signup" />
         </div>
 
@@ -168,7 +178,7 @@ export function Navbar() {
                 </a>
               ))}
               <div className="flex flex-col gap-2.5 pt-4">
-                <MobileAuth onNavigate={() => setOpen(false)} />
+                <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
                 <Button href="/audit" className="w-full" onClick={() => setOpen(false)}>
                   Run free review
                 </Button>

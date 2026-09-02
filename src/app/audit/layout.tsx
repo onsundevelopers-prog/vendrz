@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/site";
+import { ClerkScope } from "@/components/auth/ClerkScope";
 
 /** /audit is a client component, so metadata lives in this server layout. */
 export const metadata: Metadata = {
@@ -16,5 +17,5 @@ export const metadata: Metadata = {
 };
 
 export default function AuditLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <ClerkScope>{children}</ClerkScope>;
 }

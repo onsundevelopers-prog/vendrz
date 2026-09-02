@@ -19,7 +19,8 @@ import {
   ShieldAlert,
   Wallet,
 } from "lucide-react";
-import { AuthProvider, useAuthUser, useAuthSignOut, type ServerAuthUser } from "@/lib/auth";
+import { type ServerAuthUser } from "@/lib/auth";
+import { AuthProvider, useAuthSignOut, useAuthUser } from "@/lib/auth-hooks";
 import { DashboardModeProvider, useDisplayMode } from "@/lib/displayMode";
 import { hydrateUserData, persistUserData } from "@/lib/sync";
 import { Logo } from "@/components/brand/Logo";

@@ -7,16 +7,17 @@
 /*  localStorage demo accounts: without Clerk keys the app reports an  */
 /*  unauthenticated state instead of fabricating a session.            */
 /*                                                                     */
-/*  Server components can inject the authenticated user (from the      */
-/*  request-time `auth()`) through <AuthProvider> so client pages      */
-/*  under it render instantly instead of waiting for Clerk's client    */
-/*  JS to boot. Outside the provider, useAuthUser falls back to the    */
-/*  live client session.                                               */
+/*  This module is the LIGHT auth module: it carries no runtime        */
+/*  @clerk/nextjs imports (only the erased `import type`), so public   */
+/*  pages like the landing page can import `isClerkEnabled` and        */
+/*  `useClerkMounted` without pulling the Clerk client runtime into    */
+/*  their bundle. The Clerk-hook-dependent pieces - <AuthProvider>,    */
+/*  useAuthUser() and useAuthSignOut() - live in lib/auth-hooks.tsx    */
+/*  and are imported only by routes that are wrapped in <ClerkScope>.  */
 /* ------------------------------------------------------------------ */
 
 import { createContext, useContext } from "react";
-import { useClerk, useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import type { useUser } from "@clerk/nextjs";
 
 export const isClerkEnabled =
   typeof process !== "undefined" &&
@@ -47,7 +48,7 @@ export interface ServerAuthUser {
 
 const NO_USER: Pick<AuthUser, "user"> = { user: null };
 
-function anon(isLoaded: boolean): AuthUser {
+export function anon(isLoaded: boolean): AuthUser {
   return {
     id: null,
     name: "",
@@ -59,7 +60,7 @@ function anon(isLoaded: boolean): AuthUser {
   };
 }
 
-function fromClerk(user: NonNullable<ReturnType<typeof useUser>["user"]>): AuthUser {
+export function fromClerk(user: NonNullable<ReturnType<typeof useUser>["user"]>): AuthUser {
   const googleAccount = user.externalAccounts?.find((a) => a.provider === "google");
   return {
     id: user.id,
@@ -76,90 +77,28 @@ function fromClerk(user: NonNullable<ReturnType<typeof useUser>["user"]>): AuthU
   };
 }
 
-const AuthUserContext = createContext<AuthUser | null>(null);
+export const AuthUserContext = createContext<AuthUser | null>(null);
 
-/**
- * Provides the auth snapshot a server component already resolved, so the
- * whole subtree renders on first paint without waiting for Clerk's client
- * JS. Profile fields not present in the snapshot hydrate from the live
- * Clerk session when it arrives; outside of that, behavior matches the
- * plain client path exactly.
- */
-export function AuthProvider({
-  server,
-  children,
-}: {
-  server: ServerAuthUser;
-  children: React.ReactNode;
-}) {
-  /* eslint-disable react-hooks/rules-of-hooks -- static per-build flag, see useAuthUser */
-  const live = isClerkEnabled ? useUser() : null;
-  /* eslint-enable react-hooks/rules-of-hooks */
+/* ------------------------------------------------------------------ */
+/*  Clerk provider presence.                                           */
+/*  Clerk hooks (useUser / useClerk) throw outside a <ClerkProvider>.  */
+/*  Components that render on both provider-wrapped routes (dashboard,  */
+/*  auth, upload) and plain public routes (the landing navbar) read     */
+/*  this flag instead of calling Clerk hooks unconditionally.          */
+/* ------------------------------------------------------------------ */
 
-  const clerkUser = live?.user ?? null;
-  const clerkLoaded = live?.isLoaded ?? false;
+const ClerkMountedContext = createContext(false);
 
-  let value: AuthUser;
-  if (server.id && isClerkEnabled) {
-    value = {
-      id: server.id,
-      name:
-        server.name ||
-        clerkUser?.firstName ||
-        clerkUser?.username ||
-        clerkUser?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
-        "User",
-      email: server.email || (clerkUser?.primaryEmailAddress?.emailAddress ?? ""),
-      provider: "clerk",
-      providerLabel:
-        clerkUser?.externalAccounts?.find((a) => a.provider === "google")
-          ? "Google"
-          : "Email & password",
-      isLoaded: true,
-      user: clerkUser,
-    };
-  } else if (isClerkEnabled && !clerkLoaded) {
-    value = anon(false);
-  } else {
-    value = clerkUser ? fromClerk(clerkUser) : anon(true);
-  }
-
-  return <AuthUserContext.Provider value={value}>{children}</AuthUserContext.Provider>;
+/** Marks a subtree as inside <ClerkProvider> (see ClerkScope). */
+export function ClerkMounted({ children }: { children: React.ReactNode }) {
+  return (
+    <ClerkMountedContext.Provider value={true}>
+      {children}
+    </ClerkMountedContext.Provider>
+  );
 }
 
-/**
- * Current user from Clerk. `isLoaded` flips to true once the auth state
- * is known; callers gate their UI on it so there is never a hydration
- * mismatch. Inside an <AuthProvider> the server-resolved snapshot is used
- * (instant), otherwise this waits on Clerk's client session. When Clerk
- * isn't configured (no publishable key) this returns an unauthenticated
- * user rather than a fabricated demo account.
- */
-export function useAuthUser(): AuthUser {
-  const server = useContext(AuthUserContext);
-  if (server) return server;
-
-  /* eslint-disable react-hooks/rules-of-hooks -- isClerkEnabled is a static per-build flag, so the hook call order is identical on every render */
-  if (isClerkEnabled) {
-    const { user, isLoaded } = useUser();
-    if (!isLoaded) return anon(false);
-    return user ? fromClerk(user) : anon(true);
-  }
-  return anon(true);
-  /* eslint-enable react-hooks/rules-of-hooks */
-}
-
-/** Sign out of Clerk (no-op navigation when Clerk isn't configured). */
-export function useAuthSignOut(): () => void {
-  const router = useRouter();
-  /* eslint-disable react-hooks/rules-of-hooks -- static per-build flag, see useAuthUser */
-  const clerk = isClerkEnabled ? useClerk() : null;
-  /* eslint-enable react-hooks/rules-of-hooks */
-  return () => {
-    if (clerk) {
-      void clerk.signOut({ redirectUrl: "/" });
-    } else {
-      router.push("/");
-    }
-  };
+/** True only inside a Clerk-provided subtree. Safe to call anywhere. */
+export function useClerkMounted(): boolean {
+  return useContext(ClerkMountedContext);
 }

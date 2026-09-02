@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { getSession } from "@/lib/store";
-import { useAuthUser } from "@/lib/auth";
+import { useAuthUser } from "@/lib/auth-hooks";
 import { ResultsPreview } from "@/components/results/ResultsPreview";
 import { ReviewBlur } from "@/components/results/ReviewBlur";
 import { Logo } from "@/components/brand/Logo";

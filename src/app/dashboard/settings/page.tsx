@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { isClerkEnabled, useAuthUser } from "@/lib/auth";
+import { isClerkEnabled } from "@/lib/auth";
+import { useAuthUser } from "@/lib/auth-hooks";
 import { PLANS, planDef, useDisplayMode } from "@/lib/displayMode";
 import { getContracts, getAiUsage } from "@/lib/store";
 import { money } from "@/lib/format";

@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { TrustStrip } from "@/components/landing/TrustStrip";
@@ -35,11 +36,28 @@ const pricingJsonLd = {
   })),
 };
 
-export default function Home() {
+/* The landing page has no <ClerkProvider> (it ships zero Clerk JS), so the
+   navbar can't read the session client-side. Resolve it server-side from
+   the request cookie and hand the boolean down - a signed-in visitor sees
+   "Open dashboard" instead of "Log in", with no Clerk runtime on the page. */
+const clerkEnabled = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+async function resolveSignedIn(): Promise<boolean> {
+  if (!clerkEnabled) return false;
+  try {
+    const { userId } = await auth();
+    return !!userId;
+  } catch {
+    return false;
+  }
+}
+
+export default async function Home() {
+  const signedIn = await resolveSignedIn();
   return (
     <main className="bg-canvas">
       <JsonLd data={pricingJsonLd} />
-      <Navbar />
+      <Navbar signedIn={signedIn} />
       <Hero />
       <TrustStrip />
       <ProblemSection />

@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthUser } from "@/lib/auth";
+import { useAuthUser } from "@/lib/auth-hooks";
 import { planDef, useDisplayMode } from "@/lib/displayMode";
 import {
   getActivity,

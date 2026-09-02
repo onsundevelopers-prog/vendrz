@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { auth } from "@clerk/nextjs/server";
 import type { ServerAuthUser } from "@/lib/auth";
 import DashboardShell from "./shell";
+import { ClerkScope } from "@/components/auth/ClerkScope";
 
 // Server-side mirror of the client's isClerkEnabled (same env var read);
 // kept local because server components can't import values from client modules.
@@ -33,5 +34,9 @@ export default async function DashboardLayout({
       server = { id: null };
     }
   }
-  return <DashboardShell server={server}>{children}</DashboardShell>;
+  return (
+    <ClerkScope>
+      <DashboardShell server={server}>{children}</DashboardShell>
+    </ClerkScope>
+  );
 }
