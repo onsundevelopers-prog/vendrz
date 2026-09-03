@@ -199,6 +199,12 @@ export function ClerkAuthCard() {
 
   const toggleParams = sessionId ? `&session=${sessionId}` : "";
 
+  // Signed-in visitor: the claim + redirect effect above fires immediately -  
+  // render nothing rather than flashing the sign-in form for a frame. The   
+  // server page usually catches this case first, but this covers direct     
+  // navigation to /auth?session=... where the transfer must run client-side.
+  if (isLoaded && user) return null;
+
   return (
     <>
       <SessionBanner sessionId={sessionId} mode={mode} />

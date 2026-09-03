@@ -17,6 +17,7 @@
 /* ------------------------------------------------------------------ */
 
 import { useContext } from "react";
+import { useRouter } from "next/navigation";
 import { AuthUserContext, anon, type AuthUser, type ServerAuthUser } from "./auth";
 
 /**
@@ -54,13 +55,15 @@ export function useAuthUser(): AuthUser {
 
 /**
  * Sign out through the server endpoint (revokes the Clerk session and
- * clears its cookies), then do a full navigation so the next request is
- * treated as signed out by the middleware.
+ * clears its cookies). The cookies are already gone when the response
+ * resolves, so the client-side navigation to / is treated as signed out.
  */
 export function useWorkspaceSignOut(): () => void {
+  const router = useRouter();
   return () => {
     void fetch("/api/auth/signout", { method: "POST" }).finally(() => {
-      window.location.href = "/";
+      router.push("/");
+      router.refresh();
     });
   };
 }
