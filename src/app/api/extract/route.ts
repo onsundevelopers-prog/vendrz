@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAIProvider } from "@/lib/ai";
 import { createJob, failJob, getJob, saveJobText, setJobStage } from "@/lib/jobs";
 import { extractFileText, finishAnalysis, triggerJobResume } from "@/lib/extractResume";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
+import { auth } from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -38,6 +40,18 @@ export async function POST(req: NextRequest) {
     // After a restart, resume any analysis that was interrupted mid-run so
     // the polling client keeps seeing progress instead of a dead 404.
     triggerJobResume();
+
+    // Rate-limit anonymous abuse: the AI pipeline costs real quota per call,
+    // and the flow is deliberately signup-free. Signed-in users are exempt;
+    // when Clerk isn't configured everyone is anonymous and gets limited.
+    const subject = await getRateSubject(req);
+    const limit = rateLimit(subject);
+    if (!limit.ok) {
+      return NextResponse.json(
+        { error: "Too many analyses from this connection. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } }
+      );
+    }
 
     // Reject oversized uploads by the request body size BEFORE parsing it -
     // the serverless runtime refuses to parse multipart bodies over its
@@ -147,6 +161,24 @@ export async function POST(req: NextRequest) {
     console.error("[extract] request-level failure:", message);
     return NextResponse.json({ error: `Extraction failed: ${message}` }, { status: 502 });
   }
+}
+
+/**
+ * Rate-limit subject: the Clerk user id when a signed-in session exists
+ * (so a user behind a shared NAT isn't throttled by neighbours), otherwise
+ * the client IP. The Clerk import is dynamic so builds without Clerk keys
+ * don't evaluate it at module load.
+ */
+async function getRateSubject(req: NextRequest): Promise<string> {
+  if (process.env.CLERK_SECRET_KEY) {
+    try {
+      const { userId } = await auth();
+      if (userId) return `user:${userId}`;
+    } catch {
+      // Fall through to IP-based limiting.
+    }
+  }
+  return `ip:${clientIp(req)}`;
 }
 
 /**

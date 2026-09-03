@@ -56,12 +56,43 @@ const uid = (prefix: string): string =>
 
 /* ------------------------------ sessions ------------------------------ */
 
+/**
+ * Enforce the 14-day anonymous retention promise (Privacy Policy + FAQ:
+ * "retained for 14 days, then deleted"). Unclaimed anonymous analyses are
+ * removed once their expiresAt has passed; sessions transferred to an
+ * account are the user's claimed data and are kept. Runs lazily on session
+ * reads/writes - no background timer needed.
+ */
+function purgeExpiredSessions(): void {
+  if (typeof window === "undefined") return;
+  const raw = window.localStorage.getItem(KEYS.sessions);
+  if (!raw) return;
+  try {
+    const sessions = JSON.parse(raw) as Record<string, AnonymousSession>;
+    const now = Date.now();
+    let changed = false;
+    for (const [id, s] of Object.entries(sessions)) {
+      if (!s || s.transferredToUserId) continue;
+      const expiry = s.expiresAt ? new Date(`${s.expiresAt}T23:59:59`).getTime() : 0;
+      if (expiry && expiry < now) {
+        delete sessions[id];
+        changed = true;
+      }
+    }
+    if (changed) window.localStorage.setItem(KEYS.sessions, JSON.stringify(sessions));
+  } catch {
+    /* ignore - a corrupt map is left for the normal read path */
+  }
+}
+
 export function getSession(id: string): AnonymousSession | null {
+  purgeExpiredSessions();
   const sessions = read<Record<string, AnonymousSession>>(KEYS.sessions, {});
   return sessions[id] ?? null;
 }
 
 export function saveSession(session: AnonymousSession): void {
+  purgeExpiredSessions();
   const sessions = read<Record<string, AnonymousSession>>(KEYS.sessions, {});
   sessions[session.id] = session;
   write(KEYS.sessions, sessions);

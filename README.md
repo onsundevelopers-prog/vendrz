@@ -63,7 +63,10 @@ Clerk is the only auth path:
 - Paid plans are verified server-side against PayPal and bound to the Clerk account,
   so a paid status follows the user across browsers and devices.
 
-## Deployment (git → Vercel)
+## Deployment (Render Blueprint)
+
+The repo ships a `render.yaml` blueprint that deploys n4ma as a Node web service
+(persistent disk mounted at `/data`, health check at `/api/health`).
 
 1. **Push to git** - the repo is initialized already:
    ```bash
@@ -73,13 +76,39 @@ Clerk is the only auth path:
    git remote add origin https://github.com/<you>/noma.git
    git push -u origin main
    ```
-2. **Import on Vercel** - create a new project from the GitHub repo (framework preset:
-   Next.js). Build command `npm run build`, output `Next.js (static output is not used)`.
-3. **Add environment variables** in Vercel → Settings → Environment Variables:
-   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, and optionally
-   `GOOGLE_API_KEY`. Never commit `.env.local` (it's git-ignored).
-4. **Point Clerk at production** - in the Clerk dashboard add your Vercel deployment
-   URL (and `http://localhost:3000` for local dev) to the allowed origins.
+2. **Import on Render** - "New + > Blueprint" and select this repo. Render reads
+   `render.yaml`, prompts for the `sync: false` env vars, and creates the service
+   plus the persistent disk automatically.
+3. **Set the prompted environment variables** in the Render dashboard. Never
+   commit `.env.local` (it's git-ignored).
+
+### Go-live checklist
+
+- [ ] **Clerk** - set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY`;
+      add the production URL (and `http://localhost:3000`) to Clerk's allowed
+      origins.
+- [ ] **AI provider** - set `GEMINI_API_KEY` (and optionally `OLLAMA_API_KEY` as
+      fallback). Anonymous extraction is rate-limited via `EXTRACT_RATE_LIMIT`
+      (default 10/hour/IP, `0` disables).
+- [ ] **NEXT_PUBLIC_SITE_URL** - set it to the live origin so robots.txt,
+      sitemap.xml and canonical/OpenGraph tags point at the real domain instead
+      of the `n4ma.app` default.
+- [ ] **Supabase** - create the production project, run the table SQL from
+      `.env.example` (or `scripts/provision-documents.mjs`), create the private
+      `documents` bucket, then set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.
+- [ ] **Gmail OAuth** - register `https://<your-domain>/api/gmail/callback` as an
+      authorized redirect URI in Google Cloud Console; set
+      `GOOGLE_OAUTH_CLIENT_ID/SECRET` + `GMAIL_TOKEN_SECRET`.
+- [ ] **PayPal** - set the client id, plan ids and the REST pair; create the
+      webhook pointing at `https://<your-domain>/api/paypal/webhook` and set
+      `PAYPAL_WEBHOOK_ID`.
+- [ ] **PAYMENT_ADMINS** - comma-separated Clerk user ids allowed to confirm
+      outgoing payments. Without it payments can be created but never executed
+      (safe default, but intentional if you plan to use RBC payments).
+- [ ] **Persistent disk** - confirm the `noma-data` disk is mounted at `/data`
+      (payments, Gmail tokens and in-flight extraction jobs survive restarts).
+- [ ] **Health check** - verify `GET /api/health` returns `{"ok":true}` after the
+      first deploy.
 
 ## Architecture notes
 

@@ -16,7 +16,16 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm run start -- -p $PORT
     autoDeploy: true
-    healthCheckPath: /
+    # Cheap JSON probe - rendering the landing page for every health check
+    # wastes a full server render per probe interval.
+    healthCheckPath: /api/health
+    # Persistent disk backing the file-based stores below. Without it,
+    # payments, Gmail tokens and in-flight extraction jobs are silently
+    # memory-only and vanish on every deploy/restart.
+    disk:
+      name: noma-data
+      mountPath: /data
+      sizeGB: 1
     envVars:
       # AI inference provider (contract analysis). Gemini is primary and
       # rolls over to Ollama Cloud when unavailable/erroring.
@@ -115,4 +124,15 @@ services:
       # Optional one-time redemption codes (code:plan pairs). Omit to
       # disable code redemption entirely.
       - key: REDEEM_CODES
+        sync: false
+      # Anonymous extraction abuse bound (see src/lib/rateLimit.ts).
+      # 0 disables limiting entirely.
+      - key: EXTRACT_RATE_LIMIT
+        value: "10"
+      - key: EXTRACT_RATE_WINDOW_MS
+        value: "3600000"
+      # Canonical site URL - powers robots.txt, sitemap.xml and canonical/
+      # OpenGraph tags. Set it to the live origin (e.g. https://noma.onrender.com)
+      # so SEO metadata doesn't point at the default domain.
+      - key: NEXT_PUBLIC_SITE_URL
         sync: false
