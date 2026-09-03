@@ -1,6 +1,14 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Pin the workspace root so Turbopack doesn't walk upward and pick up a
+  // stray package-lock.json from a parent directory (warns and can break
+  // dependency resolution on deploy hosts).
+  turbopack: {
+    root: path.dirname(import.meta.dirname),
+  },
+
   // Native/ESM packages used by the server-side extraction pipeline. They
   // must stay external so their platform-specific binaries and module layout
   // are preserved in the serverless runtime (not mangled by the bundler).

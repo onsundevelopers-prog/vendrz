@@ -53,5 +53,6 @@ next-env.d.ts
 # agent skills / tooling (installed from third-party repos, not project code)
 .agents/
 .claude/
+.freebuff/
 skills-lock.json
 /saas-product-demo-video/

@@ -31,17 +31,19 @@ const idemIndex = new Map<string, string>();
 
 function fileToWrite(): string | null {
   if (!PAYMENT_STORE_FILE) return null;
-  return path.isAbsolute(PAYMENT_STORE_FILE)
-    ? PAYMENT_STORE_FILE
-    : path.join(process.cwd(), PAYMENT_STORE_FILE);
+  if (path.isAbsolute(PAYMENT_STORE_FILE)) return PAYMENT_STORE_FILE;
+  // Relative paths are anchored to the project's gitignored .data directory
+  // so the filesystem access is statically scoped (Turbopack can trace it
+  // without falling back to whole-project tracing).
+  return path.join(process.cwd(), ".data", path.basename(PAYMENT_STORE_FILE));
 }
 
 function persist(): void {
   const file = fileToWrite();
   if (!file) return;
   try {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify([...store.values()], null, 2), "utf8");
+    fs.mkdirSync(path.dirname(/* turbopackIgnore: true */ file), { recursive: true });
+    fs.writeFileSync(/* turbopackIgnore: true */ file, JSON.stringify([...store.values()], null, 2), "utf8");
   } catch (err) {
     console.error(`[payments] Couldn't persist store to ${file}:`, (err as Error).message);
   }
@@ -49,9 +51,9 @@ function persist(): void {
 
 function loadFromDisk(): void {
   const file = fileToWrite();
-  if (!file || !fs.existsSync(file)) return;
+  if (!file || !fs.existsSync(/* turbopackIgnore: true */ file)) return;
   try {
-    const raw = fs.readFileSync(file, "utf8");
+    const raw = fs.readFileSync(/* turbopackIgnore: true */ file, "utf8");
     const records = JSON.parse(raw) as PaymentRecord[];
     for (const r of records) {
       store.set(r.id, r);
