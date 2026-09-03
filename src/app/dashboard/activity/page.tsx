@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAuthUser } from "@/lib/auth-hooks";
+import { useAuthUser } from "@/lib/workspace-auth";
 import { getActivity } from "@/lib/store";
 import { formatDate, formatTime, timeAgo } from "@/lib/format";
 import type { ActivityRecord } from "@/lib/types";

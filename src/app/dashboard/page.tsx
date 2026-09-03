@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { useAuthUser } from "@/lib/auth-hooks";
+import { useAuthUser } from "@/lib/workspace-auth";
 import { planDef, useDisplayMode } from "@/lib/displayMode";
 import { SimpleOverview } from "@/components/dashboard/SimpleOverview";
 import { getActivity, getContracts, getDashboardStats, getEmailThreads, getAgentMessages, saveAgentMessage, logActivity, createAction, approveAction, rejectAction, markActionProgress, getAiUsage, incrementAiUsage } from "@/lib/store";

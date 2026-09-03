@@ -20,7 +20,11 @@ import {
   Wallet,
 } from "lucide-react";
 import { type ServerAuthUser } from "@/lib/auth";
-import { AuthProvider, useAuthSignOut, useAuthUser } from "@/lib/auth-hooks";
+import {
+  WorkspaceAuthProvider,
+  useAuthUser,
+  useWorkspaceSignOut,
+} from "@/lib/workspace-auth";
 import { DashboardModeProvider, useDisplayMode } from "@/lib/displayMode";
 import { hydrateUserData, persistUserData } from "@/lib/sync";
 import { Logo } from "@/components/brand/Logo";
@@ -65,7 +69,7 @@ function WorkspaceShell({
   const router = useRouter();
   const pathname = usePathname();
   const auth = useAuthUser();
-  const signOut = useAuthSignOut();
+  const signOut = useWorkspaceSignOut();
   // With a server-injected session the id is known on first render, so the
   // shell skips the skeleton entirely; the effect below stays as a guard for
   // the client-only path (and for redirecting anonymous visitors).
@@ -404,9 +408,9 @@ export default function DashboardShell({
 }) {
   return (
     <DashboardModeProvider>
-      <AuthProvider server={server}>
+      <WorkspaceAuthProvider server={server}>
         <WorkspaceShell>{children}</WorkspaceShell>
-      </AuthProvider>
+      </WorkspaceAuthProvider>
     </DashboardModeProvider>
   );
 }

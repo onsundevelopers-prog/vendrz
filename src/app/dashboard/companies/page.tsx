@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { useAuthUser } from "@/lib/auth-hooks";
+import { useAuthUser } from "@/lib/workspace-auth";
 import { planDef, useDisplayMode } from "@/lib/displayMode";
 import { getActivity, getContracts, getEmailThreads, saveAgentMessage, getAgentMessages, logActivity, createAction, approveAction, rejectAction, markActionProgress, getAiUsage, incrementAiUsage } from "@/lib/store";
 import { money, formatDate } from "@/lib/format";

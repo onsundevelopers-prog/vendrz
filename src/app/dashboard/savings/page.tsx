@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAuthUser } from "@/lib/auth-hooks";
+import { useAuthUser } from "@/lib/workspace-auth";
 import { useDisplayMode } from "@/lib/displayMode";
 import { useSectionEntitlement } from "@/lib/useSectionEntitlement";
 import { getContracts } from "@/lib/store";

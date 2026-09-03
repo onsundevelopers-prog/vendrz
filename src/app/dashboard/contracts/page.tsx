@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useAuthUser } from "@/lib/auth-hooks";
+import { useAuthUser } from "@/lib/workspace-auth";
 import { getActivity, getContracts, getEmailThreads } from "@/lib/store";
 import { money, formatDate } from "@/lib/format";
 import type { ContractRecord } from "@/lib/types";
