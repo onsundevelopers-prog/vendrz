@@ -215,7 +215,9 @@ export interface AnonymousSession {
   /** Canonical rich extraction (the AI's full output), stored alongside. */
   richExtraction: RichContractExtraction | null;
   transferredToUserId: string | null;
-  source: "manual" | "gmail";
+  /** Where the document entered n4ma (drives the source label shown in
+      the document library). */
+  source: "manual" | "gmail" | "google_drive" | "slack";
 }
 
 export interface Account {

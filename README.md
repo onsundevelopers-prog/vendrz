@@ -25,6 +25,7 @@ npm run dev        # http://localhost:3000
 | --- | --- | --- |
 | Landing | `/` | Badge → headline → subhead → dual CTA → results preview → trust strip, plus How It Works, Product, Pricing, FAQ, CTA and Footer sections. |
 | Upload | `/upload` | Drag-and-drop + file picker, PDF/DOCX/TXT/MD up to 25 MB, no required fields, single or multi-file. Authenticated uploads persist the file + analysis server-side. |
+| Add vendor data | `/dashboard/import` | Four-source ingestion picker: Upload, Gmail, Google Drive and Slack. Each connected source browses/searches real data and imports documents through the shared pipeline. |
 | Processing | `/processing/[id]` | Multi-step sequential status tied to the real pipeline stages (extraction → classification → segmentation → LLM → validation → risk rules → savings → results). |
 | Results (pre-signup) | `/results/[id]` | Risk score 0–100 with label, evidence-linked findings, savings range with a not-guaranteed disclaimer, persistent but dismissible signup CTA. |
 | Free review | `/audit` | Run a free vendor spend review; upload a contract for real results. Gmail/AWS connect options disclose honestly when not yet connected. |
@@ -38,7 +39,9 @@ npm run dev        # http://localhost:3000
 | Savings | `/dashboard/savings` | Every savings opportunity by vendor with estimated annual impact. Gated by plan. |
 | Activity | `/dashboard/activity` | Chronological, filterable workspace event log - real records only. |
 | Settings | `/dashboard/settings` | Plan, coverage, members, integrations (Gmail connect/disconnect with real OAuth), AI provider status, billing, notifications. |
-| Gmail OAuth | `api/gmail/*` | Real Google OAuth at `/dashboard/settings` → Connect; read-only `gmail.readonly`, tokens stored server-side (encrypted at rest on a persistent disk). |
+| Gmail OAuth | `api/gmail/*` | Real Google OAuth at `/dashboard/settings` or `/dashboard/import` → Connect; read-only `gmail.readonly`, tokens stored server-side (encrypted at rest on a persistent disk). |
+| Google Drive | `api/drive/*` | Real Google Drive OAuth (read-only `drive.readonly`). Browse folders, search files (name/type/modified date/owner/location), multi-select and import PDF/DOCX/TXT/CSV plus Google Docs/Sheets (exported to text/CSV) through the shared ingestion pipeline with duplicate detection. |
+| Slack | `api/slack/*` | Real Slack OAuth with the user's own token (no bot). Search messages and files across channels the user can access (channel/sender/timestamp metadata), then import selected items. Nothing is scraped; tokens are stored server-side, encrypted at rest. |
 
 ## Authentication (Clerk)
 
@@ -62,6 +65,20 @@ Clerk is the only auth path:
   the new account automatically (nothing re-runs, nothing is lost).
 - Paid plans are verified server-side against PayPal and bound to the Clerk account,
   so a paid status follows the user across browsers and devices.
+
+### Why sign-in can get stuck (and how it self-heals)
+
+n4ma moved between Clerk instances/domains during development, and the live
+publishable key encodes a decommissioned frontend domain, so all Clerk traffic
+is proxied through this app at `/__clerk` (`src/proxy.ts`). A browser that
+visited under an older Clerk setup can keep stale first-party `__session` /
+`__client` cookies that the current stack can't validate - the sign-in widget
+hangs and it looks like "only incognito works". The middleware now clears those
+cookies whenever the server has already determined there is no valid session
+(`src/lib/clerkCookies.ts`), and the sign-in recovery box offers a "Reset
+sign-in state" action, so affected users recover on their next visit without
+incognito. Do not set `CLERK_DISABLE_AUTO_PROXY` on the deployment - it points
+clerk-js back at the dead domain.
 
 ## Deployment (Render Blueprint)
 
@@ -95,10 +112,22 @@ The repo ships a `render.yaml` blueprint that deploys n4ma as a Node web service
       of the `n4ma.app` default.
 - [ ] **Supabase** - create the production project, run the table SQL from
       `.env.example` (or `scripts/provision-documents.mjs`), create the private
-      `documents` bucket, then set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.
-- [ ] **Gmail OAuth** - register `https://<your-domain>/api/gmail/callback` as an
-      authorized redirect URI in Google Cloud Console; set
+      `documents` bucket, then set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.- [ ] **Gmail OAuth** - register `https://<your-domain>/api/gmail/callback` as an authorized
+      redirect URI in Google Cloud Console; set
       `GOOGLE_OAUTH_CLIENT_ID/SECRET` + `GMAIL_TOKEN_SECRET`.
+- [ ] **Google Drive OAuth** - register `https://<your-domain>/api/drive/callback` on the
+      same OAuth client (or a dedicated client with `GOOGLE_DRIVE_CLIENT_ID/SECRET`);
+      set `GOOGLE_CLIENT_ID/SECRET` (falls back to the Gmail pair) +
+      `DRIVE_TOKEN_FILE=/data/drive-tokens.json` (+ optional `DRIVE_TOKEN_SECRET`).
+- [ ] **Slack OAuth** - create the Slack app with user scopes
+      `search:read files:read users:read` and redirect URI
+      `https://<your-domain>/api/slack/callback`; set `SLACK_CLIENT_ID/SECRET` +
+      `SLACK_TOKEN_FILE=/data/slack-tokens.json` (+ optional `SLACK_TOKEN_SECRET`).
+- [ ] **Documents source columns** - run the `ALTER TABLE documents ADD COLUMN
+      IF NOT EXISTS source_type/source_meta` migration from `.env.example` (or the
+      provisioning script) so imports are deduplicated and the free-tier import
+      allowance counts correctly. New installs get the columns from the CREATE TABLE.
+
 - [ ] **PayPal** - set the client id, plan ids and the REST pair; create the
       webhook pointing at `https://<your-domain>/api/paypal/webhook` and set
       `PAYPAL_WEBHOOK_ID`.
@@ -131,7 +160,18 @@ The repo ships a `render.yaml` blueprint that deploys n4ma as a Node web service
   user-data, feature-section gates, PayPal verify/webhook/plan, redeem, agent tasks
   (SSE), Gmail OAuth (auth/callback/status/messages), payments.
 - **`src/lib/documents.ts`** - Supabase-backed upload persistence (table + private
-  bucket), ownership-scoped reads/writes/delete and signed-URL access.
+  bucket), ownership-scoped reads/writes/delete and signed-URL access. Rows carry
+  source provenance (`source_type` + `source_meta` jsonb: external id, url, mime,
+  checksum) when the migration has run.
+- **`src/lib/ingest.ts`** - the single normalized ingestion pipeline every source
+  feeds into: documents row + bucket → text extraction → LLM extraction →
+  deterministic analysis. Manual uploads, Gmail, Google Drive and Slack all land
+  here, with duplicate prevention and the free-tier import allowance.
+- **`src/lib/drive/` + `src/app/api/drive/*`** - Google Drive OAuth, token manager
+  and Drive REST client (search/browse/export/import), scoped to files the user
+  explicitly searches for or selects.
+- **`src/lib/slack/` + `src/app/api/slack/*`** - Slack OAuth (user token only),
+  search over messages/files and import, with graceful handling of revoked tokens.
 
 Plans (Free/Team/Business/Enterprise) gate workspace sections and features on both the
 frontend and, via `/api/features/[section]`, the backend, so restricting a route or

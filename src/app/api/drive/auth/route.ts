@@ -1,39 +1,37 @@
 import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { buildAuthUrl } from "@/lib/gmail/oauth";
+import { buildAuthUrl } from "@/lib/drive/oauth";
 import {
   getClientConfig,
   getRedirectUri,
-  isGmailOAuthConfigured,
-} from "@/lib/gmail/config";
+  isDriveOAuthConfigured,
+} from "@/lib/drive/config";
 import { safeNextPath } from "@/lib/oauth/redirects";
 
 export const runtime = "nodejs";
 
-const STATE_COOKIE = "gmail_oauth_state";
-const NEXT_COOKIE = "gmail_oauth_next";
+const STATE_COOKIE = "drive_oauth_state";
+const NEXT_COOKIE = "drive_oauth_next";
 const STATE_TTL_SECONDS = 600;
-const DEFAULT_NEXT = "/dashboard/settings";
+const DEFAULT_NEXT = "/dashboard/import";
 
 /**
- * GET /api/gmail/auth?next=<path>
+ * GET /api/drive/auth?next=<path>
  *
  * Starts the Google OAuth flow: creates a random CSRF `state`, stores it
  * (and the validated return path) in httpOnly cookies, and redirects the
  * browser to Google's consent screen. The callback route later verifies
- * the state before exchanging the code for tokens. The optional `next`
- * param (allowlisted) lets pages other than Settings host the flow;
- * without it the callback returns to Settings as before.
+ * the state before exchanging the code for tokens.
  */
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
-  if (!isGmailOAuthConfigured()) {
+  if (!isDriveOAuthConfigured()) {
     return NextResponse.json(
-      { error: "Gmail OAuth is not configured on this deployment." },
+      { error: "Google Drive OAuth is not configured on this deployment." },
       { status: 503 }
     );
   }

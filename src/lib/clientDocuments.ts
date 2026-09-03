@@ -12,6 +12,8 @@ import { daysFromNow } from "./dates";
 import { getSession, KEYS, saveSession } from "./store";
 import type { AnalysisResult, AnonymousSession, ContractExtraction } from "./types";
 
+export type DocumentSourceType = "manual" | "gmail" | "google_drive" | "slack";
+
 export interface ClientDocument {
   id: string;
   filename: string;
@@ -22,6 +24,11 @@ export interface ClientDocument {
   analysis: AnalysisResult | null;
   extraction: ContractExtraction | null;
   document_name: string | null;
+  /** Where the document came from (null on deployments without the
+      source-columns migration). */
+  source_type?: DocumentSourceType | null;
+  /** Provenance extras: external id, source url, etc. */
+  source_meta?: { external_id?: string | null; source_url?: string | null; [key: string]: unknown } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -60,6 +67,7 @@ export function registerDocumentSession(
   if (doc.status !== "ready" || !doc.analysis) return null;
   const id = documentSessionId(doc.id);
   if (getSession(id)) return id;
+  const source = doc.source_type ?? "manual";
   const session: AnonymousSession = {
     id,
     documentName: doc.document_name ?? doc.filename,
@@ -73,7 +81,7 @@ export function registerDocumentSession(
     extraction: doc.extraction,
     richExtraction: null,
     transferredToUserId: userId,
-    source: "manual",
+    source: source === "google_drive" || source === "slack" || source === "gmail" ? source : "manual",
   };
   saveSession(session);
   return id;

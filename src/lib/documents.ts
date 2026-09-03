@@ -19,6 +19,23 @@ import type { AnalysisResult, ContractExtraction } from "./types";
 
 export type DocumentStatus = "uploading" | "processing" | "ready" | "failed";
 
+export type DocumentSourceType = "manual" | "gmail" | "google_drive" | "slack";
+
+/**
+ * Provenance stored for every document (source columns on the documents
+ * table - added by the ALTER in .env.example). `source_meta` carries the
+ * normalized source model: external_id, source_url, mime_type and any
+ * source-specific extras (e.g. Slack channel/sender/ts).
+ */
+export interface DocumentSourceMeta {
+  external_id?: string | null;
+  source_url?: string | null;
+  mime_type?: string | null;
+  checksum?: string | null;
+  imported_at?: string;
+  [key: string]: unknown;
+}
+
 export interface DocumentRecord {
   id: string;
   user_id: string;
@@ -31,8 +48,22 @@ export interface DocumentRecord {
   analysis: AnalysisResult | null;
   extraction: ContractExtraction | null;
   document_name: string | null;
+  /** Where the document came from: manual | gmail | google_drive | slack. */
+  source_type: DocumentSourceType | null;
+  /** Source provenance (external id / url / mime / extras). */
+  source_meta: DocumentSourceMeta | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** True when a PostgREST error means the documents table predates the
+    source columns (no migration has been run for this deployment). */
+function isMissingSourceColumn(err: { code?: string; message?: string } | null): boolean {
+  if (!err) return false;
+  if (err.code === "42703") return true;
+  if (/could not find (the )?column/i.test(err.message ?? "")) return true;
+  if (/column .* does not exist/i.test(err.message ?? "")) return true;
+  return false;
 }
 
 /** Storage bucket path for a user's document file. */
@@ -58,6 +89,11 @@ async function rowToDoc(row: Record<string, unknown>): Promise<DocumentRecord> {
     analysis: (row.analysis as AnalysisResult) ?? null,
     extraction: (row.extraction as ContractExtraction) ?? null,
     document_name: row.document_name ? String(row.document_name) : null,
+    source_type: (row.source_type as DocumentSourceType | null | undefined) ?? null,
+    source_meta:
+      row.source_meta && typeof row.source_meta === "object"
+        ? (row.source_meta as DocumentSourceMeta)
+        : null,
     createdAt: row.created_at ? String(row.created_at) : "",
     updatedAt: row.updated_at ? String(row.updated_at) : "",
   };
@@ -65,31 +101,65 @@ async function rowToDoc(row: Record<string, unknown>): Promise<DocumentRecord> {
 
 /* ------------------------- create ------------------------- */
 
-/** Insert a document row (status=uploading) for a user and return it. */
+/**
+ * Insert a document row (status=uploading) for a user and return it.
+ *
+ * When the deployment has run the source-columns migration the row also
+ * stores source provenance (source_type + source_meta). Deployments that
+ * predate the migration fall back to the legacy insert so uploads keep
+ * working untouched - provenance is simply not recorded there.
+ */
 export async function createDocumentRecord(
   userId: string,
-  input: { filename: string; file_kind: DocumentRecord["file_kind"]; file_size: number }
+  input: {
+    filename: string;
+    file_kind: DocumentRecord["file_kind"];
+    file_size: number;
+    source_type?: DocumentSourceType;
+    source_meta?: DocumentSourceMeta | null;
+  }
 ): Promise<DocumentRecord | null> {
   const db = getSupabase();
-  const { data, error } = await db
-    .from(T)
-    .insert({
-      user_id: userId,
-      filename: input.filename,
-      file_kind: input.file_kind,
-      file_size: input.file_size,
-      status: "uploading",
-    })
-    .select()
-    .maybeSingle();
-  if (error) {
-    console.error(`[documents] create failed for ${userId}:`, error.message);
+  const base = {
+    user_id: userId,
+    filename: input.filename,
+    file_kind: input.file_kind,
+    file_size: input.file_size,
+    status: "uploading",
+  };
+
+  const insert = async (row: Record<string, unknown>) => {
+    const { data, error } = await db.from(T).insert(row).select().maybeSingle();
+    if (error) return { error };
+    return { data };
+  };
+
+  // Prefer the source-aware insert (new schema).
+  if (input.source_type) {
+    const withSource = await insert({
+      ...base,
+      source_type: input.source_type,
+      source_meta: input.source_meta ?? {},
+    });
+    if (withSource.error && !isMissingSourceColumn(withSource.error)) {
+      console.error(`[documents] create failed for ${userId}:`, withSource.error.message);
+      return null;
+    }
+    if (!withSource.error && withSource.data) {
+      return rowToDoc(withSource.data as Record<string, unknown>);
+    }
+    // Source columns don't exist - fall through to the legacy insert.
+  }
+
+  const legacy = await insert(base);
+  if (legacy.error || !legacy.data) {
+    console.error(
+      `[documents] create failed for ${userId}:`,
+      legacy.error?.message ?? "no row returned"
+    );
     return null;
   }
-  if (!data) return null;
-  // Store the file as soon as the row exists so even a failed analysis
-  // leaves the PDF retrievable.
-  return rowToDoc(data as Record<string, unknown>);
+  return rowToDoc(legacy.data as Record<string, unknown>);
 }
 
 /** Upload file bytes into the user's storage under the doc's object key. */
@@ -152,6 +222,75 @@ export async function updateDocumentRecord(
     return false;
   }
   return true;
+}
+
+/* ------------------------- source provenance ------------------------- */
+
+/**
+ * Best-effort dedupe lookup: has this external source item already been
+ * imported for this user? Only meaningful when the source columns exist
+ * (migration run); returns null when they don't, so callers treat the
+ * import as new rather than failing.
+ */
+export async function findDocumentByExternalId(
+  userId: string,
+  sourceType: DocumentSourceType,
+  externalId: string
+): Promise<DocumentRecord | null> {
+  try {
+    const db = getSupabase();
+    const { data, error } = await db
+      .from(T)
+      .select("*")
+      .eq("user_id", userId)
+      .eq("source_type", sourceType)
+      .eq("source_meta->>external_id", externalId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      if (isMissingSourceColumn(error)) return null;
+      console.error(`[documents] source lookup failed for ${userId}:`, error.message);
+      return null;
+    }
+    if (!data) return null;
+    return rowToDoc(data as Record<string, unknown>);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Count documents a user imported from the given sources (used to enforce
+ * the free-tier integration import allowance). Returns 0 when the source
+ * columns are missing - the deployment can't prove usage, so it degrades
+ * to allowing imports.
+ */
+export async function countDocumentsBySource(
+  userId: string,
+  sourceTypes: DocumentSourceType[],
+  statuses?: DocumentStatus[]
+): Promise<number> {
+  try {
+    const db = getSupabase();
+    let query = db
+      .from(T)
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .in("source_type", sourceTypes);
+    if (statuses && statuses.length > 0) {
+      query = query.in("status", statuses);
+    }
+    const { count, error } = await query;
+    if (error) {
+      if (isMissingSourceColumn(error)) return 0;
+      console.error(`[documents] source count failed for ${userId}:`, error.message);
+      return 0;
+    }
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
 }
 
 /* ------------------------- read ------------------------- */

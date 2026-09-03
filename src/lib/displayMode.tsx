@@ -58,6 +58,7 @@ export const PLANS: PlanDef[] = [
       "Upcoming renewals, risks & savings",
       "Savings page with every opportunity",
       "5 AI messages per month",
+      "1 evaluation import from Google Drive or Slack",
     ],
     mode: "simple",
     aiMessages: 5,
@@ -70,7 +71,7 @@ export const PLANS: PlanDef[] = [
     cadence: "/month",
     blurb: "For teams building a shared view of every contract and vendor.",
     features: [
-      "Gmail integration - read vendor correspondence",
+      "Connect Gmail, Google Drive & Slack - import vendor documents",
       "Renewal & cancellation-deadline alerts",
       "Price-increase detection & risk scoring",
       "Business workspace - dense tables, filters, schema view",

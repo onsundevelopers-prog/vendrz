@@ -43,15 +43,17 @@ services:
         value: https://ollama.com/v1
       - key: OLLAMA_API_KEY
         sync: false      # set it in the Render dashboard
-      # Clerk authentication. CLERK_DISABLE_AUTO_PROXY keeps Clerk's
-      # frontend API on its own CDN (no /__clerk proxy hop through this
-      # server); it only mattered on *.vercel.app production URLs.
+      # Clerk authentication (DNS mode). The Clerk instance's primary domain
+      # is n4ma.online - frontend API https://clerk.n4ma.online, DNS-verified
+      # and live. clerk-js talks to clerk.n4ma.online directly from the
+      # browser; do NOT set NEXT_PUBLIC_CLERK_PROXY_URL here (that is the
+      # local-dev proxy path only). Paste the publishable + secret keys from
+      # the Clerk dashboard (API Keys) into the Render dashboard - both are
+      # marked sync:false so they are not read from this file.
       - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
         sync: false
       - key: CLERK_SECRET_KEY
         sync: false
-      - key: CLERK_DISABLE_AUTO_PROXY
-        value: "true"
       # Clerk route overrides (match .env.example defaults).
       - key: NEXT_PUBLIC_CLERK_SIGN_IN_URL
         value: /auth?mode=login
@@ -110,8 +112,31 @@ services:
         sync: false
       - key: GMAIL_TOKEN_SECRET
         sync: false   # generate: openssl rand -base64 32
-      # Mount a persistent disk on the service and point both file stores at
-      # it so Gmail tokens and in-flight extraction jobs survive restarts.
+      # Google Drive OAuth - same Google OAuth client (both redirect URIs
+      # registered) or a dedicated GOOGLE_DRIVE_CLIENT_ID/SECRET pair. The
+      # registered redirect URI must be <this-app>/api/drive/callback.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: DRIVE_TOKEN_SECRET
+        sync: false   # optional; falls back to GMAIL_TOKEN_SECRET
+      - key: DRIVE_TOKEN_FILE
+        value: /data/drive-tokens.json
+      # Slack OAuth - user-token scopes only (search:read files:read
+      # users:read). The registered redirect URI must be
+      # <this-app>/api/slack/callback.
+      - key: SLACK_CLIENT_ID
+        sync: false
+      - key: SLACK_CLIENT_SECRET
+        sync: false
+      - key: SLACK_TOKEN_SECRET
+        sync: false   # optional; falls back to GMAIL_TOKEN_SECRET
+      - key: SLACK_TOKEN_FILE
+        value: /data/slack-tokens.json
+      # Mount a persistent disk on the service and point the file stores at
+      # it so Gmail/Drive/Slack tokens and in-flight extraction jobs survive
+      # restarts.
       - key: GMAIL_TOKEN_FILE
         value: /data/gmail-tokens.json
       - key: EXTRACT_JOB_FILE

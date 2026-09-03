@@ -17,6 +17,8 @@
          analysis      jsonb,                  -- AnalysisResult
          extraction    jsonb,                  -- ContractExtraction
          document_name text,
+         source_type   text not null default 'manual', -- manual|gmail|google_drive|slack
+         source_meta   jsonb,                  -- provenance: external id/url/mime/checksum
          created_at    timestamptz not null default now(),
          updated_at    timestamptz not null default now()
        );
@@ -108,9 +110,19 @@ CREATE TABLE public.documents (
   analysis      jsonb,
   extraction    jsonb,
   document_name text,
+  source_type   text NOT NULL DEFAULT 'manual',
+  source_meta   jsonb,
   created_at    timestamptz NOT NULL DEFAULT now(),
   updated_at    timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_documents_user ON public.documents (user_id);
+CREATE INDEX IF NOT EXISTS idx_documents_source ON public.documents (user_id, source_type);
+
+---------------------------------------------------------------------------
+  Already created the table before? Run this migration instead:
+---------------------------------------------------------------------------
+ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS source_type text NOT NULL DEFAULT 'manual';
+ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS source_meta jsonb;
+CREATE INDEX IF NOT EXISTS idx_documents_source ON public.documents (user_id, source_type);
 `);
 }

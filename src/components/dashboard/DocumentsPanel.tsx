@@ -28,6 +28,22 @@ const STATUS_LABEL: Record<ClientDocument["status"], string> = {
   failed: "Failed",
 };
 
+/** Provenance label for the document library (mirrors source_type). */
+function sourceLabel(source?: ClientDocument["source_type"] | null): string {
+  switch (source) {
+    case "google_drive":
+      return "via Google Drive";
+    case "slack":
+      return "via Slack";
+    case "gmail":
+      return "via Gmail";
+    case "manual":
+      return "Uploaded";
+    default:
+      return "";
+  }
+}
+
 function StatusChip({ status }: { status: ClientDocument["status"] }) {
   if (status === "processing" || status === "uploading") {
     return (
@@ -125,6 +141,7 @@ export function DocumentsPanel() {
                         day: "numeric",
                       })
                     : ""}
+                  {sourceLabel(doc.source_type) ? ` · ${sourceLabel(doc.source_type)}` : ""}
                   {doc.status === "failed" && doc.error ? ` · ${doc.error}` : ""}
                 </p>
               </div>

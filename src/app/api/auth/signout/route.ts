@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { clearClerkAuthCookies } from "@/lib/clerkCookies";
 
 export const runtime = "nodejs";
 
@@ -26,18 +27,20 @@ export async function POST(req: NextRequest) {
     // Not signed in - still clear cookies below.
   }
 
+  const secure = req.nextUrl.protocol === "https:";
   const res = NextResponse.json({ ok: true });
+  const base = { path: "/", maxAge: 0, sameSite: "lax" as const, secure };
+  // Fixed Clerk cookie names (host-only + domain-scoped legacy copies).
+  clearClerkAuthCookies(res.cookies, { secure });
   // Domain attribute must be a bare host (no port) or browsers ignore it.
   const host = (req.headers.get("host") ?? "").split(":")[0];
-  const names = ["__client", "__session", "__session_uat", "__session_legacy"];
-  const base = { path: "/", maxAge: 0, sameSite: "lax" as const, secure: true };
+  const names = new Set(["__client", "__session", "__session_uat", "__session_legacy"]);
   for (const name of names) {
-    res.cookies.set(name, "", base);
     if (host) res.cookies.set(name, "", { ...base, domain: host });
   }
   // Per-client session cookies (__session_<clientId>) if any exist.
   for (const c of req.cookies.getAll()) {
-    if (c.name.startsWith("__session_") && !names.includes(c.name)) {
+    if (c.name.startsWith("__session_") && !names.has(c.name)) {
       res.cookies.set(c.name, "", base);
       if (host) res.cookies.set(c.name, "", { ...base, domain: host });
     }

@@ -54,6 +54,24 @@ interface GmailStatus {
   reconnectRequired?: boolean;
 }
 
+interface DriveStatus {
+  connected: boolean;
+  configured?: boolean;
+  email?: string | null;
+  name?: string | null;
+  connectedAt?: string;
+  reconnectRequired?: boolean;
+}
+
+interface SlackStatus {
+  connected: boolean;
+  configured?: boolean;
+  teamName?: string | null;
+  workspaceUrl?: string | null;
+  connectedAt?: string;
+  reconnectRequired?: boolean;
+}
+
 export default function SettingsPage() {
   const auth = useAuthUser();
   const userId = auth.id;
@@ -76,6 +94,21 @@ export default function SettingsPage() {
     text: string;
   } | null>(null);
 
+  // Real Google Drive + Slack connection state (same server-truth model as
+  // Gmail: tokens are stored server-side and never leave the API layer).
+  const [drive, setDrive] = useState<DriveStatus | null>(
+    isClerkEnabled ? null : { connected: false, configured: false }
+  );
+  const [driveBusy, setDriveBusy] = useState(false);
+  const [slack, setSlack] = useState<SlackStatus | null>(
+    isClerkEnabled ? null : { connected: false, configured: false }
+  );
+  const [slackBusy, setSlackBusy] = useState(false);
+  const [connMsg, setConnMsg] = useState<{
+    kind: "ok" | "err";
+    text: string;
+  } | null>(null);
+
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => (r.ok ? r.json() : null))
@@ -86,20 +119,25 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!isClerkEnabled) return;
     let alive = true;
-    fetch("/api/gmail/status")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (alive) setGmail(d ?? { connected: false, configured: false });
-      })
-      .catch(() => {
-        if (alive) setGmail({ connected: false, configured: false });
-      });
+    const load = (path: string) =>
+      fetch(path)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null);
+    void load("/api/gmail/status").then((d) => {
+      if (alive) setGmail(d ?? { connected: false, configured: false });
+    });
+    void load("/api/drive/status").then((d) => {
+      if (alive) setDrive(d ?? { connected: false, configured: false });
+    });
+    void load("/api/slack/status").then((d) => {
+      if (alive) setSlack(d ?? { connected: false, configured: false });
+    });
     return () => {
       alive = false;
     };
   }, []);
 
-  // Surface the result of the OAuth round-trip the callback redirected back with.
+  // Surface the result of any OAuth round-trip the callback redirected back with.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- one-time OAuth result surfacing, mirrors the displayMode pattern */
     const p = new URLSearchParams(window.location.search);
@@ -111,25 +149,83 @@ export default function SettingsPage() {
     } else if (g === "error") {
       setGmailMsg({ kind: "err", text: "Couldn't connect Gmail. Please try again." });
     }
-    if (g) window.history.replaceState({}, "", "/dashboard/settings");
+    const d = p.get("drive");
+    if (d === "connected") {
+      setConnMsg({ kind: "ok", text: "Google Drive connected. Files can now be imported from your Drive." });
+    } else if (d === "denied") {
+      setConnMsg({ kind: "err", text: "Google Drive access was denied. No files were shared." });
+    } else if (d === "error") {
+      setConnMsg({ kind: "err", text: "Couldn't connect Google Drive. Please try again." });
+    }
+    const s = p.get("slack");
+    if (s === "connected") {
+      setConnMsg({ kind: "ok", text: "Slack connected. Messages and files can now be searched and imported." });
+    } else if (s === "denied") {
+      setConnMsg({ kind: "err", text: "Slack access was denied. No workspace data was shared." });
+    } else if (s === "error") {
+      setConnMsg({ kind: "err", text: "Couldn't connect Slack. Please try again." });
+    }
+    if (g || d || s) {
+      window.history.replaceState({}, "", "/dashboard/settings");
+      // Refresh connection state so the rows reflect the round-trip.
+      void fetch("/api/gmail/status").then((r) => {
+        if (r.ok) return r.json().then(setGmail);
+      });
+      void fetch("/api/drive/status").then((r) => {
+        if (r.ok) return r.json().then(setDrive);
+      });
+      void fetch("/api/slack/status").then((r) => {
+        if (r.ok) return r.json().then(setSlack);
+      });
+    }
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  const handleDisconnect = async () => {
-    setGmailBusy(true);
+  const handleDisconnect = async (which: "gmail" | "drive" | "slack") => {
+    if (which === "gmail") setGmailBusy(true);
+    if (which === "drive") setDriveBusy(true);
+    if (which === "slack") setSlackBusy(true);
     setGmailMsg(null);
+    setConnMsg(null);
     try {
-      const res = await fetch("/api/gmail/disconnect", { method: "POST" });
+      const res = await fetch(`/api/${which}/disconnect`, { method: "POST" });
+      const msg =
+        which === "gmail"
+          ? { kind: "ok" as const, text: "Gmail disconnected. No further mailbox access." }
+          : which === "drive"
+            ? { kind: "ok" as const, text: "Google Drive disconnected. No further Drive access." }
+            : { kind: "ok" as const, text: "Slack disconnected. No further Slack access." };
+      const errMsg = {
+        ...msg,
+        kind: "err" as const,
+        text: `Couldn't disconnect ${which === "gmail" ? "Gmail" : which === "drive" ? "Google Drive" : "Slack"} right now. Try again.`,
+      };
       if (res.ok) {
-        setGmail({ connected: false, configured: gmail?.configured });
-        setGmailMsg({ kind: "ok", text: "Gmail disconnected. No further mailbox access." });
+        if (which === "gmail") {
+          setGmail({ connected: false, configured: gmail?.configured });
+          setGmailMsg(msg);
+        } else if (which === "drive") {
+          setDrive({ connected: false, configured: drive?.configured });
+          setConnMsg(msg);
+        } else {
+          setSlack({ connected: false, configured: slack?.configured });
+          setConnMsg(msg);
+        }
       } else {
-        setGmailMsg({ kind: "err", text: "Couldn't disconnect Gmail right now. Try again." });
+        if (which === "gmail") setGmailMsg(errMsg);
+        else setConnMsg(errMsg);
       }
     } catch {
-      setGmailMsg({ kind: "err", text: "Couldn't reach the server. Check your connection." });
+      const netErr = {
+        kind: "err" as const,
+        text: "Couldn't reach the server. Check your connection.",
+      };
+      if (which === "gmail") setGmailMsg(netErr);
+      else setConnMsg(netErr);
     } finally {
       setGmailBusy(false);
+      setDriveBusy(false);
+      setSlackBusy(false);
     }
   };
 
@@ -138,7 +234,8 @@ export default function SettingsPage() {
   const autoRenew = contracts.filter((c) => c.autoRenew).length;
   const escalating = contracts.filter((c) => c.escalationRate != null).length;
 
-  const connectedCount = gmail?.connected ? 1 : 0;
+  const connectedCount =
+    (gmail?.connected ? 1 : 0) + (drive?.connected ? 1 : 0) + (slack?.connected ? 1 : 0);
 
   return (
     <div className="flex h-full">
@@ -300,7 +397,7 @@ export default function SettingsPage() {
                     </button>
                   ) : isClerkEnabled && gmail?.connected ? (
                     <button
-                      onClick={handleDisconnect}
+                      onClick={() => void handleDisconnect("gmail")}
                       disabled={gmailBusy}
                       className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-50"
                     >
@@ -308,10 +405,76 @@ export default function SettingsPage() {
                     </button>
                   ) : isClerkEnabled && gmail?.configured !== false ? (
                     <a
-                      href="/api/gmail/auth"
+                      href="/api/gmail/auth?next=/dashboard/settings"
                       className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
                     >
                       Connect Gmail
+                    </a>
+                  ) : undefined
+                }
+              />
+              <Row
+                title="Google Drive"
+                desc={
+                  drive?.connected
+                    ? `Connected${drive.email ? ` as ${drive.email}` : drive.name ? ` as ${drive.name}` : ""}${drive.connectedAt ? ` · ${new Date(drive.connectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}. Browse, search and import vendor documents with read-only access.`
+                    : drive?.reconnectRequired
+                      ? "Connection expired or was revoked. Reconnect to keep importing from Drive."
+                      : isClerkEnabled && drive?.configured === false
+                        ? "Google Drive OAuth isn't configured on this deployment yet."
+                        : isClerkEnabled
+                          ? "Not connected. Drive files stay untouched until you connect."
+                          : "Sign in with Clerk to connect Google Drive."
+                }
+                state={drive?.connected ? "connected" : "not connected"}
+                action={
+                  isClerkEnabled && drive?.connected ? (
+                    <button
+                      onClick={() => void handleDisconnect("drive")}
+                      disabled={driveBusy}
+                      className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-50"
+                    >
+                      {driveBusy ? "Disconnecting…" : "Disconnect"}
+                    </button>
+                  ) : isClerkEnabled && drive?.configured !== false ? (
+                    <a
+                      href="/api/drive/auth?next=/dashboard/settings"
+                      className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
+                    >
+                      Connect Drive
+                    </a>
+                  ) : undefined
+                }
+              />
+              <Row
+                title="Slack"
+                desc={
+                  slack?.connected
+                    ? `Connected${slack?.teamName ? ` to ${slack.teamName}` : ""}${slack.connectedAt ? ` · ${new Date(slack.connectedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : ""}. Search messages and files you can access and import vendor information.`
+                    : slack?.reconnectRequired
+                      ? "Authorization was revoked. Reconnect to keep searching Slack."
+                      : isClerkEnabled && slack?.configured === false
+                        ? "Slack isn't configured on this deployment yet."
+                        : isClerkEnabled
+                          ? "Not connected. Slack stays untouched until you connect."
+                          : "Sign in with Clerk to connect Slack."
+                }
+                state={slack?.connected ? "connected" : "not connected"}
+                action={
+                  isClerkEnabled && slack?.connected ? (
+                    <button
+                      onClick={() => void handleDisconnect("slack")}
+                      disabled={slackBusy}
+                      className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-50"
+                    >
+                      {slackBusy ? "Disconnecting…" : "Disconnect"}
+                    </button>
+                  ) : isClerkEnabled && slack?.configured !== false ? (
+                    <a
+                      href="/api/slack/auth?next=/dashboard/settings"
+                      className="inline-flex h-7 items-center rounded-md border border-line px-3 text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
+                    >
+                      Connect Slack
                     </a>
                   ) : undefined
                 }
@@ -326,13 +489,13 @@ export default function SettingsPage() {
                 desc={`${connectedCount} connected`}
                 state={connectedCount > 0 ? "connected" : "not connected"}
               />
-              {gmailMsg && (
+              {(gmailMsg ?? connMsg) && (
                 <p
                   className={`px-4 py-3 text-[12px] leading-relaxed ${
-                    gmailMsg.kind === "ok" ? "text-zinc-300" : "text-zinc-400"
+                    (gmailMsg ?? connMsg)!.kind === "ok" ? "text-zinc-300" : "text-zinc-400"
                   }`}
                 >
-                  {gmailMsg.text}
+                  {(gmailMsg ?? connMsg)!.text}
                 </p>
               )}
             </Section>

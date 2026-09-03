@@ -7,6 +7,7 @@ import {
   Bot,
   CalendarClock,
   FileText,
+  FolderInput,
   Grid3x3,
   Home,
   LogOut,
@@ -52,6 +53,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { label: "Home", href: "/dashboard", icon: <Home size={15} /> },
+  { label: "Import", href: "/dashboard/import", icon: <FolderInput size={15} /> },
   { label: "Vendors", href: "/dashboard/companies", icon: <Grid3x3 size={15} /> },
   { label: "AI Assistant", href: "/dashboard/ai", icon: <Bot size={15} /> },
   { label: "Contracts", href: "/dashboard/contracts", icon: <FileText size={15} /> },
@@ -150,6 +152,13 @@ function WorkspaceShell({
         onSelect: () => router.push("/dashboard/settings"),
       },
       {
+        id: "/dashboard/import",
+        group: "Actions",
+        label: "Add vendor data",
+        keywords: "import connect gmail google drive slack upload documents contracts",
+        onSelect: () => router.push("/dashboard/import"),
+      },
+      {
         id: "/upload",
         group: "Actions",
         label: "Upload a contract",
@@ -180,7 +189,7 @@ function WorkspaceShell({
         </div>
         <div className="flex min-h-0 flex-1">
           <aside className="flex w-[52px] shrink-0 flex-col items-center gap-2.5 border-r border-line bg-surface py-3">
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 9 }).map((_, i) => (
               <Skeleton key={i} className="size-6 rounded-md" />
             ))}
           </aside>

@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getAIProvider } from "@/lib/ai";
-import { aiUnreachableMessage, extractFileText } from "@/lib/extractResume";
-import type { AnalysisResult } from "@/lib/types";
 import { rejectUnauthenticated } from "@/lib/serverAuth";
 import {
-  createDocumentRecord,
-  storeDocumentFile,
-  updateDocumentRecord,
   getDocumentsForUser,
   isDocumentsReady,
 } from "@/lib/documents";
+import { importDocumentForUser } from "@/lib/ingest";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -96,81 +92,26 @@ export async function POST(req: NextRequest) {
     );
   }
   const kind = ext === "docx" ? "docx" : ext === "pdf" ? "pdf" : "unknown";
+  const bytes = Buffer.from(await file.arrayBuffer());
 
-  // 1. Persist the document row + file FIRST so the upload survives even if
-  //    the analysis below fails. The record starts as "uploading".
-  const doc = await createDocumentRecord(userId, {
+  // Everything after this point runs through the shared ingestion core -
+  // the exact same pipeline Google Drive and Slack imports use - so every
+  // source produces one normalized document record with provenance.
+  const result = await importDocumentForUser(userId, {
     filename: file.name,
+    bytes,
     file_kind: kind,
-    file_size: file.size,
+    source_type: "manual",
   });
-  if (!doc) {
+
+  if (result.status === "unsupported" || result.status === "error") {
     return NextResponse.json(
-      { error: "Couldn't start the upload. Please try again." },
+      { error: result.error ?? "Couldn't start the upload. Please try again." },
       { status: 502 }
     );
   }
-
-  const bytes = Buffer.from(await file.arrayBuffer());
-  const storagePath = await storeDocumentFile(userId, doc.id, file.name, bytes);
-  await updateDocumentRecord(doc.id, userId, { storage_path: storagePath ?? null });
-
-  // 2. Analyze. Mark processing, run the shared pipeline, then persist the
-  //    final state. On any failure the document stays saved (status=failed).
-  await updateDocumentRecord(doc.id, userId, { status: "processing" });
-  try {
-    const text = await extractFileText(file, file.name);
-    if (text.trim().length < 40) {
-      await updateDocumentRecord(doc.id, userId, {
-        status: "failed",
-        error: "This file looks empty - no readable text found.",
-      });
-      return NextResponse.json(
-        { document: { ...doc, status: "failed", error: "This file looks empty - no readable text found." }, analysis: null },
-        { status: 200 }
-      );
-    }
-
-    // Reuse the real LLM extraction (same provider/fallback as /api/extract).
-    const provider = getAIProvider();
-    const { runExtractionPipeline } = await import("@/lib/ai/extractPipeline");
-    const { richToExtraction } = await import("@/lib/ai/base");
-    const pipelineResult = await runExtractionPipeline(
-      provider,
-      text,
-      file.name,
-      () => {}
-    );
-    if (pipelineResult.taskErrors.length >= 3) {
-      const err = aiUnreachableMessage(pipelineResult.taskErrors);
-      await updateDocumentRecord(doc.id, userId, { status: "failed", error: err });
-      return NextResponse.json({ document: { ...doc, status: "failed", error: err }, analysis: null }, { status: 200 });
-    }
-    const rich = pipelineResult.extraction;
-    const extraction = richToExtraction(rich);
-
-    // Build the full deterministic analysis (risk score, findings, savings
-    // opportunities, cancellation deadline) from the extracted terms - the
-    // exact same rules the anonymous upload flow applies, so a signed-in
-    // upload is never shown as permanently "Pending / low risk" with an empty
-    // findings list just because it took the authenticated path.
-    const { generateAnalysis } = await import("@/lib/pipeline");
-    const analysis = generateAnalysis(file.name, kind, { extraction, rich });
-
-    await updateDocumentRecord(doc.id, userId, {
-      status: "ready",
-      analysis: analysis as AnalysisResult,
-      extraction,
-      document_name: file.name,
-    });
-    return NextResponse.json({ document: { ...doc, status: "ready", analysis, extraction }, analysis });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Couldn't analyze this file.";
-    await updateDocumentRecord(doc.id, userId, { status: "failed", error: message });
-    console.error(`[documents] analyze ${doc.id} failed:`, message);
-    return NextResponse.json(
-      { document: { ...doc, status: "failed", error: message }, analysis: null },
-      { status: 200 }
-    );
-  }
+  return NextResponse.json({
+    document: result.document,
+    analysis: result.analysis,
+  });
 }

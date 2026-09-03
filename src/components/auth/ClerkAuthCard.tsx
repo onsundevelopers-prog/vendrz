@@ -55,26 +55,49 @@ function WidgetSkeleton() {
 
 /* Shown only if the Clerk widget has not become ready after a generous
    timeout. A silent void below the heading is indistinguishable from a
-   broken page; this turns it into an actionable recovery path. */
+   broken page; this turns it into an actionable recovery path. Stale
+   Clerk session cookies from an older Clerk instance/domain are the most
+   common cause - the reset button clears them server-side (no incognito
+   needed) and reloads so clerk-js boots clean. */
 function StuckBox({ onRetry }: { onRetry: () => void }) {
+  const [resetting, setResetting] = useState(false);
+  const resetAuth = async () => {
+    setResetting(true);
+    try {
+      await fetch("/api/auth/clear", { method: "POST" });
+    } catch {
+      // The reload below still starts fresh even if the clear call failed.
+    }
+    window.location.reload();
+  };
   return (
     <div className="mt-6 rounded-xl border border-coral/30 bg-coral/10 p-4 text-center sm:p-5">
       <p className="text-[13.5px] font-medium text-fg">
         The sign-in form is taking a while to load
       </p>
       <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">
-        This usually means your browser cached an older version of the page,
-        or an extension (ad blocker) is blocking the sign-in scripts.
+        This usually means your browser is holding a stale sign-in cookie from
+        an older version of the app, or an extension is blocking the sign-in
+        scripts.
       </p>
-      <button
-        onClick={onRetry}
-        className="mt-3 inline-flex h-8 items-center rounded-full bg-white px-4 text-[13px] font-[510] tracking-[-0.011em] text-black transition-colors hover:bg-bone"
-      >
-        Refresh page
-      </button>
+      <div className="mt-3 flex items-center justify-center gap-2">
+        <button
+          onClick={onRetry}
+          className="inline-flex h-8 items-center rounded-full bg-white px-4 text-[13px] font-[510] tracking-[-0.011em] text-black transition-colors hover:bg-bone"
+        >
+          Refresh page
+        </button>
+        <button
+          onClick={() => void resetAuth()}
+          disabled={resetting}
+          className="inline-flex h-8 items-center rounded-full border border-line px-4 text-[13px] font-[510] tracking-[-0.011em] text-fg transition-colors hover:bg-white/[0.05] disabled:opacity-50"
+        >
+          {resetting ? "Resetting…" : "Reset sign-in state"}
+        </button>
+      </div>
       <p className="mt-2.5 text-[11.5px] leading-relaxed text-faint">
-        Still stuck? Open it in a private/incognito window - that bypasses all
-        cached scripts.
+        Reset clears this site&apos;s stored sign-in cookies - your data is safe and
+        you&apos;ll sign back in normally.
       </p>
     </div>
   );
