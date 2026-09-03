@@ -9,7 +9,7 @@
 /*  skeleton in this slot while the widget chunk + clerk-js boot.      */
 /* ------------------------------------------------------------------ */
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { SignIn, SignUp, useUser } from "@clerk/nextjs";
@@ -31,6 +31,50 @@ function AuthHeader({ mode }: { mode: "login" | "signup" }) {
         {mode === "signup"
           ? "Save analyses, track renewals, and get alerts before deadlines slip."
           : "Log in to your workspace."}
+      </p>
+    </div>
+  );
+}
+
+/* Loading skeleton shown under the heading while clerk-js downloads and
+   boots (~2-4s on a cold load). Without it the card looks like an empty
+   void between the heading and the widget, which reads as "broken". */
+function WidgetSkeleton() {
+  return (
+    <div className="mt-6 w-full" aria-hidden="true">
+      <div className="h-11 w-full rounded-md bg-white/[0.05]" />
+      <div className="mt-3 h-11 w-full rounded-md bg-white/[0.05]" />
+      <div className="mt-4 h-11 w-full rounded-md bg-white/[0.08]" />
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-4 flex-1 rounded-md bg-white/[0.04]" />
+        <div className="h-4 w-24 rounded-md bg-white/[0.04]" />
+      </div>
+    </div>
+  );
+}
+
+/* Shown only if the Clerk widget has not become ready after a generous
+   timeout. A silent void below the heading is indistinguishable from a
+   broken page; this turns it into an actionable recovery path. */
+function StuckBox({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="mt-6 rounded-xl border border-coral/30 bg-coral/10 p-4 text-center sm:p-5">
+      <p className="text-[13.5px] font-medium text-fg">
+        The sign-in form is taking a while to load
+      </p>
+      <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">
+        This usually means your browser cached an older version of the page,
+        or an extension (ad blocker) is blocking the sign-in scripts.
+      </p>
+      <button
+        onClick={onRetry}
+        className="mt-3 inline-flex h-8 items-center rounded-full bg-white px-4 text-[13px] font-[510] tracking-[-0.011em] text-black transition-colors hover:bg-bone"
+      >
+        Refresh page
+      </button>
+      <p className="mt-2.5 text-[11.5px] leading-relaxed text-faint">
+        Still stuck? Open it in a private/incognito window - that bypasses all
+        cached scripts.
       </p>
     </div>
   );
@@ -117,6 +161,15 @@ export function ClerkAuthCard() {
 
   const { isLoaded, user } = useUser();
 
+  // If the Clerk widget has not become ready after ~12s (clerk-js blocked,
+  // stale cached bundle, ad blocker), swap the skeleton for the recovery box.
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    if (isLoaded) return;
+    const t = setTimeout(() => setStuck(true), 12000);
+    return () => clearTimeout(t);
+  }, [isLoaded]);
+
   // Once signed in: claim any anonymous session, then head to `next`.
   useEffect(() => {
     if (!isLoaded || !user) return;
@@ -150,23 +203,29 @@ export function ClerkAuthCard() {
     <>
       <SessionBanner sessionId={sessionId} mode={mode} />
       <AuthHeader mode={mode} />
-      <div className="mt-6">
-        {mode === "signup" ? (
-          <SignUp
-            routing="hash"
-            signInUrl={`/auth?mode=login${toggleParams}`}
-            fallbackRedirectUrl={afterAuth}
-            appearance={clerkAppearance}
-          />
-        ) : (
-          <SignIn
-            routing="hash"
-            signUpUrl={`/auth?mode=signup${toggleParams}`}
-            fallbackRedirectUrl={afterAuth}
-            appearance={clerkAppearance}
-          />
-        )}
-      </div>
+      {isLoaded ? (
+        <div className="mt-6">
+          {mode === "signup" ? (
+            <SignUp
+              routing="hash"
+              signInUrl={`/auth?mode=login${toggleParams}`}
+              fallbackRedirectUrl={afterAuth}
+              appearance={clerkAppearance}
+            />
+          ) : (
+            <SignIn
+              routing="hash"
+              signUpUrl={`/auth?mode=signup${toggleParams}`}
+              fallbackRedirectUrl={afterAuth}
+              appearance={clerkAppearance}
+            />
+          )}
+        </div>
+      ) : stuck ? (
+        <StuckBox onRetry={() => window.location.reload()} />
+      ) : (
+        <WidgetSkeleton />
+      )}
     </>
   );
 }
