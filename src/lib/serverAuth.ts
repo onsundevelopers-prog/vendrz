@@ -39,15 +39,16 @@ export async function getCurrentUserPlan(): Promise<{
 }
 
 /**
- * Sections gated behind the Team plan for Business-plan accounts. This is
- * the server-side mirror of PLAN_LOCKED_SECTIONS in displayMode.tsx so the
- * API and the UI agree (and the API can be called directly without
- * bypassing either).
+ * Sections gated behind the Team plan. Free locks Vendors, Contracts,
+ * Renewals, Risk, Activity and Savings; Business additionally locks
+ * Renewals / Risk / Savings. This is the server-side mirror of
+ * PLAN_LOCKED_SECTIONS in displayMode.tsx so the API and the UI agree
+ * (and the API can be called directly without bypassing either).
  */
 export const SERVER_LOCKED_SECTIONS: Record<Plan, string[]> = {
-  free: [],
+  free: ["companies", "contracts", "renewals", "risks", "activity", "savings"],
   team: [],
-  business: ["renewals", "risk", "savings"],
+  business: ["renewals", "risks", "savings"],
   enterprise: [],
 };
 

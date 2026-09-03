@@ -234,6 +234,66 @@ export default function AuditPage() {
               </span>
             </div>
           </motion.button>
+
+          {/* D - import from google drive */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.32, ease }}
+            onClick={() => router.push("/dashboard/import")}
+            className="border-sheen group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
+          >
+            <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
+              04
+            </div>
+            <div className="flex flex-1 flex-col">
+              <h3 className="mt-5 text-[17px] font-semibold tracking-[-0.02em] text-fg">
+                Import from Google Drive
+              </h3>
+              <p className="mt-2 text-[13.5px] leading-relaxed tracking-[-0.01em] text-muted">
+                Browse or search your Drive, pick vendor contracts and documents, and
+                import them for analysis. PDF, DOCX, and Google Docs/Sheets supported.
+              </p>
+            </div>
+            <div className="mt-5 flex w-full items-center justify-between">
+              <span className="rounded-md border border-white/10 bg-[#18181B] px-2.5 py-1 text-[11px] tracking-tight text-zinc-400">
+                OAuth · read-only
+              </span>
+              <span className="text-[14px] text-zinc-500 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-zinc-300">
+                →
+              </span>
+            </div>
+          </motion.button>
+
+          {/* E - import from slack */}
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4, ease }}
+            onClick={() => router.push("/dashboard/import")}
+            className="border-sheen group flex h-full flex-col justify-between rounded-lg border border-line bg-surface p-5 text-left transition-colors hover:bg-white/[0.03]"
+          >
+            <div className="flex size-10 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] text-[12px] font-semibold tracking-tight text-zinc-300">
+              05
+            </div>
+            <div className="flex flex-1 flex-col">
+              <h3 className="mt-5 text-[17px] font-semibold tracking-[-0.02em] text-fg">
+                Import from Slack
+              </h3>
+              <p className="mt-2 text-[13.5px] leading-relaxed tracking-[-0.01em] text-muted">
+                Search your Slack workspace for vendor-related messages and files, and
+                import the ones that matter with full source context.
+              </p>
+            </div>
+            <div className="mt-5 flex w-full items-center justify-between">
+              <span className="rounded-md border border-white/10 bg-[#18181B] px-2.5 py-1 text-[11px] tracking-tight text-zinc-400">
+                OAuth · read-only
+              </span>
+              <span className="text-[14px] text-zinc-500 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-zinc-300">
+                →
+              </span>
+            </div>
+          </motion.button>
         </div>
 
         {/* honest notice for unconnected sources */}

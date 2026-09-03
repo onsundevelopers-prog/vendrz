@@ -8,6 +8,9 @@ import type { ActivityRecord } from "@/lib/types";
 import { WorkspaceEmpty } from "@/components/dashboard/panels";
 import { DataTableEditor, type EditorColumn } from "@/components/dashboard/DataTableEditor";
 import { tableTabs } from "@/components/dashboard/tableTabs";
+import { SectionLocked } from "@/components/dashboard/SectionLocked";
+import { useDisplayMode } from "@/lib/displayMode";
+import { useSectionEntitlement } from "@/lib/useSectionEntitlement";
 
 /* ------------------------------------------------------------------ */
 /*  Activity - the workspace event log as a table editor.            */
@@ -51,6 +54,7 @@ const statusFor = (a: ActivityRecord) =>
 export default function ActivityPage() {
   const auth = useAuthUser();
   const userId = auth.id;
+  const { lockedSections } = useDisplayMode();
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const [type, setType] = useState<ActivityRecord["type"] | "all">("all");
   const [actor, setActor] = useState<string>("all");
@@ -62,6 +66,17 @@ export default function ActivityPage() {
     () => scoped.map((a) => ({ id: a.id, record: a })),
     [scoped]
   );
+
+  const { locked: activityLocked } = useSectionEntitlement("activity", lockedSections.includes("activity"));
+
+  if (activityLocked) {
+    return (
+      <SectionLocked
+        title="Activity"
+        description="The complete workspace event log - imports, reviews, alerts, cancellations and status changes."
+      />
+    );
+  }
 
   const columns: EditorColumn<ActivityRow>[] = [
     {

@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
   const { mode, ready, plan, requestUpgrade, aiMessageLimit, lockedSections } = useDisplayMode();
   const renewalsLocked = lockedSections.includes("renewals");
-  const riskLocked = lockedSections.includes("risk");
+  const riskLocked = lockedSections.includes("risks");
   const savingsLocked = lockedSections.includes("savings");
 
   // Landed from a pricing card (e.g. /dashboard?upgrade=team): open the

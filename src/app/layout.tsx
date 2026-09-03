@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Inter, Inter_Tight, Geist_Mono } from "next/font/google";
 import { SITE, FAQS } from "@/lib/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import "./globals.css";
@@ -17,6 +17,14 @@ import "./globals.css";
 // are enabled globally on body in globals.css.
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Inter Display (Inter Tight variable) - the tighter display cut for
+// headings while body text stays regular Inter (Linear design notes).
+const interDisplay = Inter_Tight({
+  variable: "--font-inter-display",
   subsets: ["latin"],
   display: "swap",
 });
@@ -114,7 +122,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" className={`${inter.variable} ${interDisplay.variable} ${geistMono.variable} antialiased`}>
       <body>
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />

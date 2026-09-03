@@ -9,17 +9,18 @@ import {
 
 export const runtime = "nodejs";
 
-const VALID_SECTIONS = ["renewals", "risk", "savings"];
+const VALID_SECTIONS = ["companies", "contracts", "renewals", "risks", "activity", "savings"];
 
 /**
  * GET /api/features/[section]
  *
- * Server-side authorization gate for the sections that the Team plan
- * includes but the Business plan gates (renewals / risk / savings).
+ * Server-side authorization gate for the workspace sections the Free and
+ * Business plans gate behind the Team plan (Vendors, Contracts, Renewals,
+ * Risk, Activity, Savings).
  *
- * A Business-plan account gets a 403 here regardless of what the frontend
- * shows, so a user cannot unlock a restricted route or payload by calling
- * the API directly / typing the URL / manipulating client state.
+ * A locked account gets a 403 here regardless of what the frontend shows,
+ * so a user cannot unlock a restricted route or payload by calling the
+ * API directly / typing the URL / manipulating client state.
  */
 export async function GET(
   _req: Request,

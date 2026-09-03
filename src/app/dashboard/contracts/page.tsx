@@ -14,6 +14,9 @@ import {
   type EditorColumn,
 } from "@/components/dashboard/DataTableEditor";
 import { tableTabs } from "@/components/dashboard/tableTabs";
+import { SectionLocked } from "@/components/dashboard/SectionLocked";
+import { useDisplayMode } from "@/lib/displayMode";
+import { useSectionEntitlement } from "@/lib/useSectionEntitlement";
 
 /* ------------------------------------------------------------------ */
 /*  Contracts - the contract register as a Supabase-style table        */
@@ -25,11 +28,23 @@ import { tableTabs } from "@/components/dashboard/tableTabs";
 export default function ContractsPage() {
   const auth = useAuthUser();
   const userId = auth.id;
+  const { lockedSections } = useDisplayMode();
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
 
   const [selected, setSelected] = useState<ContractRecord | null>(null);
+
+  const { locked: contractsLocked } = useSectionEntitlement("contracts", lockedSections.includes("contracts"));
+
+  if (contractsLocked) {
+    return (
+      <SectionLocked
+        title="Contracts"
+        description="Every analyzed agreement in one dense register - terms, risk, renewals and the documents behind them."
+      />
+    );
+  }
 
   const selActivity = selected
     ? activity.filter((a) => (a.vendorName ?? "").toLowerCase() === selected.vendorName.toLowerCase())

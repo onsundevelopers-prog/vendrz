@@ -4,7 +4,8 @@
 /*  Dashboard plan + display mode.                                    */
 /*                                                                     */
 /*  n4ma has four tiers:                                              */
-/*    - Free ($0)        - Simple workspace, savings page, 5 AI msgs/mo */
+/*    - Free ($0)        - Home, AI (5 msgs/mo), Settings + manual      */
+/*                        upload; most workspace sections are locked    */
 /*    - Team ($20/mo)    - Business workspace, Gmail, unlimited AI      */
 /*    - Business ($999 + $1/yr) - + team/roles, automations, support    */
 /*    - Enterprise (custom) - everything, contact sales                 */
@@ -12,6 +13,10 @@
 /*  The plan gates features:                                           */
 /*    - display mode: Free uses the Simple workspace; Team, Business   */
 /*      and Enterprise unlock the dense Business workspace.            */
+/*    - sections: Free unlocks Home / AI / Settings / Import (manual    */
+/*      upload + the 1 evaluation import); Vendors, Contracts,          */
+/*      Renewals, Risk, Activity and Savings are locked behind Team.    */
+/*      Business additionally locks Renewals / Risk / Savings.          */
 /*    - AI messages: Free 5 / paid tiers unlimited, counted per        */
 /*      calendar month (see store.getAiUsage / incrementAiUsage).      */
 /*    - Gmail: Free is excluded; every paid tier can connect.          */
@@ -55,8 +60,8 @@ export const PLANS: PlanDef[] = [
     blurb: "For individuals just getting started with n4ma.",
     features: [
       "What needs attention, at a glance",
-      "Upcoming renewals, risks & savings",
-      "Savings page with every opportunity",
+      "Upcoming renewals, risks & savings on your dashboard",
+      "Manual contract upload & analysis",
       "5 AI messages per month",
       "1 evaluation import from Google Drive or Slack",
     ],
@@ -135,16 +140,17 @@ const BUSINESS_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
 const UPGRADE_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
 
 /**
- * Workspace sections that a given plan does NOT include. For the Business
- * plan, Renewals / Risk / Savings are gated to the Team plan: they are shown
- * as locked with an "included with Team" note, never populated. Free uses
- * the Simple view which still surfaces these as overview stats, so only the
- * Business tier locks the dedicated sections.
+ * Workspace sections that a given plan does NOT include, shown as locked
+ * with an "included with Team" note (never populated for the account).
+ * Free keeps Home / AI / Settings / Import open but locks Vendors,
+ * Contracts, Renewals, Risk, Activity and Savings behind the Team plan.
+ * The Business plan additionally gates Renewals / Risk / Savings to Team.
  */
 export const PLAN_LOCKED_SECTIONS: Record<Plan, string[]> = {
-  free: [],
+  free: ["companies", "contracts", "renewals", "risks", "activity", "savings"],
   team: [],
-  business: ["renewals", "risk", "savings"],  enterprise: [],
+  business: ["renewals", "risks", "savings"],
+  enterprise: [],
 };
 
 /** The PayPal plan id configured for a tier (undefined = not wired yet). */
@@ -194,7 +200,7 @@ interface DisplayModeContextValue {
   aiMessageLimit: number;
   /** Whether the current plan can connect Gmail. */
   canUseGmail: boolean;
-  /** Sections locked out of the current plan ("renewals", "risk", "savings"). */
+  /** Sections locked out of the current plan (e.g. "renewals", "risks", "savings"). */
   lockedSections: string[];
 }
 

@@ -15,6 +15,8 @@ import {
   type EditorColumn,
 } from "@/components/dashboard/DataTableEditor";
 import { tableTabs } from "@/components/dashboard/tableTabs";
+import { SectionLocked } from "@/components/dashboard/SectionLocked";
+import { useSectionEntitlement } from "@/lib/useSectionEntitlement";
 
 /* ------------------------------------------------------------------ */
 /*  Vendors - Supabase-style table editor over the vendor register.    */
@@ -37,13 +39,24 @@ export default function CompaniesPage() {
   const [category, setCategory] = useState("");
   const [risk, setRisk] = useState("");
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const { mode, plan } = useDisplayMode();
+  const { mode, plan, lockedSections } = useDisplayMode();
   const isSimple = mode === "simple";
 
   const [advisorOpen, setAdvisorOpen] = useState(false);
   const [messages, setMessages] = useState<AgentMessage[]>(storedMessages);
   const [consulting, setConsulting] = useState(false);
   const consultingGuard = useRef(false);
+
+  const { locked: vendorsLocked } = useSectionEntitlement("companies", lockedSections.includes("companies"));
+
+  if (vendorsLocked) {
+    return (
+      <SectionLocked
+        title="Vendors"
+        description="See every vendor you work with, their categories, contracts and risk - one dense register."
+      />
+    );
+  }
 
   let scoped = contracts;
   if (category) scoped = scoped.filter((c) => c.category === category);

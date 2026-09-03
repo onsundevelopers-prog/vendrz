@@ -1,32 +1,25 @@
 @import "tailwindcss";
+@import "./theme.css";
 
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Inter Display (Inter Tight variable) for headings, Inter for body. */
+  --font-display: var(--font-inter-display), var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
   /* ------------------------------------------------------------------ */
   /*  Linear midnight system - precision instrument, one acid accent.   */
-  /*  Surfaces step up in brightness (#08090a -> #0f1011 -> #161718),   */
-  /*  elevation comes from hairline borders, not shadows, and weights   */
-  /*  stay in the 400-590 band - never bold.                            */
+  /*                                                                     */
+  /*  The neutral surfaces / text / hairlines / washes are GENERATED     */
+  /*  in src/app/theme.css by scripts/generate-theme.mjs from three      */
+  /*  LCH inputs (base, accent, contrast) - see the Linear design        */
+  /*  notes in docs/linear-ui-redesign-notes.md. Elevation comes from    */
+  /*  hairline borders, not shadows, and weights stay in the 400-590     */
+  /*  band - never bold. Only semantic status hues and the legacy        */
+  /*  navy scale live here.                                              */
   /* ------------------------------------------------------------------ */
-  --color-canvas: #08090a; /* void - page background              */
-  --color-surface: #0f1011; /* carbon - cards, nav, containers     */
-  --color-panel: #161718; /* obsidian - elevated frames/panels    */
-  --color-float: #161718; /* obsidian - floating drawers          */
-  --color-fg: #ffffff; /* paper - primary headings, emphasis  */
-  --color-muted: #d0d6e0; /* mist - secondary text, button text  */
-  --color-faint: #8a8f98; /* fog - tertiary text, placeholders   */
-  --color-ash: #62666d; /* ash - quiet metadata                */
 
-  /* 1px hairlines - graphite / smoke, no white washes */
-  --color-line: #23252a; /* graphite - subtle borders, dividers */
-  --color-line-strong: #383b3f; /* smoke - higher-contrast hairlines   */
-  --color-rule-light: #23252a;
-  --color-rule-dark: #383b3f;
-
-  /* Neutral accents - one grey action color, rest soft decorative hues */
-  --color-acid: #e4e4e7; /* grey - the only action button color        */
+  /* Semantic status hues - meaning, not elevation */
   --color-pulse: #27a644; /* ok / savings outline               */
   --color-coral: #eb5757; /* risk / destructive                 */
   --color-teal: #02b8cc; /* informational accents               */
@@ -44,54 +37,11 @@
   --color-navy-500: #383b41;
 
   --color-canvas-light: #f2f4f8; /* unused, kept for compat */
-
-  /* Semantic hover / selection washes */
-  --color-hover: rgba(255, 255, 255, 0.045); /* row / menu hover        */
-  --color-active: rgba(255, 255, 255, 0.08); /* pressed / active control */
-  --color-sel: rgba(255, 255, 255, 0.055); /* selected row background   */
-  --color-inset: rgba(255, 255, 255, 0.025); /* subtle inset surface    */
 }
 
 :root {
   color-scheme: dark;
-
-  /* ------------------------------------------------------------------ */
-  /*  shadcn/ui tokens - aligned to the Linear midnight palette so     */
-  /*  shadcn components (Card, Chart) render natively. The product is   */
-  /*  dark-only, so there is no light `.dark` variant to toggle.        */
-  /* ------------------------------------------------------------------ */
-  --background: #08090a;
-  --foreground: #d0d6e0;
-  --card: #0f1011;
-  --card-foreground: #d0d6e0;
-  --popover: #161718;
-  --popover-foreground: #d0d6e0;
-  --primary: #e4e4e7;
-  --primary-foreground: #08090a;
-  --secondary: #161718;
-  --secondary-foreground: #d0d6e0;
-  --muted: #161718;
-  --muted-foreground: #8a8f98;
-  --accent: #161718;
-  --accent-foreground: #d0d6e0;
-  --destructive: #eb5757;
-  --border: #23252a;
-  --input: #23252a;
-  --ring: #e4e4e7;
-  --chart-1: #e5e5e6;
-  --chart-2: #d0d6e0;
-  --chart-3: #8a8f98;
-  --chart-4: #62666d;
-  --chart-5: #383b3f;
-  --radius: 0.375rem;
-  --sidebar: #0f1011;
-  --sidebar-foreground: #d0d6e0;
-  --sidebar-primary: #e4e4e7;
-  --sidebar-primary-foreground: #08090a;
-  --sidebar-accent: #161718;
-  --sidebar-accent-foreground: #d0d6e0;
-  --sidebar-border: #23252a;
-  --sidebar-ring: #e4e4e7;
+  /* shadcn/ui token mirror is generated in src/app/theme.css. */
 }
 
 html {
@@ -107,6 +57,15 @@ body {
   font-feature-settings: "cv01" 1, "ss03" 1, "zero" 1;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Inter Display for headings (Linear design notes): headings use the
+   tighter display cut while body text stays regular Inter. */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
 }
 
 ::selection {
@@ -343,6 +302,7 @@ body {
   border-bottom: 1px solid var(--color-line);
 }
 .panel-title {
+  font-family: var(--font-display);
   font-size: 12px;
   font-weight: 510;
   letter-spacing: -0.01em;
@@ -873,6 +833,7 @@ body {
   padding: 0 0 14px;
 }
 .page-title {
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 590;
   letter-spacing: -0.022em;

@@ -30,7 +30,7 @@ export default function RisksPage() {
   const userId = auth.id;
   const now = useNow();
   const { lockedSections } = useDisplayMode();
-  const { locked: riskLocked } = useSectionEntitlement("risk", lockedSections.includes("risk"));
+  const { locked: riskLocked } = useSectionEntitlement("risks", lockedSections.includes("risks"));
   const contracts = useMemo(() => (userId ? getContracts(userId) : []), [userId]);
   const activity = useMemo(() => (userId ? getActivity(userId) : []), [userId]);
   const threads = useMemo(() => (userId ? getEmailThreads(userId) : []), [userId]);
