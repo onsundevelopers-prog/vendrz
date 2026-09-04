@@ -2,7 +2,7 @@
 /*  Long-form content - written for humans and search engines.        */
 /*                                                                     */
 /*  Plain-language explainers around the core questions customers      */
-/*  actually type into Google: what vendor spend analysis is, how to   */
+/*  actually type into Google: what software spend analysis is, how to */
 /*  find hidden fees, and how automatic renewals work. No jargon,      */
 /*  no invented claims - every paragraph describes what n4ma really    */
 /*  does with your documents.                                          */
@@ -16,7 +16,7 @@ export function LearnMore() {
           Learn
         </p>
         <h2 className="mt-4 text-center text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-          What is vendor spend analysis, really?
+          What is software spend analysis, really?
         </h2>
 
         <div className="mt-12 space-y-10 text-[15px] font-normal leading-[1.7] tracking-[-0.011em] text-faint">
@@ -26,10 +26,10 @@ export function LearnMore() {
               software subscriptions, cloud hosting, marketing platforms,
               insurance, and a dozen other vendors with invoices that arrive on
               autopilot. Most of those agreements were signed once, years ago,
-              and never looked at again. Vendor spend analysis is the practice of
-              actually reviewing that spending - not your invoices for this
-              month, but the contracts underneath them - to find where money is
-              quietly leaking out.
+              and never looked at again. Software spend analysis is the practice
+              of actually reviewing that spending - not just this month&apos;s
+              invoices, but the contracts underneath them - to find where money
+              is quietly leaking out.
             </p>
             <p>
               The leaks are rarely a single big line item. They are small,

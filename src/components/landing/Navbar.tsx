@@ -180,7 +180,7 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
               <div className="flex flex-col gap-2.5 pt-4">
                 <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
                 <Button href="/audit" className="w-full" onClick={() => setOpen(false)}>
-                  Run free review
+                  Find my savings
                 </Button>
               </div>
             </div>

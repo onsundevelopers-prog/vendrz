@@ -5,18 +5,23 @@ import { motion } from "framer-motion";
 const PAINS = [
   {
     num: "01",
-    title: "Silent auto-renewal",
-    body: "Miss the window and inaction is commitment - most agreements roll into another full term by default.",
+    title: "Auto-renewals",
+    body: "A missed cancellation window can lock a company into another year of a tool it barely uses.",
   },
   {
     num: "02",
-    title: "Notice windows buried in fine print",
-    body: "Cancel-by dates sit 30–90 days before renewal, inside a clause you signed years ago and never re-read.",
+    title: "Price increases",
+    body: "A 5% annual escalation quietly compounds into much larger spending year after year.",
   },
   {
     num: "03",
-    title: "Escalations that compound",
-    body: "A 5% annual increase sounds small. Uncapped, it stacks every year on a larger base - quietly.",
+    title: "Unused software",
+    body: "Companies keep paying for seats, tools, and services nobody actually needs.",
+  },
+  {
+    num: "04",
+    title: "Duplicate spending",
+    body: "Different teams can unknowingly pay multiple vendors for overlapping functionality.",
   },
 ];
 
@@ -38,12 +43,11 @@ export function ProblemSection() {
             The problem
           </p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Vendor contracts are designed to be forgotten.
+            The money leaks nobody notices.
           </h2>
           <p className="mt-5 max-w-md text-pretty text-[15px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Renewals renew themselves. Cancel-by dates hide in section 7.1.
-            Escalations compound quietly. By the time anyone looks, you&apos;ve
-            already agreed to next year&apos;s price.
+            The biggest waste isn&apos;t always a giant expense. It&apos;s the
+            small costs that keep repeating because nobody is watching.
           </p>
         </motion.div>
 
@@ -71,6 +75,16 @@ export function ProblemSection() {
           ))}
         </div>
       </div>
+
+      <motion.p
+        initial={false}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.7, delay: 0.1, ease }}
+        className="mx-auto mt-16 max-w-2xl px-5 text-center text-pretty text-[15px] font-normal leading-relaxed tracking-[-0.01em] text-fg lg:px-8"
+      >
+        n4ma finds these leaks before they become another invoice.
+      </motion.p>
     </section>
   );
 }

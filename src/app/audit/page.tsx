@@ -123,12 +123,12 @@ export default function AuditPage() {
             Free review · no signup · no credit card
           </span>
           <h1 className="mt-6 text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.03em] text-fg sm:text-4xl">
-            Run your free vendor spend review
+            Find the money your business is wasting
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-pretty text-[16px] font-normal leading-[1.55] tracking-[-0.01em] text-muted">
-            See where your company&apos;s money is going, and where you can save. We&apos;ll
-            analyze spend, find renewals, and quantify waste before you create an
-            account.
+            N4MA reads your contracts, invoices, and subscriptions for hidden fees,
+            auto-renewals, and price increases - then shows you exactly what to fix
+            and how much you could save. No account needed to start.
           </p>
         </motion.div>
 

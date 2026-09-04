@@ -2,15 +2,18 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { PLAN_MAP, type Plan } from "@/lib/displayMode";
+import { PLAN_MAP, salesMailto, type Plan } from "@/lib/displayMode";
 
 /* ------------------------------------------------------------------ */
 /*  Pricing - Airtable-style plan cards.                              */
 /*                                                                     */
-/*  Four tiers: Free / Team ($20, most popular) / Business ($999 then  */
-/*  $1/yr) / Enterprise (custom). Each card shows the plan's own       */
-/*  features ("Everything in X, plus:"), with the featured card       */
-/*  highlighted.                                                       */
+/*  Four tiers: Free (30-day Team Plus trial included) / Team Plus     */
+/*  ($250 CAD one-time, most popular) / Business (sales) /             */
+/*  Enterprise (sales). Each card shows the plan's own features        */
+/*  ("Everything in X, plus:"), with the featured card highlighted.    */
+/*                                                                     */
+/*  There is no payment processor: Team Plus is a one-time $250 CAD    */
+/*  e-transfer arranged by email after the free trial.                 */
 /* ------------------------------------------------------------------ */
 
 const CARDS: {
@@ -25,45 +28,37 @@ const CARDS: {
 }[] = [
   {
     id: "free",
-    group: "Free includes:",
-    cta: "Try for free",
+    group: "Free includes:", // note: cadence === "forever"
+    cta: "Start your free trial",
     href: "/audit",
     featured: false,
+    buttonNote: "30 days of Team Plus — no credit card",
   },
   {
     id: "team",
     group: "Everything in Free, plus:",
-    cta: "Start with Team",
-    href: signupHref("team"),
+    cta: "Start with Team Plus",
+    href: "/auth?mode=login&next=%2Fdashboard",
     featured: true,
-    buttonNote: "or purchase now",
+    buttonNote: "or email to purchase now",
   },
   {
     id: "business",
-    group: "Everything in Team, plus:",
-    cta: "Get started",
-    href: signupHref("business"),
+    group: "Everything in Team Plus, plus:",
+    cta: "Contact us",
+    href: salesMailto("business"),
     featured: false,
-    buttonNote: "or contact sales",
+    buttonNote: "custom pricing · sales-led",
   },
   {
     id: "enterprise",
     group: "Everything in Business, plus:",
-    cta: "Contact Sales",
-    href: "mailto:sales@n4ma.app?subject=Enterprise%20plan",
+    cta: "Contact us",
+    href: salesMailto("enterprise"),
     featured: false,
+    buttonNote: "custom pricing · sales-led",
   },
 ];
-
-/**
- * Plan link that lands the user on the Clerk auth page (sign-in by
- * default; account creation is one click away inside it), then opens the
- * dashboard with the upgrade screen pre-opened for the chosen plan so the
- * next step is payment - not a bare redirect to the dashboard.
- */
-function signupHref(plan: Plan): string {
-  return `/auth?mode=login&next=${encodeURIComponent(`/dashboard?upgrade=${plan}`)}`;
-}
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -90,7 +85,7 @@ function TierCard({
   index: number;
 }) {
   const plan = PLAN_MAP[card.id];
-  const isCustom = card.id === "enterprise";
+  const isCustom = card.id === "business" || card.id === "enterprise";
 
   return (
     <motion.div
@@ -177,11 +172,12 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            A plan for every organization&apos;s needs
+            Start free. Scale when the leaks do.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Every plan includes unlimited reviews. No credit card required to see
-            your first result - ever.
+            Every new account gets 30 days of Team Plus free - no credit card.
+            After that, Team Plus is a one-time $250 CAD payment, arranged by
+            email. No subscription, no automatic charges.
           </p>
         </motion.div>
 
@@ -192,11 +188,12 @@ export function Pricing() {
         </div>
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
-          All prices in USD · Team is billed monthly, cancel anytime · Business is $999 upfront
-          then $1/yr · Enterprise is custom-priced
+          Team Plus is a one-time $250 CAD payment via e-transfer (arranged by email) · Business
+          and Enterprise are sales-led · nothing is ever charged automatically
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
-          Free includes the Simple workspace, the Savings page, and 5 AI messages per month.
+          Every new account starts with a free 30-day Team Plus trial · manual upload &amp;
+          analysis stay free afterwards.
         </p>
       </div>
     </section>

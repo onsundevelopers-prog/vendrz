@@ -5,18 +5,23 @@ import { motion } from "framer-motion";
 const STEPS = [
   {
     num: "01",
-    title: "Connect your data",
-    body: "Financial feeds, invoices, and contracts - read-only. No passwords to vendors, no manual list to build. We match every transaction to a vendor automatically.",
+    title: "Connect",
+    body: "Give n4ma access to the documents and sources that contain your business spending - upload contracts and invoices, or connect Gmail, Google Drive, and Slack. Everything is read-only.",
   },
   {
     num: "02",
-    title: "n4ma analyzes spend",
-    body: "Transactions are normalized, vendors matched, and spend is computed across categories, trends, renewals, usage, and billing anomalies - by rules, not guesses.",
+    title: "Detect",
+    body: "n4ma watches for the patterns that waste money: upcoming renewals, cancellation deadlines, price increases, hidden fees, unused seats, duplicate tools, and billing anomalies.",
   },
   {
     num: "03",
-    title: "See waste, risks & savings",
-    body: "Unused seats, duplicate tools, price increases, and renewal traps - each opportunity quantified and tied to the evidence behind it.",
+    title: "Prove",
+    body: "Every important finding is backed by evidence - the exact clause, document, page, or invoice it came from, plus the calculation behind every estimate.",
+  },
+  {
+    num: "04",
+    title: "Save",
+    body: "See what to fix, why it matters, and how much it could save - a quantified list of spending leaks and the action each one calls for.",
   },
 ];
 
@@ -40,15 +45,15 @@ export function HowItWorks() {
             How it works
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            From data to savings in one pass
+            From spending data to savings.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            No forms to fill, no account to make. The full review runs
-            automatically and finishes in under two minutes.
+            Upload a document or connect a source and the first review finishes
+            in under two minutes. No forms to fill, no account required to start.
           </p>
         </motion.div>
 
-        <div className="mx-auto mt-14 grid max-w-5xl gap-4 lg:grid-cols-3">
+        <div className="mx-auto mt-14 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, i) => (
             <motion.div
               key={step.num}

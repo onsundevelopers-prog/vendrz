@@ -184,7 +184,7 @@ export default function AuditProcessingPage() {
           </>
         ) : failed ? (
           <>
-            <p className="text-[15px] font-medium text-fg">The analysis didn't complete</p>
+            <p className="text-[15px] font-medium text-fg">The analysis didn&apos;t complete</p>
             <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-muted">
               Something went wrong while analyzing this file. Please try again.
             </p>

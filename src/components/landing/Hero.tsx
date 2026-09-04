@@ -49,20 +49,20 @@ export function Hero() {
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="text-[12px] font-[510] tracking-[-0.01em] text-faint"
+            className="text-[11px] font-[510] uppercase tracking-[0.18em] text-faint"
           >
-            AI that finds hidden fees in everyday tools
+            AI spend intelligence
           </motion.p>
 
           <motion.h1
             initial={false}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
-            className="mt-5 max-w-2xl text-balance text-[44px] font-[510] leading-[1.02] tracking-[-0.022em] text-fg sm:text-[56px] lg:text-[64px]"
+            className="mt-5 max-w-3xl text-balance text-[44px] font-[510] leading-[1.02] tracking-[-0.022em] text-fg sm:text-[56px] lg:text-[64px]"
           >
-            <StaggeredWords text="Know where your money's going." />
+            <StaggeredWords text="Your business is leaking money." />
             <span className="relative mt-1 inline-block text-bone/90">
-              <StaggeredWords text="Find where you can save." delay={0.32} />
+              <StaggeredWords text="N4MA finds it." delay={0.32} />
             </span>
           </motion.h1>
 
@@ -72,10 +72,9 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.55, ease }}
             className="mt-6 max-w-xl text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint"
           >
-            n4ma reads your contracts, invoices, and subscriptions and points out
-            where you&apos;re overpaying - hidden fees, automatic renewals, and price
-            increases you didn&apos;t notice. Upload a document and see what&apos;s costing
-            you, in plain English.
+            N4MA monitors contracts, invoices, and subscriptions for hidden fees,
+            auto-renewals, price increases, and wasted spending&mdash;then shows you
+            exactly what to fix and how much you could save.
           </motion.p>
 
           <motion.div
@@ -85,7 +84,7 @@ export function Hero() {
             className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
           >
             <Button href="/audit" size="lg" className="w-full sm:w-auto">
-              Run your free review
+              Find my savings
             </Button>
             <a
               href="#how-it-works"
@@ -111,7 +110,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.82 }}
             className="mt-5 text-[11.5px] font-normal tracking-[-0.01em] text-ash"
           >
-            Read-only · no signup · first review in under two minutes
+            Read-only · No signup required · First review in under two minutes
           </motion.p>
         </div>
       </div>

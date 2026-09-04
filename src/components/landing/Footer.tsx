@@ -36,9 +36,11 @@ export function Footer() {
           <div className="max-w-xs">
             <Logo />
             <p className="mt-4 text-[13px] font-normal leading-relaxed tracking-[-0.011em] text-faint">
-              n4ma is the AI that finds hidden fees and wasted spending in the
-              everyday tools your business already pays for - so you can cancel
-              what you don&apos;t need and negotiate the rest.
+              n4ma is the AI financial watchdog for business software. It
+              watches the money your business spends on software and vendors,
+              finds where it&apos;s being wasted, and proves every finding with
+              evidence - so you can cancel what you don&apos;t need and negotiate the
+              rest.
             </p>
           </div>
           <div className="flex gap-20">

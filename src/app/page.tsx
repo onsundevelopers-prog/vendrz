@@ -5,6 +5,7 @@ import { TrustStrip } from "@/components/landing/TrustStrip";
 import { ProblemSection } from "@/components/landing/ProblemSection";
 import { Capabilities } from "@/components/landing/Capabilities";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Savings } from "@/components/landing/Savings";
 import { Pricing } from "@/components/landing/Pricing";
 import { Faq } from "@/components/landing/Faq";
 import { LearnMore } from "@/components/landing/LearnMore";
@@ -21,7 +22,7 @@ const pricingJsonLd = {
   name: "n4ma Pricing",
   url: `${SITE.url}/#pricing`,
   description:
-    "Plans for every organization: Free, Team, Business, and Enterprise. Every plan includes unlimited reviews; no credit card required to see your first result.",
+    "Find your first spending leaks on Free; track renewals, risk, and savings across every connected source on Team, Business, or Enterprise. No credit card required to see your first result.",
   itemListElement: PRICING_PLANS.map((plan) => ({
     "@type": "Offer",
     name: plan.name,
@@ -63,6 +64,7 @@ export default async function Home() {
       <ProblemSection />
       <Capabilities />
       <HowItWorks />
+      <Savings />
       <Pricing />
       <Faq />
       <LearnMore />
