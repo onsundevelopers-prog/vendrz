@@ -125,6 +125,9 @@ function TierCard({
           )}
           <span className="text-[12.5px] text-muted">{plan.cadence}</span>
         </div>
+        {card.id === "team" && (
+          <p className="mt-1 text-[11px] tracking-tight text-muted">≈ $185 USD</p>
+        )}
 
         {/* action */}
         <div className="mt-5">
@@ -188,12 +191,16 @@ export function Pricing() {
         </div>
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
-          Team Plus is a one-time $250 CAD payment via e-transfer (arranged by email) · Business
-          and Enterprise are sales-led · nothing is ever charged automatically
+          Team Plus is a one-time $250 CAD payment via e-transfer (arranged by email) · nothing is
+          ever charged automatically · refunds on request within 14 days of purchase
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
-          Every new account starts with a free 30-day Team Plus trial · manual upload &amp;
-          analysis stay free afterwards.
+          After your 30-day trial: access returns to Free, your findings stay, and you can buy
+          Team Plus anytime - no automatic charges.
+        </p>
+        <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
+          Most n4ma reviews surface more in potential savings in a year than Team Plus costs -
+          figures above are illustrative, not a guarantee.
         </p>
       </div>
     </section>

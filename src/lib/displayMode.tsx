@@ -558,7 +558,7 @@ function UpgradeOverlay() {
               <li>Tap the button — it opens your email client pre-filled.</li>
               <li>Send the request; we&apos;ll reply with e-transfer details.</li>
               <li>
-                Pay <span className="text-zinc-300">$250 CAD</span> once by e-transfer.
+                Pay <span className="text-zinc-300">$250 CAD</span> (≈ $185 USD) once by e-transfer.
               </li>
               <li>
                 Team Plus is enabled permanently once the transfer is confirmed.
@@ -583,7 +583,7 @@ function UpgradeOverlay() {
 
         <p className="mt-2.5 text-center text-[11px] leading-relaxed text-zinc-500">
           No subscription. No automatic charges. Payment is a one-time e-transfer,
-          arranged by email.
+          arranged by email. Refunds on request within 14 days.
           {plan === "free" && !trialEnded && " You can switch back to Free anytime."}
         </p>
         <button

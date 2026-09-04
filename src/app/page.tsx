@@ -22,14 +22,14 @@ const pricingJsonLd = {
   name: "n4ma Pricing",
   url: `${SITE.url}/#pricing`,
   description:
-    "Find your first spending leaks on Free; track renewals, risk, and savings across every connected source on Team, Business, or Enterprise. No credit card required to see your first result.",
+    "Find your first spending leaks on Free; track renewals, risk, and savings across every connected source on Team Plus, Business, or Enterprise. Every account starts with a free 30-day Team Plus trial - no credit card, and nothing is ever auto-charged.",
   itemListElement: PRICING_PLANS.map((plan) => ({
     "@type": "Offer",
     name: plan.name,
     description: plan.blurb,
     url: `${SITE.url}/#pricing`,
     ...(plan.price !== null
-      ? { price: plan.price, priceCurrency: "USD" }
+      ? { price: plan.price, priceCurrency: "CAD" }
       : {}),
     ...(plan.id !== "enterprise"
       ? { priceValidUntil: new Date(new Date().getFullYear() + 1, 11, 31).toISOString().slice(0, 10) }
