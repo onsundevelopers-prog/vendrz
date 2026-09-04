@@ -1,0 +1,27 @@
+# n4ma
+
+> n4ma is the AI financial watchdog for business software. It connects to the systems a company already uses (Gmail, Google Drive, Slack, or direct upload), monitors contracts, invoices, and subscriptions for hidden fees, auto-renewals, price increases, unused seats, and duplicate tools, and surfaces every finding tied back to the exact source document — then shows what to fix and how much it could save. No procurement software, no deployment.
+
+## n4ma
+
+- [n4ma](https://n4ma.online/): Your business is leaking money. n4ma finds it. Free no-signup review in about two minutes.
+- [Free vendor review](https://n4ma.online/audit): Upload a contract or invoice — or review from Gmail/Drive/Slack — and get evidence-backed findings without creating an account.
+- [Pricing](https://n4ma.online/#pricing): Free tier plus a 30-day Team Plus trial on signup; Team Plus is a one-time $250 CAD payment via e-transfer (no subscription); Business and Enterprise are sales-led.
+- [Privacy](https://n4ma.online/privacy) · [Terms](https://n4ma.online/terms)
+
+## Key facts
+
+- Sources: manual upload (PDF, DOCX, TXT, MD, CSV), Gmail (read-only OAuth), Google Drive (read-only OAuth), Slack (read-only OAuth).
+- Findings: renewal dates, cancellation deadlines, price escalations, hidden fees, unused seats, duplicate tools, billing anomalies — each linked to its source clause, document, page, or invoice.
+- Savings methodology: transparent and stated; estimates are labeled as estimates, never presented as guaranteed or as fabricated customer results.
+- Access model: every new account gets a free 30-day Team Plus trial (no credit card). After it ends, Team Plus is a one-time $250 CAD payment (≈ $185 USD) arranged by email via e-transfer and confirmed manually. Nothing is ever auto-charged. Business and Enterprise Scale are sales-led with custom pricing.
+- Evidence-first: n4ma does not cancel anything on the user's behalf; it identifies the action and drafts it, and the user approves and sends.
+
+## FAQ
+
+- What can n4ma find? Hidden fees, auto-renewals, cancellation windows, price increases, unused seats, duplicate tools, billing anomalies, and other potential spending leaks across software subscriptions and vendor contracts.
+- How does n4ma calculate savings? Transparent methodology applied to the user's own documents; every estimate is labeled and tied to evidence.
+- Does n4ma replace a finance team? No. n4ma identifies opportunities with evidence; humans make the financial decisions.
+- Can n4ma cancel subscriptions for me? No. n4ma identifies the action required and helps prepare it; the user sends or approves it.
+- Is my data used to train AI? See the privacy policy for the current data-handling terms.
+- Is a credit card required? No. The 30-day Team Plus trial requires no payment method, and Team Plus itself is a one-time e-transfer arranged by email.
