@@ -535,6 +535,9 @@ export interface AuditSession {
   jobId?: string | null;
   result: CompanyAudit | null;
   unlockedToUserId: string | null;
+  /** Workspace session id once this review's document was imported into the
+      signed-in dashboard (set on import so it is never duplicated). */
+  workspaceSessionId?: string | null;
 }
 
 /* ------------------------- activity + agent ------------------------- */

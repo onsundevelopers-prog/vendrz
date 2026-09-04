@@ -28,6 +28,7 @@ import {
 } from "@/lib/workspace-auth";
 import { DashboardModeProvider, useDisplayMode } from "@/lib/displayMode";
 import { hydrateUserData, persistUserData } from "@/lib/sync";
+import { importClaimedAudits } from "@/lib/auditImport";
 import { Logo } from "@/components/brand/Logo";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,7 +101,14 @@ function WorkspaceShell({
     const userId = auth.id;
     let alive = true;
     void hydrateUserData(userId).then((changed) => {
-      if (alive && changed) setDataVersion((v) => v + 1);
+      // Import any completed free reviews this account claimed into the
+      // workspace registers (Vendors / Contracts / Renewals / ...), then
+      // persist the new sessions so they follow the user across devices.
+      const imported = importClaimedAudits(userId);
+      if (alive && (changed || imported > 0)) {
+        if (imported > 0) persistUserData(userId);
+        setDataVersion((v) => v + 1);
+      }
     });
     const timer = setInterval(() => persistUserData(userId), 15_000);
     const onHide = () => persistUserData(userId);

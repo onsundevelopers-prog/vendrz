@@ -3,8 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Check,
-  Loader2,
-  ShieldAlert,
   CircleDashed,
   ExternalLink,
   Info,
@@ -14,28 +12,32 @@ import {
   Mail,
   BadgeCheck,
   Wrench,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  CheckCheck,
 } from "lucide-react";
 
 import {
   type AgentApprovalRequest,
   type AgentClauseFinding,
   type AgentContractAnalysis,
-  type AgentEvent,
   type AgentTask,
 } from "@/lib/agentTask";
 import type { ContractRecord } from "@/lib/types";
 import { formatTime, initials } from "@/lib/format";
 import { BrowserTab } from "./browser-window";
+import { Markdown } from "@/lib/markdown";
 
 /* ------------------------------------------------------------------ */
 /*  Agent chat - a conversational assistant response.                  */
 /*                                                                     */
-/*  Modeled on the reference assistant chat: the agent opens with      */
-/*  plain prose ("I'll check your contracts for upcoming renewals…"),  */
-/*  works through a single subtle activity strip that streams the      */
-/*  real tool calls as they happen, then closes with a conversational   */
-/*  summary. No card-per-step, no robotic system labels, no fake       */
-/*  progress. Everything is the assistant talking about real work.     */
+/*  Claude-style interaction quality: the response reads as natural    */
+/*  content flowing through the page - no card-per-step, no robotic    */
+/*  labels. The agent opens with plain prose, works through a quiet    */
+/*  staged indicator (thinking -> checking -> preparing), streams the  */
+/*  final answer as polished markdown, and reveals actions (copy,      */
+/*  feedback) only when relevant.                                      */
 /* ------------------------------------------------------------------ */
 
 const TOOL_ICONS: Record<string, typeof Wrench> = {
@@ -53,26 +55,11 @@ function toolIconEl(name: string, size: number) {
   return <Icon size={size} />;
 }
 
-/** Blinking caret shown on live narration while the agent is working. */
-function Caret() {
-  return (
-    <span
-      aria-hidden="true"
-      className="caret-blink ml-0.5 inline-block h-[13px] w-[7px] translate-y-[2px] rounded-[1px] bg-zinc-500"
-    />
-  );
-}
-
 /* ------------------------------------------------------------------ */
-/*  Typewriter - reveals assistant prose a few characters at a time   */
-/*  so the agent's reply reads like it is being written live.         */
-/*                                                                     */
-/*  "0.5x slower": the ms-per-character below is double a typical     */
-/*  fast typewriter (~17ms/char), giving a calmer, more deliberate     */
-/*  reveal than the default.                                          */
+/*  Typewriter - reveals assistant prose a few characters at a time.  */
 /* ------------------------------------------------------------------ */
 
-const TYPEWRITER_SPEED_MS = 34;
+const TYPEWRITER_SPEED_MS = 30;
 
 function Typewriter({
   text,
@@ -80,16 +67,12 @@ function Typewriter({
   speedMs = TYPEWRITER_SPEED_MS,
 }: {
   text: string;
-  /** Optional renderer so inline formatting (e.g. **bold**) survives typing. */
   render?: (partial: string) => React.ReactNode;
   speedMs?: number;
 }) {
   const [count, setCount] = useState(0);
   const [prevText, setPrevText] = useState(text);
 
-  // Restart from the top when the underlying text changes. Adjusting state
-  // during render is the sanctioned pattern for prop-derived state (and
-  // avoids a synchronous setState inside the effect below).
   if (prevText !== text) {
     setPrevText(text);
     setCount(0);
@@ -108,6 +91,16 @@ function Typewriter({
 
   const partial = text.slice(0, count);
   return <>{render ? render(partial) : partial}</>;
+}
+
+/** Blinking caret shown on live narration while the agent is working. */
+function Caret() {
+  return (
+    <span
+      aria-hidden="true"
+      className="ai-caret ml-0.5 inline-block h-[13px] w-[7px] translate-y-[2px] rounded-[1px] bg-zinc-500"
+    />
+  );
 }
 
 /** A natural-language opening line for each kind of job. */
@@ -141,7 +134,7 @@ function currentActivity(task: AgentTask): string {
   const active = task.plan.steps.find(
     (s) => s.status === "running" || s.status === "requires_approval"
   );
-  if (task.status === "awaiting_approval") return "I've prepared what you asked for — waiting on your review before I continue.";
+  if (task.status === "awaiting_approval") return "Preparing your draft for review";
   if (active) {
     const lastTool = [...task.events]
       .reverse()
@@ -151,13 +144,52 @@ function currentActivity(task: AgentTask): string {
     if (active.detail) return active.detail;
     return active.title;
   }
-  if (task.status === "completed") return "Done.";
-  if (task.status === "failed") return "I hit a problem and couldn't finish.";
-  return "Getting started.";
+  if (task.status === "completed") return "Done";
+  if (task.status === "failed") return "I hit a problem and couldn't finish";
+  return "Getting started";
 }
 
 /* ------------------------------------------------------------------ */
-/*  Tool activity - ONE subtle strip that streams live tool calls.     */
+/*  Working indicator - staged, calm, no spinner.                     */
+/* ------------------------------------------------------------------ */
+
+const STAGE_META: { label: string; sub: string }[] = [
+  { label: "Thinking", sub: "Understanding what you asked for" },
+  { label: "Checking your data", sub: "Reading contracts and connected sources" },
+  { label: "Preparing response", sub: "Assembling what I found" },
+];
+
+function WorkingIndicator() {
+  // Three crossfading stages, keyed by time so the label animates in.
+  const [stage, setStage] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setStage((s) => (s + 1) % STAGE_META.length), 2400);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const meta = STAGE_META[stage];
+  return (
+    <div className="mt-2.5 flex items-center gap-3" role="status" aria-live="polite">
+      <span className="flex items-center gap-1">
+        {[0, 1, 2].map((i) => (
+          <span key={i} className="ai-dot size-1.5 rounded-full bg-zinc-400" />
+        ))}
+      </span>
+      <div className="flex min-w-0 items-baseline gap-2">
+        <span key={`label-${stage}`} className="ai-stage-in text-[12.5px] font-medium text-zinc-200">
+          {meta.label}
+        </span>
+        <span className="hidden truncate text-[11.5px] text-zinc-500 sm:inline">
+          {meta.sub}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Tool activity - ONE subtle expandable strip that streams live      */
+/*  tool calls. Collapses to a quiet status line when done.            */
 /* ------------------------------------------------------------------ */
 
 interface ToolView {
@@ -206,16 +238,12 @@ function ActivityStrip({ task }: { task: AgentTask }) {
   if (views.length === 0) return null;
 
   return (
-    <div className="border-sheen mt-2 overflow-hidden rounded-xl border border-line bg-surface">
+    <div className="mt-3 overflow-hidden rounded-lg border border-line bg-surface">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-2 px-3.5 py-2.5 text-left"
+        className="flex w-full items-center gap-2 px-3.5 py-2 text-left"
       >
-        {anyActive ? (
-          <Loader2 size={13} className="shrink-0 animate-spin text-zinc-400" />
-        ) : (
-          <Check size={13} className="shrink-0 text-zinc-500" />
-        )}
+        <span className={`size-1.5 shrink-0 rounded-full ${anyActive ? "animate-pulse bg-zinc-300" : "bg-zinc-600"}`} />
         <span className="min-w-0 flex-1 truncate text-[12.5px] text-zinc-300">
           {currentActivity(task)}
         </span>
@@ -224,50 +252,45 @@ function ActivityStrip({ task }: { task: AgentTask }) {
           className={`shrink-0 text-zinc-500 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
-      {open && (
-        <div className="overflow-hidden">
-          <div className="fade-rise divide-y divide-line/40 border-t border-line/60">
-              {views.map((v, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-start gap-2.5 px-3.5 py-2 transition-opacity duration-200 ${v.status === "running" ? "" : "opacity-60"}`}
-                  >
-                    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center">
-                      {v.status === "running" ? (
-                        <Loader2 size={12} className="animate-spin text-zinc-300" />
-                      ) : v.status === "done" ? (
-                        <Check size={12} className="text-zinc-500" />
-                      ) : (
-                        <ShieldAlert size={12} className="text-zinc-300" />
-                      )}
-                    </span>
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded bg-white/[0.05] text-zinc-500">
-                      {toolIconEl(v.tool, 10)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <span className={`text-[12px] font-medium ${v.status === "failed" ? "text-zinc-300" : v.status === "running" ? "text-zinc-100" : "text-zinc-300"}`}>
-                          {v.detail || v.label}
-                        </span>
-                      </div>
-                      {v.status === "running" && (
-                        <p className="mt-0.5 text-[11px] text-zinc-500">Working on this…</p>
-                      )}
-                      {v.status === "done" && v.outcome && (
-                        <p className="mt-0.5 text-[11.5px] leading-relaxed text-zinc-400">{v.outcome}</p>
-                      )}
-                      {v.status === "failed" && v.outcome && (
-                        <p className="mt-0.5 text-[11.5px] leading-relaxed text-zinc-300/80">{v.outcome}</p>
-                      )}
-                    </div>
-                    {!anyActive && (
-                      <span className="shrink-0 text-[10px] tabular-nums text-zinc-600">{formatTime(v.at)}</span>
-                    )}
-                  </div>
-              ))}
+      <div className="ai-expand" data-open={open}>
+        <div>
+          <div className="divide-y divide-line/40 border-t border-line/60">
+            {views.map((v, i) => (
+              <div
+                key={i}
+                className={`flex items-start gap-2.5 px-3.5 py-2 transition-opacity duration-200 ${
+                  v.status === "running" ? "" : "opacity-60"
+                }`}
+              >
+                <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center">
+                  {v.status === "running" ? (
+                    <span className="size-1.5 animate-pulse rounded-full bg-zinc-300" />
+                  ) : v.status === "done" ? (
+                    <CheckCheck size={12} className="text-zinc-500" />
+                  ) : (
+                    <CircleDashed size={12} className="text-zinc-300" />
+                  )}
+                </span>
+                <span className="flex size-5 shrink-0 items-center justify-center rounded bg-white/[0.05] text-zinc-500">
+                  {toolIconEl(v.tool, 10)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <span className={`text-[12px] font-medium ${v.status === "failed" ? "text-zinc-300" : "text-zinc-200"}`}>
+                    {v.detail || v.label}
+                  </span>
+                  {v.status === "running" && <p className="mt-0.5 text-[11px] text-zinc-500">Working on this…</p>}
+                  {v.status !== "running" && v.outcome && (
+                    <p className="mt-0.5 text-[11.5px] leading-relaxed text-zinc-400">{v.outcome}</p>
+                  )}
+                </div>
+                {!anyActive && (
+                  <span className="shrink-0 text-[10px] tabular-nums text-zinc-600">{formatTime(v.at)}</span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -287,7 +310,7 @@ function ClauseFindings({
 }) {
   if (findings.length === 0) return null;
   return (
-    <div className="border-sheen mt-2 overflow-hidden rounded-xl border border-line bg-surface">
+    <div className="mt-3 overflow-hidden rounded-lg border border-line bg-surface">
       <div className="flex items-center gap-2 border-b border-line/60 px-3.5 py-2">
         <FileText size={12} className="text-zinc-500" />
         <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-zinc-200">
@@ -348,21 +371,18 @@ function ApprovalGate({
   onDeny: () => void;
 }) {
   return (
-    <div className="fade-rise border-sheen mt-3 overflow-hidden rounded-xl border border-white/15 bg-surface">
-      <div className="px-3.5 py-2.5">
-        <p className="text-[12.5px] font-medium text-fg">
+    <div className="ai-stage-in mt-4 overflow-hidden rounded-lg border border-white/15 bg-surface">
+      <div className="px-3.5 py-3">
+        <p className="text-[13px] font-medium text-fg">
           I&apos;ve drafted a {approval.actionType.replace("_", " ")} notice for {approval.vendorName}.
         </p>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-zinc-400">
-          {/* Keep punctuation clean - no bolded system code, just a normal sentence. */}
-          {approval.subject}
-        </p>
+        <p className="mt-1 text-[13px] leading-relaxed text-zinc-400">{approval.subject}</p>
         <details className="group">
           <summary className="mt-1.5 inline-flex cursor-pointer list-none items-center gap-1 text-[12px] font-medium text-zinc-400 transition-colors hover:text-zinc-200">
             Review the draft
             <ChevronDown size={12} className="transition-transform duration-200 group-open:rotate-180" />
           </summary>
-          <div className="border-sheen mt-2 overflow-hidden rounded-lg border border-line bg-[#0a0a0e] p-3">
+          <div className="mt-2 overflow-hidden rounded-lg border border-line bg-[#0a0a0e] p-3">
             <p className="text-[10.5px] tracking-[-0.01em] text-zinc-600">
               To · {approval.to || "address not on file"}
             </p>
@@ -375,7 +395,7 @@ function ApprovalGate({
         <div className="mt-3 flex items-center gap-2">
           <button
             onClick={onApprove}
-            className="flex h-8 items-center gap-1.5 rounded-lg bg-white px-3.5 text-[12.5px] font-semibold text-black transition-colors hover:opacity-90"
+            className="flex h-8 items-center gap-1.5 rounded-lg bg-white px-3.5 text-[12.5px] font-semibold text-black transition-opacity hover:opacity-90"
           >
             <Check size={13} />
             Approve
@@ -399,129 +419,86 @@ function ApprovalGate({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Final summary - plain conversational result.                       */
+/*  Subtle actions - copy + feedback, revealed on hover/focus.         */
 /* ------------------------------------------------------------------ */
 
-function renderInline(text: string): React.ReactNode {
-  return text.split(/\*\*(.+?)\*\*/g).map((part, j) =>
-    j % 2 === 1 ? (
-      <strong key={j} className="font-medium text-zinc-100">
-        {part}
-      </strong>
-    ) : (
-      <span key={j}>{part}</span>
-    )
-  );
-}
+function ResponseActions({ task }: { task: AgentTask }) {
+  const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  const text = task.result ?? "";
 
-function FinalSummary({ task }: { task: AgentTask }) {
-  if (!task.result) return null;
-  if (task.status === "cancelled") {
-    return (
-      <p className="mt-4 flex items-start gap-2 text-[13px] leading-relaxed text-zinc-400">
-        <CircleDashed size={15} className="mt-0.5 shrink-0 text-zinc-500" />
-        <span>No worries — I stopped there and didn&apos;t change anything. Let me know if you&apos;d like the draft adjusted.</span>
-      </p>
-    );
-  }
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+
+  if (task.status !== "completed" || !text) return null;
+
   return (
-    <div className="fade-rise mt-4">
-      {task.status === "failed" ? (
-        <p className="flex items-start gap-2 text-[13px] leading-relaxed text-zinc-400">
-          <ShieldAlert size={15} className="mt-0.5 shrink-0 text-zinc-300" />
-          <span>
-            {task.error || "I ran into a problem and couldn't finish."} You can re-run the task anytime.
-          </span>
-        </p>
-      ) : (
-        <div className="border-sheen rounded-xl border border-line/70 bg-surface px-4 py-3">
-          <p className="text-[13.5px] leading-relaxed text-zinc-200">
-            <Typewriter text={task.result} render={renderInline} />
-          </p>
-          <p className="mt-2 text-[11.5px] text-zinc-500">Let me know if you&apos;d like me to take any next step.</p>
-        </div>
-      )}
+    <div className="ai-hover-actions mt-3 flex items-center gap-0.5">
+      <button
+        onClick={copy}
+        className="flex h-6 items-center gap-1.5 rounded-md px-1.5 text-[11px] text-zinc-500 transition-colors hover:bg-white/[0.05] hover:text-zinc-300"
+      >
+        {copied ? <Check size={11} className="text-zinc-300" /> : <Copy size={11} />}
+        {copied ? "Copied" : "Copy"}
+      </button>
+      <span className="mx-1 h-3 w-px bg-line" aria-hidden="true" />
+      <button
+        onClick={() => setFeedback(feedback === "up" ? null : "up")}
+        aria-label="Helpful"
+        title="Helpful"
+        className={`flex size-6 items-center justify-center rounded-md transition-colors hover:bg-white/[0.05] ${
+          feedback === "up" ? "text-zinc-200" : "text-zinc-500 hover:text-zinc-300"
+        }`}
+      >
+        <ThumbsUp size={11} />
+      </button>
+      <button
+        onClick={() => setFeedback(feedback === "down" ? null : "down")}
+        aria-label="Not helpful"
+        title="Not helpful"
+        className={`flex size-6 items-center justify-center rounded-md transition-colors hover:bg-white/[0.05] ${
+          feedback === "down" ? "text-zinc-200" : "text-zinc-500 hover:text-zinc-300"
+        }`}
+      >
+        <ThumbsDown size={11} />
+      </button>
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  Phase strip - a quiet one-line indicator (not a system bar).       */
-/* ------------------------------------------------------------------ */
-/*  Execution log (collapsible developer view).                        */
+/*  Final summary - plain conversational result, rendered as markdown. */
 /* ------------------------------------------------------------------ */
 
-function eventLabel(type: AgentEvent["type"]): string {
-  const m: Record<string, string> = {
-    "task.created": "Task created",
-    "task.started": "Task started",
-    "plan.created": "Plan created",
-    "step.started": "Step started",
-    "step.completed": "Step completed",
-    "step.failed": "Step failed",
-    "approval.required": "Approval required",
-    "approval.granted": "Approval granted",
-    "approval.denied": "Approval denied",
-    "tool.started": "Tool started",
-    "tool.completed": "Tool completed",
-    "tool.failed": "Tool failed",
-    "task.completed": "Task completed",
-    "task.failed": "Task failed",
-    "task.cancelled": "Task cancelled",
-  };
-  return m[type] ?? type;
-}
-
-export function AgentEventLogLight({
-  task,
-  open,
-  onToggle,
-}: {
-  task: AgentTask;
-  open: boolean;
-  onToggle?: () => void;
-}) {
-  const events = [...task.events].reverse();
-  const running = task.status === "running" || task.status === "awaiting_approval";
+function FinalSummary({ task }: { task: AgentTask }) {
+  if (!task.result) return null;
+  if (task.status === "cancelled") {
+    return (
+      <p className="mt-4 flex items-start gap-2 text-[13.5px] leading-relaxed text-zinc-400">
+        <CircleDashed size={15} className="mt-0.5 shrink-0 text-zinc-500" />
+        <span>No worries — I stopped there and didn&apos;t change anything. Let me know if you&apos;d like the draft adjusted.</span>
+      </p>
+    );
+  }
+  if (task.status === "failed") {
+    return (
+      <p className="mt-4 flex items-start gap-2 text-[13.5px] leading-relaxed text-zinc-400">
+        <CircleDashed size={15} className="mt-0.5 shrink-0 text-zinc-300" />
+        <span>{task.error || "I ran into a problem and couldn't finish."} You can re-run the task anytime.</span>
+      </p>
+    );
+  }
   return (
-    <div className="border-t border-line/60">
-      <button
-        onClick={onToggle}
-        className="flex w-full items-center gap-2 px-4 py-1.5 text-left"
-        disabled={!onToggle}
-      >
-        <span className="text-[10px] font-medium tracking-[-0.01em] text-zinc-500">
-          Activity log · {events.length}
-        </span>
-        {running && (
-          <span className="flex items-center gap-1 text-[10px] text-zinc-500">
-            <Loader2 size={9} className="animate-spin" /> live
-          </span>
-        )}
-        {onToggle && (
-          <span className="ml-auto text-[10px] text-zinc-600">{open ? "Hide" : "Show"}</span>
-        )}
-      </button>
-      {(open || running) && (
-        <div className="max-h-56 overflow-y-auto pb-2">
-          {events.length === 0 ? (
-            <p className="px-4 py-2 text-[11px] text-zinc-600">No events yet.</p>
-          ) : (
-            events.map((e, i) => (
-              <div key={i} className="flex items-start gap-2.5 px-4 py-1">
-                <span className="mt-0.5 w-12 shrink-0 text-right text-[9.5px] tabular-nums text-zinc-600">
-                  {formatTime(e.at)}
-                </span>
-                <span className="min-w-0 flex-1 text-[11px] leading-relaxed text-zinc-400">
-                  {eventLabel(e.type)}
-                  {e.tool ? <span className="text-zinc-500"> · {e.tool}</span> : null}
-                  {e.detail ? <span className="text-zinc-500"> — {e.detail}</span> : null}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+    <div className="ai-msg-in mt-4">
+      <Markdown text={task.result} />
+      <p className="mt-3 text-[12.5px] text-zinc-500">Let me know if you&apos;d like me to take any next step.</p>
     </div>
   );
 }
@@ -591,16 +568,16 @@ export function AgentChat({
   }, [ref]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col px-4 pb-2 pt-5">
-      {/* USER message - right aligned bubble */}
-      <div className="fade-rise flex justify-end">
-        <div className="max-w-[78%] rounded-xl rounded-br-sm border border-white/10 bg-white/[0.07] px-4 py-2.5 transition-transform duration-150 hover:scale-[1.01]">
+    <div className="mx-auto flex w-full max-w-[var(--ai-msg-maxw)] flex-col px-4 pb-4 pt-6 sm:px-6">
+      {/* USER message - quiet pill, right aligned */}
+      <div className="ai-msg-in flex justify-end">
+        <div className="max-w-[80%] rounded-xl rounded-br-sm border border-line bg-white/[0.06] px-4 py-2.5">
           <p className="text-[14px] leading-relaxed text-fg">{task.request}</p>
         </div>
       </div>
 
-      {/* AGENT response */}
-      <div className="fade-rise mt-6 flex flex-col">
+      {/* AGENT response - natural content flow, no card */}
+      <div className="ai-msg-in mt-7 flex flex-col">
         {/* identity row */}
         <div className="flex items-center gap-2.5">
           <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.08] text-[10px] font-semibold text-zinc-200">
@@ -609,7 +586,7 @@ export function AgentChat({
           <span className="text-[13px] font-medium text-zinc-100">n4ma AI</span>
           {running && (
             <span className="flex items-center gap-1.5 text-[12px] text-zinc-500">
-              <Loader2 size={11} className="animate-spin" />
+              <span className="size-1.5 animate-pulse rounded-full bg-zinc-400" />
               working
             </span>
           )}
@@ -617,28 +594,21 @@ export function AgentChat({
 
         {/* the response */}
         <div className="mt-2.5">
-          <p className="text-[14px] leading-[1.65] text-zinc-300">
+          <p className="text-[14.5px] leading-[1.7] text-zinc-300">
             <Typewriter text={conversationOpener(task)} />
             {running && <Caret />}
           </p>
 
-          {running && (
-            <p
-              key={task.events.length}
-              className="fade-rise mt-2 text-[13.5px] leading-relaxed text-zinc-400"
-            >
-              Looks like a solid match — checking the details now.
-            </p>
-          )}
+          {running && <WorkingIndicator />}
 
           {/* compact live activity */}
           <ActivityStrip task={task} />
 
           {/* what I found (natural recap from the referenced contract) */}
           {recap && !running && task.status !== "failed" && task.status !== "cancelled" && (
-            <p className="mt-3 text-[14px] leading-[1.65] text-zinc-300">
-              <Typewriter text={recap} render={renderInline} />
-            </p>
+            <div className="ai-msg-in mt-4">
+              <Markdown text={recap} />
+            </div>
           )}
 
           {/* real clause findings */}
@@ -649,13 +619,13 @@ export function AgentChat({
             <ApprovalGate approval={pending} onApprove={() => onApprove(pending)} onDeny={() => onDeny(pending)} />
           )}
           {!pending && grantedApproval && (
-            <p className="mt-3 flex items-start gap-2 text-[13px] leading-relaxed text-zinc-400">
+            <p className="ai-msg-in mt-4 flex items-start gap-2 text-[13.5px] leading-relaxed text-zinc-400">
               <Check size={15} className="mt-0.5 shrink-0 text-zinc-500" />
               <span>Thanks — approved. Moving on to deliver this now.</span>
             </p>
           )}
           {!pending && deniedApproval && (
-            <p className="mt-3 flex items-start gap-2 text-[13px] leading-relaxed text-zinc-400">
+            <p className="ai-msg-in mt-4 flex items-start gap-2 text-[13.5px] leading-relaxed text-zinc-400">
               <CircleDashed size={15} className="mt-0.5 shrink-0 text-zinc-500" />
               <span>Understood — I&apos;ll stop here and leave everything as it is.</span>
             </p>
@@ -663,6 +633,9 @@ export function AgentChat({
 
           {/* result / failure */}
           <FinalSummary task={task} />
+
+          {/* subtle actions - copy + feedback */}
+          <ResponseActions task={task} />
         </div>
       </div>
     </div>

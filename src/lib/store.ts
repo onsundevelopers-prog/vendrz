@@ -555,6 +555,12 @@ export function getAuditSessionsForUser(userId: string): AuditSession[] {
   return Object.values(sessions).filter((s) => s.unlockedToUserId === userId);
 }
 
+/** Every review session stored on this device (anonymous + claimed). */
+export function getAllAuditSessions(): AuditSession[] {
+  const sessions = read<Record<string, AuditSession>>(KEYS.auditSessions, {});
+  return Object.values(sessions);
+}
+
 /* ------------------------------ AI usage ------------------------------ */
 
 /**
