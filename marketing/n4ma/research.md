@@ -6,7 +6,7 @@
 ## Company snapshot
 - **One-sentence description:** N4MA is the AI financial watchdog for business software — it monitors contracts, invoices, and subscriptions for hidden fees, auto-renewals, price increases, and wasted spend, and proves every finding with evidence.
 - **Stage:** Pre-seed / bootstrapped. **Zero revenue to date.**
-- **Product status:** Live and GA — real OAuth integrations (Gmail, Google Drive, Slack), manual upload, free no-signup audit funnel, AI analysis (Gemini), PayPal subscriptions, Clerk auth, Supabase backend, deployed on Vercel at n4ma.online.
+- **Product status:** Live and GA — real OAuth integrations (Gmail, Google Drive, Slack), manual upload, free no-signup audit funnel, AI analysis (Gemini), trial + one-time e-transfer access model (no payment processor), Clerk auth, Supabase backend, deployed on Vercel at n4ma.online.
 - **Positioning (just reworked, 2026-09):** "Your business is leaking money. N4MA finds it." Category claim: *AI financial watchdog for business software* — deliberately NOT "vendor management."
 
 ## ICP
@@ -19,7 +19,7 @@
 
 ## Funnel state today
 - **Numbers:** No signup/activation/paid data exists yet — funnel is effectively zero-volume pre-launch. `[TBD]`
-- **Funnel shape:** Free audit (no signup) → results page → account signup → free workspace → import → finding → Team upgrade. Bottleneck unknown — nothing has shipped to an audience yet.
+- **Funnel shape:** Free audit (no signup) → results page → account signup → 30-day Team Plus trial → import → finding → Team Plus purchase ($250 CAD one-time). Bottleneck unknown — nothing has shipped to an audience yet.
 - **Biggest leak:** Unknown (pre-traffic). Highest-risk leaks: (a) audit results not captured (no email capture on the audit), (b) no measurement/analytics wired, (c) no activation path after signup beyond an empty workspace.
 
 ## Funding
@@ -37,14 +37,14 @@
 - **Marketing tooling:** $0 today (ElevenLabs + Remotion used for the launch film; Ahrefs, GA4, email ESP all unsubscribed/unwired)
 - **Retainers:** fCMO (this engagement)
 - **Blended CAC:** Unknown — no acquisition history. Top open decision; every projection depends on it.
-- **% of ARR:** N/A (no ARR). Maps to funding tier **Tier 1 — Pre-seed / bootstrapped ($0–$2K/mo, organic only).**
+- **% of paid revenue:** N/A (no paid revenue). Maps to funding tier **Tier 1 — Pre-seed / bootstrapped ($0–$2K/mo, organic only).**
 
 ## Channels currently active
 - **Acquisition:** None. First asset (60s launch film, dark-premium, VO + music) goes to YouTube today ~2pm. `[in-flight]`
 - **Activation:** Free audit funnel exists and works; no email capture; signup via Clerk.
 - **Retention:** None (no lifecycle email, no ESP wired).
 - **Referral:** None.
-- **Revenue:** PayPal subscriptions live (Team $20/mo, Business $999 then $1/yr, Enterprise custom); server-side verification wired.
+- **Revenue:** Live access model, no payment processor — every account gets an auto 30-day Team Plus trial; after expiry, Team Plus is **$250 CAD one-time via e-transfer** (arranged by email to the configured support address, manually confirmed); Business/Enterprise are sales-led (custom). Zero purchases to date.
 
 ## Already done (acknowledge in plan)
 - **Launch film** (60s, 1080p, VO + licensed CC-BY music) — flagship asset, shipping today.
@@ -52,7 +52,7 @@
 - **Four real ingestion sources:** Manual upload, Gmail, Google Drive, Slack — all real OAuth, working in production.
 - **Free no-signup audit funnel** — "Find my savings," ~2-minute first review.
 - **AI analysis** (Gemini) with extraction of renewal dates, cancellation deadlines, price escalations, annual spend.
-- **Pricing + PayPal billing** — Free/Team/Business/Enterprise with server-verified subscriptions.
+- **Pricing + access model** — Free (30-day Team Plus trial on signup) → Team Plus $250 CAD one-time e-transfer → Business/Enterprise sales-led.
 - **AI chat workspace redesign** (Claude-grade polish pass).
 - **Product foundation:** contracts/vendors/renewals/risk/activity/savings sections (paid tiers), CSV/PDF export, team/roles on Business.
 
@@ -64,7 +64,7 @@
 | Email capture on free audit | Not built | Product/priority decision |
 | Lifecycle email (welcome/findings digests) | Not built | No ESP chosen; no decision |
 | "Cancel subscription via email" dashboard feature | Requested; status unclear | Product scope |
-| Plan-mix reconciliation (Business tier gates Renewals/Risk/Savings behind "Team" in plan definitions) | Likely a product bug | Needs product decision |
+| Plan-mix reconciliation (Business tier gates Renewals/Risk/Savings behind "Team Plus" in plan definitions) | Likely a product bug | Needs product decision |
 
 ## Strategic posture
 - **Founder's top priority this quarter:** Get the first users + first revenue proof from the free-audit wedge; ship the launch film.

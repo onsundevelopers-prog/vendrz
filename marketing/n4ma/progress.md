@@ -2,7 +2,7 @@
 
 phase: finalized
 current_section: 1
-plan_version: v1
+plan_version: v1.1
 last_updated: 2026-09-04
 
 ## Sections completed
@@ -26,4 +26,4 @@ sections/01.md … sections/13.md (drafted in full in one pass; section-by-secti
 ## Notes
 - Client: n4ma.online — AI financial watchdog for business software. Bootstrapped, $0 revenue, $0 marketing budget, solo founder, no public face, no channels live. Launch film ships to YouTube 2026-09-04 ~2pm.
 - Deviations from default workflow: REVIEW walked in a single pass (deliverable-first, per client working style); user can request per-section revision at any time.
-- Funnel metrics, CAC, and retention are unknown — flagged in Section 13 open decisions, not guessed.
+- v1.1 (2026-09-04) — Revised Sections 1–3, 5–13 + research.md for the new access model: auto 30-day Team Plus trial → one-time $250 CAD e-transfer purchase (manual, founder-confirmed); Business/Enterprise sales-led; no payment processor. Removed PayPal/$20-mo/annual-pricing references; revenue reframed as cumulative one-time CAD (no ARR by design).

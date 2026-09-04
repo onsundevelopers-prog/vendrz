@@ -1,9 +1,8 @@
-
 ---
 
 ## 1. Executive summary
 
-**This plan optimizes for one thing:** turning n4ma from a strong story into a self-sustaining acquisition loop at zero marketing budget — visitor → free audit → evidence-backed finding → free workspace → paid Team subscription — and reaching **$10K ARR** by the end of twelve months. Today n4ma has a distinctive category ("AI financial watchdog for business software"), a working product (four real ingestion sources: upload, Gmail, Drive, Slack), live billing, a reworked landing page, and a flagship 60-second launch film. What it doesn't have is distribution: no audience, no SEO, no email, no analytics, no funnel data. This plan builds the machinery that takes a great product story and compounds it.
+**This plan optimizes for one thing:** turning n4ma from a strong story into a self-sustaining acquisition loop at zero marketing budget — visitor → free audit → evidence-backed finding → free workspace → 30-day Team Plus trial → one-time Team Plus purchase — and reaching **$10K CAD in cumulative paid revenue** by the end of twelve months. Today n4ma has a distinctive category ("AI financial watchdog for business software"), a working product (four real ingestion sources: upload, Gmail, Drive, Slack), a live trial + one-time purchase model (no payment processor, by design), a reworked landing page, and a flagship 60-second launch film. What it doesn't have is distribution: no audience, no SEO, no email, no analytics, no funnel data. This plan builds the machinery that takes a great product story and compounds it.
 
 ### Three big bets, ranked by leverage
 
@@ -15,10 +14,10 @@
 
 ### What twelve months looks like, plausibly
 
-- **Q1:** launch film live; GA4 + email capture wired; content hub + cornerstone 1 + savings calculator; guided first import; welcome/digest emails live; first paying workspaces (single digits).
-- **Q2:** Product Hunt launch + directories; accountant partner channel active; share-a-finding shipped; trial→paid mechanics designed; AI-answer presence started.
-- **Q3:** programmatic SEO v1; first cohort retention math; annual pricing test; case study #1 from a real activated user; second film asset.
-- **Q4:** **~$10K ARR** (roughly 35–40 paying workspaces); two best-converting assets doubled down; annual-season content; possible first paid pilot if revenue justifies it. Linear, honest growth — no hockey stick promised.
+- **Q1:** launch film live; GA4 + email capture wired; content hub + cornerstone 1 + savings calculator; guided first import; welcome/digest emails live; first Team Plus purchases (single digits).
+- **Q2:** Product Hunt launch + directories; accountant partner channel active; share-a-finding shipped; trial-to-paid mechanics live (day-25 nudge, expiry screen); AI-answer presence started.
+- **Q3:** programmatic SEO v1; first paid-cohort engagement math; purchase-friction reduction; case study #1 from a real activated user; second film asset.
+- **Q4:** **~$10K CAD cumulative paid revenue** (roughly 40 Team Plus purchases); two best-converting assets doubled down; annual-season content; possible first paid pilot if revenue justifies it. Linear, honest growth — no hockey stick promised.
 
 ### 90-day priorities
 
@@ -54,9 +53,9 @@ We are claiming a new category inside the SaaS-spend space: **AI financial watch
 
 ### The business model logic
 
-Freemium wedge → paid workspace. The **free no-signup audit** is the acquisition asset (a lead magnet that *is* the product). Signup is free; the **Free plan** proves value with one evaluation import from Drive/Slack plus manual upload and 5 AI messages; **Team ($20/mo)** unlocks the full machine — Gmail/Drive/Slack ingestion, renewal & cancellation-deadline alerts, price-increase detection, business workspace, unlimited AI; **Business ($999 then $1/yr)** adds team/roles and automations for companies that want a managed rollout; **Enterprise (custom)** is sales-led. Billing is PayPal with server-side verification — subscription state is already accessible via webhook + verify endpoints, which matters for the ops stack (§11).
+Trial wedge → one-time paid workspace. The **free no-signup audit** is the acquisition asset (a lead magnet that *is* the product). Signup is free and **auto-starts a full 30-day Team Plus trial** (server-side, no credit card); after it ends, **Team Plus ($250 CAD, one-time e-transfer)** unlocks the whole machine permanently — Gmail/Drive/Slack ingestion, renewal & cancellation-deadline alerts, price-increase detection, business workspace, unlimited AI — arranged by email and granted manually once the transfer clears; **Business** and **Enterprise Scale** are sales-led (team/roles, automations, governance). There is no payment processor by design: no subscriptions, no auto-charges, nothing to cancel — which also means paid state is a simple server-side grant (Clerk metadata, admin-confirmed), relevant to the ops stack (§11).
 
-**Compounding channel thesis:** content + free-tool SEO around "money leaks" (the problem is searchable in a thousand phrasings), each piece funneling into the no-signup audit, the audit converting to free workspaces, workspaces converting to Team. The launch film is the flagship asset that seeds every channel: YouTube, homepage, short-form cuts, social. Time in market beats timing the market — SEO and content are the buy-and-hold assets; the audit is the conversion engine.
+**Compounding channel thesis:** content + free-tool SEO around "money leaks" (the problem is searchable in a thousand phrasings), each piece funneling into the no-signup audit, the audit converting to trial workspaces, and the 30-day trial converting to Team Plus purchases. The launch film is the flagship asset that seeds every channel: YouTube, homepage, short-form cuts, social. Time in market beats timing the market — SEO and content are the buy-and-hold assets; the audit + trial clock is the conversion engine.
 
 ### Brand voice (the non-negotiable)
 
@@ -93,13 +92,13 @@ Every section of this plan respects these rules.
 | Retainers / fCMO | This engagement |
 | **Total** | **~$0/mo** |
 | Blended CAC | Unknown — top open decision (§13) |
-| Spend as % of ARR | N/A (no ARR yet) |
+| Spend as % of paid revenue | N/A (no paid revenue yet) |
 
 **Funding tier:** **Tier 1 — Pre-seed / bootstrapped** ($0–$2K/mo, organic only). Every move in this plan must execute at $0 unless explicitly flagged as a future-tier unlock.
 
 ### Phase of SaaS growth
 
-**$0–10K ARR — the grueling phase.** Binding constraint: *proving a repeatable path from stranger → audit → paying workspace.* Growth pattern to expect: linear additions (a few signups and a first handful of Team subscriptions per month) punctuated by step-functions (launch moments, a channel breakthrough). No hockey stick; the plan sequences S-curves honestly (§10).
+**$0–10K CAD paid revenue — the grueling phase.** Binding constraint: *proving a repeatable path from stranger → audit → trial → Team Plus purchase.* Growth pattern to expect: linear additions (a few signups and a first handful of Team Plus purchases per month) punctuated by step-functions (launch moments, a channel breakthrough). No hockey stick; the plan sequences S-curves honestly (§10).
 
 ### What's already done (acknowledge, then build on)
 
@@ -110,7 +109,7 @@ Every section of this plan respects these rules.
 | **Free no-signup audit** ("Find my savings") | Live | The wedge. Lead magnet that *is* the product; two-minute first review |
 | **Four real ingestion sources** — Upload, Gmail, Google Drive, Slack | Live, real OAuth | Category credibility: "bring your own system" story; differentiator vs. spreadsheet workflows |
 | **Evidence-first AI analysis** (Gemini) — renewal dates, cancellation deadlines, price escalations, annual spend | Live | The trust story: every finding links to source clause/document/page |
-| **Pricing + PayPal billing** (Free/Team/Business/Enterprise), server-verified | Live | Monetization ready; conversion data doesn't exist yet |
+| **Pricing + access model** — auto 30-day Team Plus trial → one-time $250 CAD e-transfer purchase (manual, founder-confirmed); Business/Enterprise sales-led; no payment processor | Live | Monetization ready; purchase funnel is founder-in-the-loop until process is tight; conversion data doesn't exist yet |
 | **AI chat workspace redesign** (Claude-grade polish) | Live | Retention surface; "ask questions in plain English" is a real demo moment |
 | **Honest FAQ + savings methodology** | Live | Trust; answers "how do you calculate savings?" before it's asked |
 
@@ -129,7 +128,7 @@ Every section of this plan respects these rules.
 | No email capture on the free audit | Every audit result is anonymous; no nurture, no reactivation, no referral channel | Add email capture + results-delivery email (Weeks 1–2, §5 Move 2) |
 | No analytics wired | Marketing is flying blind; can't measure the funnel the plan depends on | GA4 + UTM scheme + key event tracking (Weeks 1–2, §4/§13) |
 | No content surface | The compounding channel doesn't exist; SEO starts from zero | Launch content hub + cornerstone pieces (Weeks 3–4, §4 Move 2) |
-| Plan-mix quirk: Business tier definitions gate Renewals/Risk/Savings behind "Team" | Confusing upgrade path at the $999 tier | Product decision — reconcile plan gating (open decision §13) |
+| Plan-mix quirk: Business tier definitions gate Renewals/Risk/Savings behind "Team Plus" | Confusing upgrade path at the sales-led tiers | Product decision — reconcile plan gating (open decision §13) |
 
 ### Audit rubric snapshot
 
@@ -146,7 +145,7 @@ Every section of this plan respects these rules.
 | 9 | Email lifecycle | 0 | No ESP, no flows at all |
 | 10 | Sales material | 1 | Film + landing can stand in; no one-pager, deck, or case study |
 | 11 | Messaging | 4 | Documented voice, consistent across landing/FAQ/film; enforced honesty |
-| 12 | Pricing | 3 | Clear tiers, live billing; plan-mix quirk at Business tier; never pressure-tested against demand |
+| 12 | Pricing | 3 | Clear tiers + auto 30-day trial; manual e-transfer purchase is founder-in-the-loop (conversion risk until reply SLA is tight); plan-mix quirk at Business tier; never pressure-tested against demand |
 | 13 | CRO | 0 | No tests, no instrumentation |
 | 14 | GTM launches | 1 | Film launch is the first structured moment; no playbook yet |
 | 15 | Ads (paid) | 0 | No paid — appropriate at Tier 1, not a failure |
@@ -219,7 +218,7 @@ Nothing is live except the launch film going to YouTube today. No audience, no d
 
 ### Current state
 
-The funnel exists: audit (no signup) → results page → account → free workspace → import → finding → Team upgrade. What's missing: the audit results are anonymous (no email capture), the post-signup workspace is empty and unguided, there is no welcome email, and there's no measurement of where the funnel leaks. The free plan's built-in trial mechanic — 5 AI messages/mo + **1 evaluation import from Drive/Slack** — is genuinely good and under-marketed.
+The funnel exists: audit (no signup) → results page → account → 30-day Team Plus trial → import → finding → purchase. What's missing: the audit results are anonymous (no email capture), the post-signup workspace is empty and unguided, there is no welcome email, and there's no measurement of where the funnel leaks. The product already auto-starts a full **30-day Team Plus trial** on signup (no credit card) — Free's limits (5 AI messages/mo + 1 evaluation import from Drive/Slack) apply only after it expires. That gift-and-timer mechanic is genuinely good and under-marketed.
 
 ### The plan
 
@@ -227,13 +226,13 @@ The funnel exists: audit (no signup) → results page → account → free works
 
 **Move 2 — Email capture on the audit (Weeks 1–2).** The highest-leverage activation fix in the whole plan: add an email field ("email me this review") on the audit results page, deliver the findings by email, and use it as the welcome/nurture entry point. Without this, every audit is a dead end. This is idea #48 (dynamic email capture) executed at the exact moment of highest intent.
 
-**Move 3 — Guided first import (Weeks 3–4).** Post-signup, replace the empty workspace with a 3-step wizard: (1) "bring your own system" — Gmail / Drive / Slack / upload (the four-source story is the differentiator — say it), (2) one import (Free's evaluation import is the perfect first step), (3) "here are your findings" — surfaced as renewal windows, price increases, risks. One-click signup via Clerk/Google (idea #90) already works; make sure it's the default path from the audit.
+**Move 3 — Guided first import (Weeks 3–4).** Post-signup, replace the empty workspace with a 3-step wizard: (1) "bring your own system" — Gmail / Drive / Slack / upload (the four-source story is the differentiator — say it), (2) one import (the 30-day trial makes it unrestricted — the perfect first step), (3) "here are your findings" — surfaced as renewal windows, price increases, risks. One-click signup via Clerk/Google (idea #90) already works; make sure it's the default path from the audit.
 
 **Move 4 — Onboarding email flow (Weeks 3–4, cross-ref §6).** ESP wired (Resend or similar — $0 tier), welcome email at signup (idea #47: founder-signed, story-first, no pressure), findings-delivery email after first import, "your evaluation import is ready" nudge if they haven't imported in 48h (idea #51).
 
-**Move 5 — Upgrade moment design (Q2).** The paid pitch is embedded in the product already (locked sections with "included with Team" notes; upgrade overlay). Improve it: make the locked sections show *why* ("Renewals — Team" with a one-line value), and place an upgrade nudge right after the first-finding moment ("See every renewal window across your vendors"). In-app upsell = idea #91. Test one variant (CRO skill, idea #96).
+**Move 5 — Purchase-moment design (Q2).** The paid pitch is embedded in the product already (locked sections with "included with Team Plus" notes; purchase overlay). Improve it: make the locked sections show *why* ("Renewals — Team Plus" with a one-line value), and place a purchase nudge right after the first-finding moment ("See every renewal window across your vendors"). In-app upsell = idea #91. Test one variant (CRO skill, idea #96).
 
-**Move 6 — Use the free tier as a trial, explicitly (Q2).** The 5-message AI limit + 1 evaluation import is a natural trial. Frame it in-app ("You have 1 evaluation import left — connect Slack to see what it finds") and in the welcome email. The moment of limit-hit should be a designed upgrade moment, not an error.
+**Move 6 — Let the trial clock do the selling (Q2).** The 30-day trial *is* the mechanic now — no invented limits needed. Frame it in-app (the countdown is already visible: "X days left in your Team Plus trial"), in the welcome email, and with a buy-before-expiry nudge ("purchase now — Team Plus simply continues when the trial ends"). The expiry moment (day 30+) must be a designed purchase screen, not an error: "Your 30-day Team Plus trial has ended" → Email to Purchase → $250 CAD e-transfer. The day-25 email is the highest-leverage send in the funnel (cross-ref §6, §8).
 
 **Skipped (this tier):** concierge setup (Q3+, high-value only), app-store optimization (no mobile app), paid onboarding ads.
 
@@ -244,7 +243,7 @@ The funnel exists: audit (no signup) → results page → account → free works
 | 1–2 | Email capture on audit + results-delivery email; GA4 events for audit→signup→import→finding | Founder + fCMO |
 | 3–4 | Guided first-import wizard; welcome email live; 48h import nudge | Founder + fCMO |
 | 5–8 | First-finding upgrade nudge live; one CRO test on the audit page | Founder + fCMO |
-| 9–12 | Measure funnel leak points; iterate on the highest-leak step; trial framing copy (evaluation import) shipped | Founder + fCMO |
+| 9–12 | Measure funnel leak points; iterate on the highest-leak step; trial-ending + expiry-screen copy shipped | Founder + fCMO |
 
 ### 12-month activation outlook
 
@@ -261,11 +260,11 @@ The funnel exists: audit (no signup) → results page → account → free works
 
 ## 6. Retention
 
-*How a Team subscriber stays, deepens, and keeps the product top-of-mind.*
+*How a Team Plus owner stays engaged, deepens, and keeps the product top-of-mind.*
 
 ### Current state
 
-No lifecycle email, no ESP, no win-back, no churn data (no subscribers yet). The strategic advantage: **the product itself is a retention engine.** Renewal alerts, cancellation-deadline warnings, and price-increase detection give a paying user a reason to open n4ma every time a vendor does something — the product creates its own return visits. Retention work should amplify that, not invent a parallel engagement layer.
+No lifecycle email, no ESP, no win-back, no paid cohort yet. One structural fact reframes this whole section: **Team Plus is a permanent one-time grant — there is no subscription to lapse, so financial churn is ~0% by design.** The real retention risks are (a) trial users who never convert at day 30 (§5/§8 own that moment) and (b) paid owners who go dormant — they can't churn, but a silent owner generates no findings, no referrals, and no Business/Enterprise signal. The strategic advantage: **the product itself is an engagement engine.** Renewal alerts, cancellation-deadline warnings, and price-increase detection give an owner a reason to open n4ma every time a vendor does something — the product creates its own return visits. Retention work should amplify that, not invent a parallel engagement layer.
 
 ### The plan
 
@@ -273,13 +272,13 @@ No lifecycle email, no ESP, no win-back, no churn data (no subscribers yet). The
 
 **Move 2 — Findings digest as the retention beat (Q2).** The weekly digest is the single most valuable retention email: it re-proves the product's worth with fresh, specific evidence every week ("Acme renews Oct 24 — cancel window closes Sep 24"). It's also an acquisition asset (§4 Move 4: shareable). Ship it before win-back or lapsed flows.
 
-**Move 3 — Churn prevention (Q2→Q3).** Cancellation flow with a save moment: on cancel, surface what they'd lose ("you have 4 renewal windows being monitored"), offer annual pricing, one-tap pause. Failed-payment recovery (PayPal webhooks already wired — use them). This is `churn-prevention` skill territory (ideas #52/#53 later).
+**Move 3 — Trial-expiry + dormancy beats (Q2→Q3).** There's no cancellation flow to build (nothing auto-charges); the churn-equivalents are expiry and silence. Two flows: (1) trial-expiry reactivation — a day-31+ email to expired users ("your findings are still here — Team Plus keeps the watch on"), since a trial that ends without a purchase is the closest thing this model has to a lost customer; (2) paid-dormancy beats — owners who haven't opened in 30/60 days get "what your vendors have done since" digests, the product's own evidence as the hook. Ideas #52/#53 territory.
 
-**Move 4 — Win-back + reactivation (Q3).** Lapsed free workspaces (signed up, never imported) get the "your evaluation import is still waiting" email; churned Team subscribers get a "what you'd have caught this month" email — the product's own evidence as the hook. (Ideas #46/#52.)
+**Move 4 — Win-back + reactivation (Q3).** Lapsed free workspaces (signed up, never imported) get the "your evaluation import is still waiting" email; dormant Team Plus owners get a "what your vendors have done since you left" email — the product's own evidence as the hook. (Ideas #46/#52.)
 
 **Move 5 — Support as marketing (Q2).** Solo founder = personal, fast support. Every support interaction is a retention moment: same-day replies, honest answers, "here's how to use this finding." Turn the best exchanges into FAQ entries and case-study seeds (idea #135).
 
-**Move 6 — Annual-plan default test (Q3, cross-ref §8).** Annual Team (2 months free) reduces churn exposure and front-loads cash — test it after the first cohort exists.
+**Move 6 — Paid-engagement expansion (Q3, cross-ref §8).** One-time owners have no renewal hook, so engagement is the expansion lever: the most active Team Plus owners are the Business/Enterprise signals (team/roles, governance) and the strongest referrers (§7). Track weekly-finding-review cohorts from purchase date and feed the most engaged into the sales conversation.
 
 **Skipped (this tier):** in-app messaging platforms (Customer.io-class tooling is Tier 2+), certification programs, community building (premature at zero users — community is a Q3+/Tier-2 unlock, idea #35).
 
@@ -287,21 +286,21 @@ No lifecycle email, no ESP, no win-back, no churn data (no subscribers yet). The
 
 | Weeks | Move | Owner |
 |---|---|---|
-| 3–4 | ESP wired; welcome + findings-digest + evaluation-reminder flows live | Founder + fCMO |
-| 5–8 | Digest iterated on open rates; churn-prevention flow drafted (save moment) | Founder + fCMO |
-| 9–12 | Cancellation save-moment shipped; support-as-marketing habit established; first churn/retention numbers read | Founder + fCMO |
+| 3–4 | ESP wired; welcome + findings-digest + trial-reminder flows live | Founder + fCMO |
+| 5–8 | Digest iterated on open rates; trial-expiry + dormancy flows drafted | Founder + fCMO |
+| 9–12 | Trial-expiry reactivation + paid-dormancy beats live; support-as-marketing habit established; first engagement numbers read | Founder + fCMO |
 
 ### 12-month retention outlook
 
 - **Q1:** backbone live; no data yet.
-- **Q2:** first paying cohort; digest open rates as the leading indicator.
-- **Q3:** churn prevention live; annual default test; first retention cohort analysis.
-- **Q4:** retention baseline named (target: ≥90% annual retention on Team — the product's evidence loop should make this achievable); win-back flows firing.
+- **Q2:** first paid cohort; digest open rates as the leading indicator.
+- **Q3:** trial-expiry + dormancy flows live; first paid-cohort engagement analysis.
+- **Q4:** retention baseline named — financial churn ~0% structurally (permanent grants), so the target is engagement (≥50% of Team Plus owners still reviewing findings weekly at month 3); reactivation flows firing.
 
 ### Skills + tools
 
-- **Skills:** `emails`, `churn-prevention`, `copywriting`, `ab-testing`, `paywalls` (annual upsell)
-- **Tools:** Resend or equivalent ESP, PayPal webhook data (subscription state, failed payments), GA4 (return visits), GitHub (product flows)
+- **Skills:** `emails`, `churn-prevention`, `copywriting`, `ab-testing`, `paywalls` (purchase overlay)
+- **Tools:** Resend or equivalent ESP, GA4 (return visits), GitHub (product flows), product state (Supabase/Clerk — dormancy segments)
 ---
 
 ## 7. Referral
@@ -316,7 +315,7 @@ Nothing exists. But the product has an inherent referral mechanic waiting to be 
 
 **Move 1 — Share-a-finding, built into the product (Q1, Weeks 5–8).** On the findings/results page and in the digest, a "share this finding" affordance that generates a clean, branded, evidence-backed summary (leak → proof → savings estimate → n4ma link). This is the natural viral loop (idea #93, lightweight version): the finding *is* the ad, and it's honest because it's the user's own data.
 
-**Move 2 — Accountant & fractional-CFO affiliate program (Q2, cross-ref §4 Move 6).** The highest-trust referral source for this category. Structure: practitioners get a tracked link + revenue share (e.g., 20% of the first year on Team/Business); per-practitioner landing content ("n4ma for accountants"); monthly digest of what their referrals found. Start with 10–25 warm outreach emails (cold-email skill), not a public program page. Idea #62, executed personally at this stage.
+**Move 2 — Accountant & fractional-CFO affiliate program (Q2, cross-ref §4 Move 6).** The highest-trust referral source for this category. Structure: practitioners get a tracked link + flat revenue share (e.g., 20% = **$50 CAD per confirmed Team Plus purchase** — clean because the payment is one-time; Business/Enterprise commissions negotiated per deal); per-practitioner landing content ("n4ma for accountants"); monthly digest of what their referrals found. Start with 10–25 warm outreach emails (cold-email skill), not a public program page. Idea #62, executed personally at this stage.
 
 **Move 3 — Founder as referrer-zero (Now).** Before any program: the founder asks the first 10 users (by name, personally) for one intro each — the "referrer-zero" motion. Every happy user gets asked at the moment of their best finding, not generically.
 
@@ -341,7 +340,7 @@ Nothing exists. But the product has an inherent referral mechanic waiting to be 
 ### Skills + tools
 
 - **Skills:** `referrals`, `cold-email`, `social` (partner-shareable content), `copywriting`, `emails` (partner lifecycle)
-- **Tools:** Dub.co or equivalent (link + attribution), GitHub (partner landing pages), PayPal data (commission accounting), the digest pipeline
+- **Tools:** Dub.co or equivalent (link + attribution), GitHub (partner landing pages), a simple commission log keyed to the entitlement grant record (Notion or spreadsheet — no processor to report from), the digest pipeline
 ---
 
 ## 8. Revenue
@@ -350,53 +349,54 @@ Nothing exists. But the product has an inherent referral mechanic waiting to be 
 
 ### Current state
 
-Pricing is live and defensible: **Free** ($0, 5 AI msgs/mo, 1 evaluation import, manual upload) → **Team** ($20/mo, all integrations, business workspace, unlimited AI) → **Business** ($999 then $1/yr, team/roles, automations) → **Enterprise** (custom, sales). Billing is PayPal with server-side verification (verify + webhook endpoints already built). Zero revenue data exists — no ARPC, no churn, no cohort. The pricing story is already outcome-framed ("Find your first spending leaks," "Give your team a complete view…") per the positioning rework.
+Pricing and access are live and defensible under the new model (no payment processor): **every account auto-starts a 30-day Team Plus trial** on first sign-in (server-side, in Clerk metadata — not restartable, not client-extendable). When it ends, the user drops to **Free** (manual upload & analysis, 5 AI messages/mo, 1 evaluation import from Drive/Slack, simple workspace; Vendors/Contracts/Renewals/Risk/Activity/Savings locked) and sees the upgrade screen: **Team Plus — $250 CAD one-time via e-transfer**, arranged by email to the configured support address. Once the transfer is confirmed by the founder (admin endpoint), Team Plus is granted **permanently** — no subscription, never auto-charged. **Business** (team/roles, automations, priority AI) and **Enterprise Scale** (governance, SLA) are **sales-led, custom-priced**. Zero paid cohort exists yet — no conversion data, no request-to-confirmed cycle time.
 
 ### Unit economics (required table — mostly TBD, honestly)
 
 | Metric | Value | Note |
 |---|---|---|
-| ARPC | TBD | No customers yet; Team = $20/mo list |
+| ARPC | $250 CAD (one-time) | ≈ $185 USD. No ARR by design — revenue is cumulative one-time grants |
 | Blended CAC | TBD | Top open decision — no acquisition history |
-| Annual retention rate | TBD | No cohorts; target ≥90% (evidence-loop product should support it) |
-| LTV (rough) | TBD | Depends on retention data |
+| Structural churn | ~0% | Paid is a permanent grant — no subscription to lapse. Real losses are trial non-conversion and paid dormancy, not cancellations |
+| LTV (rough) | $250 CAD + referral/expansion potential | LTV ≈ ARPC unless a Team Plus buyer upgrades to Business/Enterprise or refers others |
 | LTV / CAC | TBD | Health benchmark: >3 |
 
 Every TBD here feeds §10's budget math and belongs in §13's open decisions.
 
 ### The plan
 
-**Move 1 — Measure the money funnel before touching pricing (Weeks 1–4).** Audit → signup → import → finding → paid. Instrument the paid conversion events and the upgrade-overlay opens. No pricing changes until there's a baseline. (This is also the §5 activation work — revenue and activation share the same events.)
+**Move 1 — Measure the money funnel before touching pricing (Weeks 1–4).** Audit → signup → trial start → import → finding → upgrade-overlay open → purchase-email click → e-transfer request received → transfer confirmed. Instrument every step (the last two are manual — log them in the support inbox or a simple spreadsheet). The e-transfer step is founder-in-the-loop: a 24h reply SLA and a clean "Already paid? Refresh my access" path (already in product) are part of the funnel, not afterthoughts. No pricing changes until there's a baseline.
 
-**Move 2 — Trial → paid mechanics (Q2).** The free tier's evaluation import + 5-message limit is the trial. Design the limit-hit moment (see §5 Move 6) and the post-first-finding upgrade nudge. Test one upgrade-copy variant.
+**Move 2 — The 30-day clock is the trial-to-paid mechanic (Q2).** The trial is already automatic and full-featured — the work is designing the expiry moment, which is the product's single biggest revenue surface: day-25 "your trial ends soon" email, the expiry screen already built ("Your 30-day Team Plus trial has ended"), and a buy-before-expiry nudge during the trial ("purchase now — Team Plus simply continues when the trial ends"). Test one upgrade-copy variant. (Cross-ref §5 — activation and revenue share the same moment.)
 
-**Move 3 — Annual Team default test (Q3).** After the first cohort: annual Team (e.g., 2 months free, $200/yr) as the default option — better retention economics, front-loaded cash, less churn exposure. A/B the annual vs. monthly default (ab-testing skill).
+**Move 3 — Reduce manual-purchase friction (Q2→Q3).** The e-transfer path is deliberately human, so make the human steps painless: auto-drafted purchase email (already in product), founder reply within 24h with transfer details, confirmation on payment, permanent grant. Measure request→confirmed conversion and cycle time; a founder response that takes days will leak revenue at exactly the moment of highest intent. Once the first cohort exists, A/B the nudge copy and the expiry email.
 
-**Move 4 — Reconcile the plan mix (Q1).** Open decision from §3: Business tier definitions gate Renewals/Risk/Savings behind "Team" — a paying Business customer would see those locked. Decide: fix the gating (Business should include what Team includes, plus its own adds) or re-tier. Also pressure-test the $999 + $1/yr structure against the outcome language — at this stage, most revenue will come from Team; keep Business simple and honest.
+**Move 4 — Reconcile the plan mix (Q1).** Open decision from §3: Business tier definitions still gate Renewals/Risk/Savings behind Team Plus — a Business buyer would see those locked. Decide: bundle (Business is sold *on top of* Team Plus) or fix the gating so Business ≥ Team Plus plus its own adds. Keep the sales story simple: Team Plus is the purchasable tier; Business/Enterprise are for companies that need team/roles and governance on top.
 
-**Move 5 — Sales material from real evidence (Q2→Q3).** The film is the demo. Add: one-pager ("How n4ma calculates savings" — methodology as a sales document, because trust is the product), and the first case study written from a real activated user (not fabricated — per the honesty rule). Enterprise inbound ("contact sales") gets a reply within a day from the founder.
+**Move 5 — Sales material from real evidence (Q2→Q3).** The film is the demo. Add: one-pager ("How n4ma calculates savings" — methodology as a sales document, because trust is the product), and the first case study written from a real activated user (not fabricated — per the honesty rule). Business/Enterprise inbound ("contact us") gets a reply within a day from the founder.
 
-**Move 6 — Revenue levers held for later (Q4+).** Price localization, usage-based tiers, expansion revenue from new sources (more integrations = more data = more findings = more value). Flagged, not executed in this 12-month plan.
+**Move 6 — Revenue levers held for later (Q4+).** Price localization, Business/Enterprise upsell from engaged Team Plus buyers, expansion revenue from new sources (more integrations = more data = more findings = more value). Flagged, not executed in this 12-month plan.
 
 ### 90-day revenue moves
 
 | Weeks | Move | Owner |
 |---|---|---|
-| 1–4 | Paid-conversion events instrumented; plan-mix gating decision made | Founder |
-| 5–8 | Upgrade nudge after first finding; one upgrade-copy variant | Founder + fCMO |
-| 9–12 | First revenue read; pricing review against funnel data; methodology one-pager drafted | Founder + fCMO |
+| 1–4 | Purchase funnel instrumented (incl. manual request/confirm logging); plan-mix gating decision made | Founder |
+| 5–8 | Trial-ending nudge + expiry-screen copy tested; 24h e-transfer reply SLA in force | Founder + fCMO |
+| 9–12 | First purchase read; request→confirmed cycle-time review; methodology one-pager drafted | Founder + fCMO |
 
 ### 12-month revenue outlook
 
-- **Q1:** baseline funnel; first handful of Team subscribers (realistic: single digits).
-- **Q2:** trial→paid mechanics live; first cohort forming.
-- **Q3:** annual default test; case study #1; retention math real.
-- **Q4:** **goal: first $10K ARR** (~40 Team subs or mix) — linear, honest growth; $0 CAC-driven. This is the funding-stage proof point for any future round.
+- **Q1:** baseline funnel; first handful of Team Plus purchases (realistic: single digits).
+- **Q2:** trial-to-paid mechanics live (day-25 email, buy-before-expiry nudge); first cohort forming.
+- **Q3:** purchase-friction reduction live; case study #1; first paid-cohort engagement math real.
+- **Q4:** **goal: first $10K CAD cumulative paid revenue** (~40 Team Plus purchases or a mix including Business/Enterprise deals) — linear, honest growth, $0 CAC-driven. One-time model means revenue is cumulative, not recurring; this is the funding-stage proof point for any future round.
 
 ### Skills + tools
 
-- **Skills:** `pricing`, `paywalls`, `sales-enablement`, `revops`, `ab-testing`
-- **Tools:** PayPal (verify + webhook subscription data), GA4 (paid events), GitHub (product gating), Notion (pricing decisions log)
+- **Skills:** `pricing`, `sales-enablement`, `revops`, `ab-testing`, `emails` (trial-ending flow)
+- **Tools:** GA4 (funnel events incl. mailto-click), Supabase/Clerk entitlement admin (grant tracking), support inbox or spreadsheet (e-transfer request log), Notion (pricing decisions log) — no payment processor, by design.
+
 ---
 
 ## 9. 90-day roadmap
@@ -411,9 +411,9 @@ Every TBD here feeds §10's budget math and belongs in §13's open decisions.
 |---|---|---|
 | Launch film live on YouTube + embedded on homepage (+ thumbnail/title/description SEO, end-screen to audit) | Acquisition | Both |
 | 3–5 short-form cuts from the film (per-leak format) drafted | Acquisition | fC |
-| GA4 + UTM scheme wired; events: audit_start, audit_result, signup, import, finding, upgrade_open, paid | All stages | fC |
+| GA4 + UTM scheme wired; events: audit_start, audit_result, signup, trial_start, import, finding, upgrade_open, purchase_email_click, transfer_confirmed | All stages | fC |
 | Email capture on audit results page + results-delivery email | Activation | Both |
-| Plan-mix gating decision made (Business vs. Team section locks) | Revenue | F |
+| Plan-mix gating decision made (Business vs. Team Plus section locks) | Revenue | F |
 
 ### Weeks 3–4 — Foundation
 
@@ -445,7 +445,7 @@ Every TBD here feeds §10's budget math and belongs in §13's open decisions.
 | "Finding of the week" series established (weekly demo → audit link) | Acquisition | Both |
 | vs-pages drafted (spreadsheets, enterprise spend platforms) | Acquisition | fC |
 | Programmatic SEO v1 plan (integration/pain-point pages) | Acquisition | fC |
-| Cancellation save-moment flow drafted; churn baseline if any cancellations | Retention | Both |
+| Trial-expiry reactivation + paid-dormancy flows drafted (no subscriptions to cancel — the model's churn risks are expiry and silence) | Retention | Both |
 | Methodology one-pager ("How n4ma calculates savings") | Revenue | fC |
 | 90-day review: which asset converts (audit→signup→paid), what to double down, what to kill | All stages | Both |
 
@@ -458,7 +458,7 @@ Every TBD here feeds §10's budget math and belongs in §13's open decisions.
 
 **Budget method:** Revenue-Based (Method 1) — but revenue is $0, so the practical rule is "spend what's proven, which is nothing yet." The plan is organic-only (Tier 1) until revenue data exists; the first paid-test budget unlocks only from revenue or funding, not from a projection. **Annual marketing budget:** ~$0–2K (tooling only: Ahrefs free tier, ESP free tier, Typefully ~$13–39/mo later). Experimental buffer: the 10–20% rule applies to the *time* portfolio, not dollars — 10% of weekly effort is reserved for tests (a new channel, a new format).
 
-**Resulting end-of-year ARR goal (honest):** **$10K ARR** — the exit from the "grueling" phase. ~35–40 paying workspaces on Team (or a mix including 2–3 Business/Enterprise deals). At $0 CAC this is achievable through the organic stack; it is a *linear* forecast, not a hockey stick.
+**Resulting end-of-year revenue goal (honest):** **$10K CAD cumulative paid revenue** — the exit from the "grueling" phase. ~40 Team Plus purchases at $250 CAD one-time (or a mix including 2–3 Business/Enterprise deals). One-time model: there is no ARR by design, so revenue compounds as cumulative purchases, not recurring spend — and each purchase is founder-in-the-loop until the transfer confirms. At $0 CAC this is achievable through the organic stack; it is a *linear* forecast, not a hockey stick.
 
 **Growth pattern expected:** layering S-curves — Channel × Product × Market. Each quarter starts a new curve while the current one still grows: Q1 content/SEO + video; Q2 Product Hunt/momentum + accountants; Q3 programmatic SEO + AI-answer presence; Q4 second film asset + possible paid pilot. No single channel carries the plan (no silver bullets, a hundred golden pellets).
 
@@ -472,34 +472,34 @@ Every TBD here feeds §10's budget math and belongs in §13's open decisions.
 - Content hub + cornerstone 1 + glossary + savings calculator
 - Guided first-import wizard; welcome + digest + reminder emails live
 - No-face social cadence established (2/wk)
-**KPI targets:** 1–5 paying workspaces (first revenue); audit→finding activation baseline measured; 10+ content assets published; film views ≥2K.
+**KPI targets:** 1–5 Team Plus purchases (first revenue); audit→finding activation baseline measured; 10+ content assets published; film views ≥2K.
 **S-curves:** Content/SEO curve → launching. Video curve → launching. Measurement is now the platform under both.
 
 ### Q2 — Months 4–6 (momentum)
 
 **Funding state:** Tier 1 (revenue may justify first tooling only).
-**Focus:** Product Hunt + partner channel + trial→paid mechanics.
+**Focus:** Product Hunt + partner channel + trial-to-purchase mechanics.
 **Outcomes:**
 - Product Hunt launch + directories live
 - Accountant/fractional-CFO channel active (3–5 partners; tracked links; revenue share)
 - Share-a-finding shipped; referral mechanics instrumented
-- Upgrade moment designed after first-finding; limit-hit moment framed as trial
-- Churn-prevention flow drafted; digest optimizing on opens
+- Purchase moment designed after first-finding; trial-ending nudge (day-25) live
+- Trial-expiry + dormancy flows drafted; digest optimizing on opens
 - AI-SEO v1 (llms.txt, structured data); vs-pages live
-**KPI targets:** 10+ paying workspaces; 15–30 audit submissions/mo; first referral conversions; digest open ≥45%.
+**KPI targets:** 10+ Team Plus purchases (cumulative); 15–30 audit submissions/mo; first referral conversions; digest open ≥45%.
 **S-curves:** PH/momentum curve → launch (may be a step-function). Partner curve → no-face founder content compounding. Product-led trial curve → start.
 
 ### Q3 — Months 7–9 (acceleration)
 
 **Funding state:** Tier 1 (or Tier 2 pilot if revenue/funding allows).
-**Focus:** Programmatic SEO, retention math, annual pricing, second film.
+**Focus:** Programmatic SEO, paid-cohort engagement math, purchase-friction reduction, second film.
 **Outcomes:**
 - Programmatic SEO v1 (integration/pain-point pages)
 - AI-search presence: n4ma shows up in AI answers to money-leak questions
-- Annual Team default test live; first cohort retention analysis; win-back flows firing
+- Purchase-friction reduction live (24h e-transfer reply SLA); first paid-cohort engagement analysis; trial-expiry reactivation flows firing
 - Case study #1 from a real activated user (honest, evidence-led)
 - Second film-grade asset produced (e.g., "how a renewal almost slipped through" narrative)
-**KPI targets:** 20+ paying workspaces ($5K+ ARR); organic traffic growing MoM; retention ≥90% named from data; case study published.
+**KPI targets:** 20+ Team Plus purchases ($5K+ CAD cumulative); organic traffic growing MoM; paid-engagement baseline named from data; case study published.
 **S-curves:** Programmatic/ai-seo curve → next S-curve starting while content/partner curves still grow.
 
 ### Q4 — Months 10–12 (compound + review)
@@ -510,14 +510,14 @@ Every TBD here feeds §10's budget math and belongs in §13's open decisions.
 - "2027 Software Audit" annual-season content (forecast, checklist, renewal calendar)
 - Quarterly asset review → double down / kill decisions documented
 - If revenue supports it: first paid pilot (Tier 2: $5–15K/mo test on 1–2 channels with best CAC evidence)
-- Funding-stage proof package ready (funnel numbers, retention math, ARR) if a raise is considered
-**KPI targets:** **$10K ARR** (exit grueling phase); CAC known from pilot if run; referral ≥20% of new signups; audited savings-claimed metric public-ready.
+- Funding-stage proof package ready (funnel numbers, engagement math, cumulative paid revenue) if a raise is considered
+**KPI targets:** **$10K CAD cumulative paid revenue** (exit grueling phase); CAC known from pilot if run; referral ≥20% of new signups; audited savings-claimed metric public-ready.
 **S-curves:** Paid curve → pilot. Annual-content curve → seasonal wave. The portfolio now has 4–5 lanes; the 70/20/10 split governs effort.
 
 ### Tier transition triggers (what changes when)
 
-- **Revenue ≥ $500/mo:** upgrade tooling (Ahrefs full, Typefully) — still Tier 1.
-- **First $10K ARR:** the plan's Tier-1 phase is proven; decide with a raise rather than from revenue alone whether to enter Tier 2 (first marketing hire, paid pilot $5–15K/mo).
+- **Confirmed purchases ≥ $500/mo** (≈2 Team Plus/mo): upgrade tooling (Ahrefs full, Typefully) — still Tier 1.
+- **First $10K CAD cumulative:** the plan's Tier-1 phase is proven; decide with a raise rather than from revenue alone whether to enter Tier 2 (first marketing hire, paid pilot $5–15K/mo).
 - **Any funding round closes:** Section 11's capability table applies — paid channels, second hire, agency relationships. The organic stack built in this 12-month plan is what makes that spend efficient.
 ---
 
@@ -544,9 +544,9 @@ A solo founder + fCMO + the marketing-skills library can output the work of a 15
 |---|---|---|
 | Acquisition | GitHub (site/content repo), film pipeline (Remotion + ElevenLabs), YouTube | GA4 (events + channels); Ahrefs Webmaster Tools (free keyword data); defuddle (research extraction) |
 | Activation | Clerk (signup), Supabase (product state) | GA4 events; ESP (Resend or equivalent) |
-| Retention | PayPal (verify + webhook subscription state) | ESP flows; GA4 retention curves |
-| Referral | PayPal (commissions data) | Dub.co (tracked links + attribution) |
-| Revenue | PayPal (subscriptions) | GA4 paid events |
+| Retention | Product state in Supabase/Clerk (trial expiry + dormancy segments — grants are permanent, no processor state) | ESP flows; GA4 retention curves |
+| Referral | Manual commission log keyed to the entitlement grant record | Dub.co (tracked links + attribution) |
+| Revenue | Supabase/Clerk entitlement admin (trial + grant state; manual upgrade endpoint) | GA4 paid events (incl. purchase-email clicks) |
 | Cross-cutting | GitHub, Notion (knowledge base) | Notion API (decisions log) |
 
 ### A concrete example that proves the stack
@@ -558,7 +558,7 @@ The **launch film** is the demonstration: a single founder + agentic pipeline pr
 | Stage | Headcount | Tooling | Channels live |
 |---|---|---|---|
 | **Today (Tier 1 — pre-seed/bootstrapped)** | Founder + fCMO | Marketing-skills library + film pipeline + GitHub + free tiers (GA4, ESP, Ahrefs Webmaster) | Organic: YouTube + content/SEO + no-face social + audit funnel + value posts + accountant channel |
-| **After $10K ARR (Tier 1.5)** | Same + first contractor (design or content) | Ahrefs full, Typefully, Dub paid tier | All above + annual-content season + first paid pilot prep |
+| **After first $10K CAD in purchases (Tier 1.5)** | Same + first contractor (design or content) | Ahrefs full, Typefully, Dub paid tier | All above + annual-content season + first paid pilot prep |
 | **Seed close (Tier 2)** | + first marketing hire (Manager/Lead, π-shaped) | + paid ad accounts (Google/LinkedIn) + `ads`/`ad-creative` skills; Mixpanel/Amplitude if needed | + paid pilot $5–15K/mo + PR push on the raise + structured launch motion |
 | **Seed deployment (Tier 3)** | + designer (fractional) + second marketer | + dedicated tooling $2–5K/mo + agency relationships for niche execution | Paid scaling $20–50K/mo; weekly content cadence sustainable |
 | **Series A (Tier 4)** | Full team forming (performance lead, content lead) | $5–10K/mo tooling; possible PR firm | Aggressive paid; brand campaigns; international consideration |
@@ -569,7 +569,7 @@ The **launch film** is the demonstration: a single founder + agentic pipeline pr
 |---|---|---|
 | Growth marketing (demand engine) | Founder (strategy) + fCMO | Agentic stack (skills + MCPs); first marketing hire at Tier 2 |
 | Product marketing (story engine) | Founder (positioning owner) | fCMO `product-marketing` + `copywriting`; design via agentic design stack |
-| Content marketing (trust engine) | Founder (voice) + fCMO | Agentic stack (cornerstones, glossary, calculator, short-form); first content contractor at $10K ARR |
+| Content marketing (trust engine) | Founder (voice) + fCMO | Agentic stack (cornerstones, glossary, calculator, short-form); first content contractor at $10K CAD in purchases |
 | Paid (future) | fCMO strategy at Tier 2 | Niche agency or performance contractor (not in-house until Series A) |
 
 **First-hire rule:** title Manager or Lead, never VP/CMO; look for π-shaped (product-marketing + growth or content). Until then, execution is contractor + agentic stack, per the team-and-agency model.
@@ -695,8 +695,8 @@ Sections 4–8 prescribe what n4ma *is doing*. This section maps what's *possibl
 | 50 | Inbox Placement | Q2 | Deliverability setup so digests actually land |
 | 46 | Reactivation Emails | Q3 | "Your evaluation import is still waiting" for lapsed free workspaces |
 | 52 | Win-back Emails | Q3 | "What you'd have caught this month" — the product's own evidence as the hook |
-| 53 | Trial Reactivation | Q3 | Limit-hit moment → trial reactivation offer |
-| 94 | Offboarding Flows | Q3 | Save-moment on cancel: show what they'd lose, offer annual, one-tap pause |
+| 53 | Trial Reactivation | Q3 | Day-31+ email to expired trials: "your findings are still here" — the closest thing this model has to a lost customer |
+| 94 | Offboarding Flows | Q3 | No subscription to cancel (permanent one-time grant) — use the save-moment pattern on trial expiry: show what they'd lose + the e-transfer purchase as the exit |
 | 134 | Certifications | Q4+ | "n4ma-certified accountant" — interesting long-game for the partner channel |
 
 ### 12.4 Referral ideas
@@ -736,7 +736,7 @@ Sections 4–8 prescribe what n4ma *is doing*. This section maps what's *possibl
 
 ### Measurement — the metrics that matter
 
-**North star (proposed):** **Evidence-backed findings reviewed per week** (across all workspaces). This captures the product's actual value loop — someone sees a leak, proof attached, decision made — and it compounds: more findings → more savings discovered → more shareable evidence → more referral → more revenue. It's the metric that makes ARR a lagging indicator of a healthy flywheel, and it's specific to n4ma (not generic "ARR growth").
+**North star (proposed):** **Evidence-backed findings reviewed per week** (across all workspaces). This captures the product's actual value loop — someone sees a leak, proof attached, decision made — and it compounds: more findings → more savings discovered → more shareable evidence → more referral → more revenue. It's the metric that makes paid revenue a lagging indicator of a healthy flywheel, and it's specific to n4ma (not a generic revenue target).
 
 **Leading indicators by AARRR stage:**
 
@@ -746,7 +746,7 @@ Sections 4–8 prescribe what n4ma *is doing*. This section maps what's *possibl
 | Activation | Audit→signup rate; audit→finding rate; time-to-first-finding; free-workspace first-import rate |
 | Retention | Findings-digest open rate; weekly finding reviews per workspace; return-visit rate; cancel-save rate |
 | Referral | Shares per finding; tracked-link signups (accountants); referral % of new signups |
-| Revenue | Trial→paid conversion; upgrade-overlay opens; ARPC; annual vs. monthly mix; churn |
+| Revenue | Trial→purchase conversion (purchase-email click → e-transfer request → transfer confirmed); upgrade-overlay opens; ARPC ($250 CAD one-time); request→confirmed cycle time; paid-dormancy rate |
 
 **Review cadence:**
 - **Weekly:** founder + fCMO on leading indicators (§9's 6 events) — 30 min, kill/double-down decisions.
@@ -776,7 +776,7 @@ Ranked by impact.
 
 1. **CAC (and all unit economics) unknown** — no revenue, no acquisition history. Every §8/§10 projection depends on it. **Blocked by:** time; unblocks when the first cohort exists (Q3 at the earliest). Not guessing — flagged.
 2. **Does the free audit capture an email?** — the single highest-leverage conversion decision in the plan (§5 Move 2). **Blocked by:** product priority + ESP choice. Needed by Week 2.
-3. **Plan-mix gating quirk** — Business tier definitions lock Renewals/Risk/Savings behind "Team" (§3, §8 Move 4). A paying Business customer would see locked sections. **Blocked by:** product decision — fix gating or re-tier. Do in Q1.
+3. **Plan-mix gating quirk** — Business tier definitions lock Renewals/Risk/Savings behind "Team Plus" (§3, §8 Move 4). A Business buyer would see locked sections. **Blocked by:** product decision — bundle (Business sold on top of Team Plus) or fix gating. Do in Q1.
 4. **"Cancel subscription via email" feature** — requested, status unclear. Blocks the revenue/automation story and the FAQ claim around it. **Blocked by:** product scope decision.
 5. **Analytics stack choice** — GA4 is the default (free, standard) but nothing is wired. **Blocked by:** same Week-2 decision as #2.
 6. **Founder's time allocation** — the no-face social cadence (2/wk) and 10 user intro asks are founder-owned; if they slide, those channels stall. **Blocked by:** founder capacity — the agentic stack covers execution, not the founder's voice.
@@ -796,7 +796,6 @@ Ranked by impact.
 **fCMO working drafts (not yet published):** the 90-day sprint artifacts (keyword shortlist, cornerstone outlines, PH launch checklist, accountant outreach list) — generated per §9 and stored alongside this plan as the weeks run.
 
 > Note: paths here are descriptive repo-relative references; no machine-local paths ship with this plan.
-
 ---
 
-*N4MA Marketing Plan v1. Prepared by fCMO, 2026-09-04. For team review and discussion.*
+*N4MA Marketing Plan v1.1. Prepared by fCMO, 2026-09-04. For team review and discussion.*
