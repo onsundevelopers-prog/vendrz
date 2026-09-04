@@ -77,6 +77,27 @@ export default function AuditResultsPage() {
         <ReviewBlur
           blurred={!isSignedIn}
           sessionId={params.id}
+          documentName={session?.documentName}
+          summary={
+            // analysis is typed AnalysisResult | CompanyAudit | null; both
+            // shapes feed the preview, so read through a Partial cast - any
+            // field absent at runtime is simply dropped from the lead.
+            (() => {
+              const r = analysis as Partial<AnalysisResult>;
+              return {
+                vendorName: r.vendorName ?? null,
+                riskScore: r.riskScore ?? null,
+                riskLabel: r.riskLabel ?? null,
+                renewalDate: r.renewalDate ?? null,
+                savingsLow: r.savings?.low ?? null,
+                savingsHigh: r.savings?.high ?? null,
+                findings:
+                  r.findings?.length ??
+                  (analysis as { opportunities?: Array<unknown> }).opportunities?.length ??
+                  null,
+              };
+            })()
+          }
         >
           <ResultsPreview result={analysis as AnalysisResult} />
         </ReviewBlur>
