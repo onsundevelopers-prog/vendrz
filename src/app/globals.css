@@ -871,17 +871,6 @@ h4 {
 /* ------------------------------------------------------------------ */
 
 /* ------------------------------------------------------------------ */
-/*  PayPal button - clip the SDK's 132px iframe down to the gold      */
-/*  button itself. The extra height is PayPal's light branding row    */
-/*  ("PayPal" / checkout text) which renders as a white band under    */
-/*  the button on dark surfaces.                                      */
-/* ------------------------------------------------------------------ */
-.paypal-host > div {
-  height: 48px !important;
-  overflow: hidden;
-}
-
-/* ------------------------------------------------------------------ */
 /*  Clerk - keep the auth flow pure black.                            */
 /*  The appearance objects style the card/inputs; these rules kill the */
 /*  leftover default surfaces: the light footer panel, the "Secured by */
@@ -936,4 +925,219 @@ h4 {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ------------------------------------------------------------------ */
+/*  AI interface - design tokens + motion system.                      */
+/*  Claude-quality interaction polish: everything animates on          */
+/*  opacity/transform/height, 150-320ms, with one shared easing,       */
+/*  and collapses entirely under prefers-reduced-motion.               */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --ai-sidebar-w: 248px;
+  --ai-msg-maxw: 44rem;
+  --ai-composer-maxw: 44rem;
+  --ai-dur-fast: 150ms;
+  --ai-dur-base: 220ms;
+  --ai-dur-slow: 320ms;
+  --ai-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ai-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Working dots - three soft pulses, no spinner. */
+@keyframes ai-dot {
+  0%, 80%, 100% { opacity: 0.22; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-1px); }
+}
+.ai-dot { animation: ai-dot 1.2s var(--ai-ease) infinite; }
+.ai-dot:nth-child(2) { animation-delay: 0.15s; }
+.ai-dot:nth-child(3) { animation-delay: 0.3s; }
+
+/* Stage label crossfade (Thinking -> Checking -> Preparing). */
+@keyframes ai-stage-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+.ai-stage-in { animation: ai-stage-in var(--ai-dur-base) var(--ai-ease-out); }
+
+/* Message entrance - subtle rise, never bouncy. */
+@keyframes ai-msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.ai-msg-in { animation: ai-msg-in var(--ai-dur-slow) var(--ai-ease-out); }
+
+/* Sidebar: animated width (desktop) + inner fade. */
+.ai-sidebar {
+  transition: width var(--ai-dur-slow) var(--ai-ease), transform var(--ai-dur-slow) var(--ai-ease);
+}
+.ai-sidebar-inner { transition: opacity var(--ai-dur-base) var(--ai-ease); }
+
+/* Expandable panels - grid-rows collapse, GPU-cheap. */
+.ai-expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--ai-dur-slow) var(--ai-ease);
+}
+.ai-expand[data-open="true"] { grid-template-rows: 1fr; }
+.ai-expand > * { overflow: hidden; min-height: 0; }
+
+/* Blinking caret for live narration. */
+@keyframes ai-caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.ai-caret { animation: ai-caret 1s steps(1) infinite; }
+
+/* Composer: focus animation - border + soft halo, no glow. */
+.ai-composer {
+  transition: border-color var(--ai-dur-fast) var(--ai-ease),
+    background-color var(--ai-dur-fast) var(--ai-ease),
+    box-shadow var(--ai-dur-fast) var(--ai-ease);
+}
+.ai-composer:focus-within {
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 10px 30px -14px rgba(0, 0, 0, 0.65);
+}
+
+/* Send button: instant response to input availability. */
+.ai-send {
+  transition: background-color var(--ai-dur-fast) var(--ai-ease),
+    color var(--ai-dur-fast) var(--ai-ease), transform var(--ai-dur-fast) var(--ai-ease),
+    opacity var(--ai-dur-fast) var(--ai-ease);
+}
+.ai-send:active:not(:disabled) { transform: scale(0.93); }
+
+/* Message action row: quiet until hovered / focused. */
+.ai-actions button {
+  opacity: 0.5;
+  transition: opacity var(--ai-dur-fast) var(--ai-ease), color var(--ai-dur-fast) var(--ai-ease);
+}
+.ai-actions:hover button, .ai-actions button:focus-visible, .ai-actions button[data-active="true"] {
+  opacity: 1;
+}
+
+/* Sidebar row: hover / active states. */
+.ai-row { transition: background-color var(--ai-dur-fast) var(--ai-ease); }
+
+/* ------------------------- Markdown rendering ------------------------- */
+
+.ai-md { font-size: 14.5px; line-height: 1.7; color: var(--color-muted); word-break: break-word; }
+.ai-md > * + * { margin-top: 0.85em; }
+.ai-md h1, .ai-md h2, .ai-md h3 {
+  font-family: var(--font-display);
+  color: var(--color-fg);
+  font-weight: 590;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+}
+.ai-md h1 { font-size: 20px; }
+.ai-md h2 { font-size: 17px; }
+.ai-md h3 { font-size: 15px; }
+.ai-md strong { color: var(--color-fg); font-weight: 520; }
+.ai-md em { color: var(--color-fg); }
+.ai-md ul { list-style: disc; padding-left: 1.35em; }
+.ai-md ol { list-style: decimal; padding-left: 1.35em; }
+.ai-md li { margin-top: 0.3em; }
+.ai-md li::marker { color: var(--color-ash); }
+.ai-md code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  color: var(--color-fg);
+}
+.ai-md pre {
+  background: #0a0a0e;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+.ai-md pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.ai-md blockquote {
+  border-left: 2px solid var(--color-line-strong);
+  padding-left: 14px;
+  color: var(--color-faint);
+}
+.ai-md a {
+  color: var(--color-fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-line-strong);
+  transition: text-decoration-color var(--ai-dur-fast) var(--ai-ease);
+}
+.ai-md a:hover { text-decoration-color: var(--color-fg); }
+.ai-md hr { border: 0; border-top: 1px solid var(--color-line); margin: 1.2em 0; }
+.ai-md table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ai-md th, .ai-md td {
+  border: 1px solid var(--color-line);
+  padding: 6px 10px;
+  text-align: left;
+}
+.ai-md th { color: var(--color-fg); font-weight: 520; background: rgba(255, 255, 255, 0.03); }
+
+/* Code blocks: header strip + body, native to the surface. */
+.ai-codeblock {
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0a0e;
+}
+.ai-codeblock pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+.ai-codeblock pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-muted);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+/* Wide tables scroll inside their container instead of breaking layout. */
+.ai-table-wrap { overflow-x: auto; }
+
+/* Streaming partial markdown - same inline look as the final render. */
+.ai-md-stream strong { color: var(--color-fg); font-weight: 520; }
+.ai-md-stream code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  color: var(--color-fg);
+}
+
+/* Response actions - revealed on hover/focus, always visible on touch. */
+.ai-hover-actions { opacity: 0.35; transition: opacity var(--ai-dur-fast) var(--ai-ease); }
+.ai-hover-actions:focus-within { opacity: 1; }
+@media (hover: hover) {
+  .ai-hover-actions:hover { opacity: 1; }
+  .ai-msg-row:hover .ai-hover-actions { opacity: 1; }
+}
+@media (hover: none) {
+  .ai-hover-actions { opacity: 1; }
+}
+
+/* ------------------------- reduced motion ------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

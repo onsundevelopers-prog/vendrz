@@ -63,25 +63,16 @@ services:
         value: /dashboard
       - key: NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
         value: /dashboard
-      # PayPal subscriptions (Business/Team plans). Public values are safe in
-      # the repo; the REST pair is server-only. PAYPAL_WEBHOOK_ID powers the
-      # /api/paypal/webhook endpoint that revokes Business mode on
-      # cancellation/expiry - create the webhook in the PayPal dashboard
-      # (URL: https://<this-app>/api/paypal/webhook) and paste its ID.
-      - key: NEXT_PUBLIC_PAYPAL_CLIENT_ID
-        sync: false          # set in the hosting dashboard (public client id)
-      # Business plan id ($999 setup fee, then $1/yr renewal).
-      - key: NEXT_PUBLIC_PAYPAL_PLAN_ID
-        value: P-6JW433095T554031YNKJDN3I
-      # Team ($20/mo) subscription plan - create it in PayPal Billing > Plans
-      # and paste the id here.
-      - key: NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID
+      # Access model (no payment processor): 30-day Team Plus trial auto-
+      # starts server-side; after it ends, Team Plus is a one-time $250 CAD
+      # e-transfer arranged by email. ADMIN_UPGRADE_TOKEN authorizes the
+      # manual /api/entitlement step that grants access once a transfer is
+      # confirmed.
+      - key: ENTITLE_TRIAL_DAYS
+        value: "30"
+      - key: ADMIN_UPGRADE_TOKEN
         sync: false
-      - key: PAYPAL_CLIENT_ID
-        sync: false
-      - key: PAYPAL_SECRET
-        sync: false
-      - key: PAYPAL_WEBHOOK_ID
+      - key: NEXT_PUBLIC_SUPPORT_EMAIL
         sync: false
       # RBC Move Money API - outgoing transfers from your RBC business
       # account. Requires onboarding via your RBC Advisor; see .env.example

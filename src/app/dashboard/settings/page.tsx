@@ -79,7 +79,17 @@ export default function SettingsPage() {
 
   const [section, setSection] = useState<SectionId>("general");
   const [ai, setAi] = useState<AiStatus>({ provider: null, model: null });
-  const { mode, plan, requestUpgrade, switchToFree, aiMessageLimit, canUseGmail } = useDisplayMode();
+  const {
+    mode,
+    plan,
+    requestUpgrade,
+    switchToFree,
+    aiMessageLimit,
+    canUseGmail,
+    entitlement,
+    trialDaysLeft,
+    trialEndsAt,
+  } = useDisplayMode();
   const aiUsage = useMemo(() => (userId ? getAiUsage(userId).used : 0), [userId]);
   const planInfo = planDef(plan);
 
@@ -280,7 +290,7 @@ export default function SettingsPage() {
           {section === "dashboard" && (
             <Section
               title="Plan"
-              sub="Your plan decides the workspace and limits. Free includes Simple mode, the Savings page, and 5 AI messages."
+              sub="Every new account starts with a 30-day Team Plus trial. After it ends, Free keeps manual upload and 5 AI messages; Team Plus is a one-time $250 CAD purchase."
             >
               <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
                 {PLANS.map((opt) => {
@@ -311,7 +321,13 @@ export default function SettingsPage() {
                         </span>
                         <span className="mt-0.5 block text-[11px] font-medium tracking-tight text-zinc-400">
                           {opt.price}
-                          {opt.cadence !== "forever" ? ` ${opt.cadence}` : " · forever"}
+                          {opt.cadence !== "forever" &&
+                          opt.cadence !== "sales" &&
+                          opt.cadence !== "pricing"
+                            ? ` ${opt.cadence}`
+                            : opt.cadence === "forever"
+                              ? " · forever"
+                              : ""}
                         </span>
                         <span className="mt-1 block text-[12px] leading-relaxed text-muted">
                           {opt.features.slice(0, 2).join(" · ")}
@@ -535,29 +551,53 @@ export default function SettingsPage() {
           )}
 
           {section === "billing" && (
-            <Section title="Billing" sub="Plan and usage.">
+            <Section title="Billing" sub="Plan, trial, and usage. No subscription - nothing is ever charged automatically.">
               <DetailRow label="Plan">
                 {planInfo.name} · {planInfo.price}
-                {planInfo.cadence !== "forever" ? planInfo.cadence : ""}
+                {planInfo.cadence !== "forever" ? ` ${planInfo.cadence}` : " · forever"}
               </DetailRow>
               <DetailRow label="Status">
-                {plan === "free" ? "Free plan" : "Active"}
+                {entitlement === "trial"
+                  ? `Trial active · ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left`
+                  : entitlement === "paid"
+                    ? "Active (one-time purchase)"
+                    : entitlement === "expired"
+                      ? "Trial ended"
+                      : "Free plan"}
               </DetailRow>
+              {entitlement === "trial" && trialEndsAt && (
+                <DetailRow label="Trial ends">
+                  {new Date(trialEndsAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </DetailRow>
+              )}
               <DetailRow label="Payment method">
-                {plan === "free" ? "Not connected" : "PayPal subscription"}
+                {entitlement === "paid"
+                  ? "E-transfer (manual)"
+                  : "None — never auto-charged"}
               </DetailRow>
               <DetailRow label="AI messages this month">
                 {aiMessageLimit === Infinity
                   ? `${aiUsage} used · unlimited`
                   : `${aiUsage} / ${aiMessageLimit}`}
               </DetailRow>
-              <DetailRow label="Invoices">No invoices on file</DetailRow>
               <div className="px-4 py-3">
                 <p className="text-[11.5px] leading-relaxed text-muted">
-                  {plan === "free"
-                    ? "You're on the free plan: Simple workspace, Savings page, and 5 AI messages per month. Upgrade to unlock Gmail, alerts, and the full workspace."
-                    : `${planInfo.name} is active for this workspace (${planInfo.price}${planInfo.cadence.startsWith("/") ? planInfo.cadence : ""}). Your PayPal subscription keeps it unlocked, and once enabled it stays active indefinitely - it is never revoked automatically.`}
+                  {entitlement === "trial"
+                    ? `You're on the 30-day Team Plus trial (${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left) - Gmail, Drive, Slack, alerts, and the full workspace are unlocked. When it ends you can buy Team Plus for a one-time $250 CAD via e-transfer, arranged by email.`
+                    : entitlement === "paid"
+                      ? `${planInfo.name} is active on this workspace - a one-time ${planInfo.price} CAD purchase confirmed manually. It never expires and is never auto-charged.`
+                      : "Your 30-day Team Plus trial has ended. Free keeps manual upload and 5 AI messages. Upgrade to Team Plus with a one-time $250 CAD e-transfer to keep Gmail, Drive, Slack, alerts, and the full workspace."}
                 </p>
+                <button
+                  onClick={() => requestUpgrade("team")}
+                  className="mt-2 inline-flex h-8 items-center rounded-md border border-line px-3 text-[12px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg"
+                >
+                  {entitlement === "paid" ? "Manage Team Plus" : "Upgrade to Team Plus"}
+                </button>
               </div>
             </Section>
           )}

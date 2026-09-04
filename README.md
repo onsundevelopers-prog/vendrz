@@ -8,9 +8,10 @@ price escalations, and dollar-quantified savings opportunities **with evidence**
 invites the user to create an account to save and track it.
 
 Stack: Next.js (App Router) + TypeScript + Tailwind CSS + Framer Motion. Auth is
-**Clerk**; workspace data and uploaded documents persist in **Supabase**; subscriptions
-charge via **PayPal**; and the AI provider is **Gemini** (primary) with an automatic
-**Ollama Cloud** fallback.
+**Clerk**; workspace data and uploaded documents persist in **Supabase**; every new
+account gets a 30-day **Team Plus trial**, after which Team Plus is a one-time $250 CAD
+payment via e-transfer (manual, no payment processor); and the AI provider is **Gemini**
+(primary) with an automatic **Ollama Cloud** fallback.
 
 ## Run it
 
@@ -63,8 +64,10 @@ Clerk is the only auth path:
 - The `/auth` page signs in/up through Clerk: Google OAuth, email + password, and
   email-verification codes. Anonymous analysis and free-review sessions transfer to
   the new account automatically (nothing re-runs, nothing is lost).
-- Paid plans are verified server-side against PayPal and bound to the Clerk account,
-  so a paid status follows the user across browsers and devices.
+- Access is resolved server-side and bound to the Clerk account: the 30-day Team Plus
+  trial auto-starts on first sign-in and can never be extended by the browser; paid
+  Team Plus (one-time $250 CAD e-transfer) is granted manually by the founder via
+  /api/entitlement. Status follows the user across browsers and devices.
 
 ### Why sign-in can get stuck (and how it self-heals)
 
@@ -128,9 +131,10 @@ The repo ships a `render.yaml` blueprint that deploys n4ma as a Node web service
       provisioning script) so imports are deduplicated and the free-tier import
       allowance counts correctly. New installs get the columns from the CREATE TABLE.
 
-- [ ] **PayPal** - set the client id, plan ids and the REST pair; create the
-      webhook pointing at `https://<your-domain>/api/paypal/webhook` and set
-      `PAYPAL_WEBHOOK_ID`.
+- [ ] **Access model** - optional: set `ADMIN_UPGRADE_TOKEN` so you can grant Team
+      Plus (or Business/Enterprise) via `POST /api/entitlement` after an e-transfer
+      is confirmed, and `NEXT_PUBLIC_SUPPORT_EMAIL` to override where purchase
+      emails go. Trial length defaults to 30 days (`ENTITLE_TRIAL_DAYS`).
 - [ ] **PAYMENT_ADMINS** - comma-separated Clerk user ids allowed to confirm
       outgoing payments. Without it payments can be created but never executed
       (safe default, but intentional if you plan to use RBC payments).
@@ -157,8 +161,9 @@ The repo ships a `render.yaml` blueprint that deploys n4ma as a Node web service
 - **`src/lib/payments/`** - server-side payment records with idempotency + audit
   trail, and the RBC Move Money adapter (admin-gated, never fakes success).
 - **`src/app/api/`** - the server layer: extraction, documents (Supabase storage),
-  user-data, feature-section gates, PayPal verify/webhook/plan, redeem, agent tasks
-  (SSE), Gmail OAuth (auth/callback/status/messages), payments.
+  user-data, feature-section gates, plan (trial/entitlement source of truth),
+  entitlement (manual founder upgrade), redeem, agent tasks (SSE), Gmail OAuth
+  (auth/callback/status/messages), payments.
 - **`src/lib/documents.ts`** - Supabase-backed upload persistence (table + private
   bucket), ownership-scoped reads/writes/delete and signed-URL access. Rows carry
   source provenance (`source_type` + `source_meta` jsonb: external id, url, mime,

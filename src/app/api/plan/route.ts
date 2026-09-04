@@ -1,166 +1,70 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import {
-  getPayPalSubscription,
-  mapPlanIdToTier,
-  readPlanMetadata,
-  PayPalError,
-} from "@/lib/paypal";
-import { upsertSubscription } from "@/lib/paypalStore";
+  buildTrialRecord,
+  readEntitlement,
+  resolveEntitlement,
+} from "@/lib/entitlement";
 
 export const runtime = "nodejs";
 
 /**
- * GET /api/plan?subscriptionId=...
+ * GET /api/plan
  *
- * The server-side source of truth for a user's plan. Reads the paid-plan
- * record stored on the Clerk account (written by /api/paypal/verify) and
- * re-checks the subscription with PayPal so cancellations/expirations are
- * enforced even if a webhook was missed or a serverless instance restarted.
+ * The server-side source of truth for a user's access. Reads the
+ * entitlement record on the Clerk account (written by this route's trial
+ * auto-start, /api/entitlement after a confirmed e-transfer, or
+ * /api/redeem) and resolves it against the server clock.
  *
- * - ACTIVE subscription  -> returns the paid tier (and repairs metadata
- *   if the local browser only has a subscription id).
- * - CANCELLED/EXPIRED    -> clears the stored plan and returns free.
- * - PayPal unreachable   -> 503; the client keeps the current state, so a
- *   network blip can never downgrade a paying user.
- * - No subscription known -> returns free with `verified: false` (nothing
- *   to check), so the client keeps whatever it had locally.
+ * - No record            -> a 30-day Team Plus trial is auto-started and
+ *   reported (server-side, idempotent - never restarted by the client).
+ * - Trial                -> Team Plus until trialEndsAt; daysLeft included.
+ * - Expired trial        -> free; the client shows the upgrade screen.
+ * - Paid                 -> Team Plus / Business / Enterprise permanently.
+ *
+ * The browser is never asked to compute access: it only receives the state
+ * the server resolved, so localStorage edits cannot extend a trial.
  */
-export async function GET(req: NextRequest) {
+export async function GET() {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
-  let stored: ReturnType<typeof readPlanMetadata> = null;
   try {
     const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    stored = readPlanMetadata(user.privateMetadata);
+    let user = await client.users.getUser(userId);
+
+    // Auto-start the trial exactly once per account, server-side.
+    if (readEntitlement(user.privateMetadata) === null) {
+      await client.users.updateUser(userId, {
+        privateMetadata: { plan: buildTrialRecord() },
+      });
+      user = await client.users.getUser(userId);
+    }
+
+    const view = resolveEntitlement(user.privateMetadata);
+    const active = view.kind === "paid" || view.kind === "trial";
+    return NextResponse.json({
+      plan: view.plan,
+      active,
+      verified: true,
+      entitlement: view.kind,
+      tier: view.tier,
+      trialStartedAt: view.trialStartedAt,
+      trialEndsAt: view.trialEndsAt,
+      daysLeft: view.daysLeft,
+      paidAt: view.paidAt,
+    });
   } catch (err) {
     console.error(
-      `[paypal] Couldn't read plan metadata for ${userId}:`,
+      `[plan] couldn't resolve entitlement for ${userId}:`,
       err instanceof Error ? err.message : err
     );
-  }
-
-  const querySubId = req.nextUrl.searchParams.get("subscriptionId")?.trim() ?? "";
-  const subscriptionId = stored?.subscriptionId ?? querySubId;
-
-  // A one-time Business purchase is permanent - it is never re-billed and
-  // never revoked, so there is nothing to re-verify with PayPal.
-  if (stored?.type === "lifetime") {
-    return NextResponse.json({
-      plan: stored.tier,
-      active: true,
-      verified: true,
-      status: stored.status,
-    });
-  }
-
-  // Nothing to verify - user has never paid (or metadata is unreachable
-  // and no local subscription id was provided).
-  if (!subscriptionId) {
-    return NextResponse.json({ plan: "free", active: false, verified: false });
-  }
-
-  try {
-    const sub = await getPayPalSubscription(subscriptionId);
-    const tier = sub.planId ? mapPlanIdToTier(sub.planId) : undefined;
-
-    if (tier && sub.status === "ACTIVE") {
-      // Subscription is live - make sure the account record agrees (covers
-      // users who paid before account-binding existed).
-      if (stored?.tier !== tier || stored.subscriptionId !== subscriptionId) {
-        try {
-          const client = await clerkClient();
-          await client.users.updateUser(userId, {
-            privateMetadata: {
-              plan: {
-                tier,
-                type: "subscription",
-                subscriptionId,
-                status: "active",
-                updatedAt: new Date().toISOString(),
-              },
-            },
-          });
-        } catch (err) {
-          console.error(
-            `[paypal] Couldn't repair plan metadata for ${userId}:`,
-            err instanceof Error ? err.message : err
-          );
-        }
-      }
-      upsertSubscription({ subscriptionId, planId: sub.planId || "", status: "ACTIVE" });
-      return NextResponse.json({
-        plan: tier,
-        active: true,
-        verified: true,
-        subscriptionId,
-        status: sub.status,
-      });
-    }
-
-    if (tier) {
-      // The subscription exists but isn't active anymore (cancelled /
-      // expired / suspended) - revoke the paid plan on the account.
-      try {
-        const client = await clerkClient();
-        await client.users.updateUser(userId, { privateMetadata: { plan: null } });
-      } catch (err) {
-        console.error(
-          `[paypal] Couldn't clear plan metadata for ${userId}:`,
-          err instanceof Error ? err.message : err
-        );
-      }
-      upsertSubscription({
-        subscriptionId,
-        planId: sub.planId || "",
-        status: "CANCELLED",
-      });
-      return NextResponse.json({
-        plan: "free",
-        active: false,
-        verified: true,
-        subscriptionId,
-        status: sub.status,
-      });
-    }
-
-    // Subscribed to a plan we don't sell - treat as free.
-    return NextResponse.json({
-      plan: "free",
-      active: false,
-      verified: true,
-      subscriptionId,
-      status: sub.status,
-    });
-  } catch (err) {
-    // PayPal explicitly says the subscription doesn't exist.
-    if (err instanceof PayPalError && (err.status === 404 || err.status === 400)) {
-      try {
-        const client = await clerkClient();
-        await client.users.updateUser(userId, { privateMetadata: { plan: null } });
-      } catch {
-        /* best effort */
-      }
-      return NextResponse.json({
-        plan: "free",
-        active: false,
-        verified: true,
-        subscriptionId,
-      });
-    }
-    // PayPal unreachable - keep current state, never downgrade on a blip.
+    // Clerk unreachable - respond 503; the client keeps its current state,
+    // so a network blip can never downgrade a paying/trial user.
     return NextResponse.json(
-      {
-        plan: stored?.tier ?? "free",
-        active: !!stored,
-        verified: false,
-        subscriptionId,
-        error: "Couldn't reach PayPal to verify this subscription.",
-      },
+      { error: "Couldn't check your access right now.", verified: false },
       { status: 503 }
     );
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import type { PlanMetadata } from "@/lib/paypal";
+import { buildPaidRecord, type EntitlementTier } from "@/lib/entitlement";
 
 export const runtime = "nodejs";
 
@@ -8,10 +8,10 @@ export const runtime = "nodejs";
  * POST /api/redeem
  *
  * Validates a one-time redemption code server-side and binds the granted
- * plan to the signed-in user's Clerk account (privateMetadata.plan), the
- * same account record that PayPal verification writes. The code is never
- * validated in the browser, and the granted tier is decided here - never
- * sent from the client.
+ * plan to the signed-in user's Clerk account (privateMetadata.plan) - the
+ * same record /api/plan reads as the entitlement source of truth. The
+ * code is never validated in the browser, and the granted tier is decided
+ * here - never sent from the client.
  *
  * Codes live on the server (env REDEEM_CODES as `code:plan` pairs); if none
  * are configured the endpoint refuses, so a frontend-only "success" is never
@@ -89,16 +89,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const metadata: PlanMetadata = {
-      tier: def.plan,
-      // A redeemed code is a permanent grant (no billing), never revoked.
-      type: "lifetime",
-      subscriptionId: `redeem:${code}`,
-      status: "active",
-      updatedAt: new Date().toISOString(),
-    };
+    // A redeemed code is a permanent paid grant (no billing), never revoked.
+    const tier: EntitlementTier =
+      def.plan === "team" || def.plan === "business" || def.plan === "enterprise"
+        ? def.plan
+        : "team";
     await client.users.updateUser(userId, {
-      privateMetadata: { plan: metadata },
+      privateMetadata: { plan: buildPaidRecord(tier) },
     });
 
     return NextResponse.json({

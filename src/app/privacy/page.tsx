@@ -66,8 +66,8 @@ const sections: LegalSection[] = [
   {
     title: "Third-Party Services",
     blocks: [
-      "We may use third-party service providers to monitor and analyze the use of our Service, process payments, or assist with other business functions.",
-      "We use PayPal to process payments. PayPal may collect personal and financial information as described in their privacy policy.",
+      "We may use third-party service providers to monitor and analyze the use of our Service, or assist with other business functions.",
+      "Paid access (Team Plus) is a one-time purchase paid by Interac e-transfer, arranged by email and confirmed manually. We do not use an automated payment processor and never collect or store card, bank, or payment details on our servers.",
       "We offer social login options. When you log in via a social platform, we may receive profile information as permitted by your social account settings.",
     ],
   },

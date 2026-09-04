@@ -3,43 +3,47 @@
 /* ------------------------------------------------------------------ */
 /*  Dashboard plan + display mode.                                    */
 /*                                                                     */
-/*  n4ma has four tiers:                                              */
-/*    - Free ($0)        - Home, AI (5 msgs/mo), Settings + manual      */
-/*                        upload; most workspace sections are locked    */
-/*    - Team ($20/mo)    - Business workspace, Gmail, unlimited AI      */
-/*    - Business ($999 + $1/yr) - + team/roles, automations, support    */
-/*    - Enterprise (custom) - everything, contact sales                 */
+/*  Access model (no payment processor):                              */
+/*    - Every new account gets a 30-day Team Plus trial, auto-started */
+/*      server-side on first sign-in (never client-side, never        */
+/*      restartable).                                                 */
+/*    - When the trial expires the user drops to Free and is shown a  */
+/*      Team Plus upgrade screen: $250 CAD one-time via e-transfer,   */
+/*      arranged by email.                                            */
+/*    - Once the founder confirms the transfer, /api/entitlement      */
+/*      grants Team Plus permanently (paid).                          */
+/*    - Business / Enterprise are sales-led tiers (contact email).    */
 /*                                                                     */
 /*  The plan gates features:                                           */
-/*    - display mode: Free uses the Simple workspace; Team, Business   */
-/*      and Enterprise unlock the dense Business workspace.            */
-/*    - sections: Free unlocks Home / AI / Settings / Import (manual    */
-/*      upload + the 1 evaluation import); Vendors, Contracts,          */
-/*      Renewals, Risk, Activity and Savings are locked behind Team.    */
-/*      Business additionally locks Renewals / Risk / Savings.          */
-/*    - AI messages: Free 5 / paid tiers unlimited, counted per        */
-/*      calendar month (see store.getAiUsage / incrementAiUsage).      */
-/*    - Gmail: Free is excluded; every paid tier can connect.          */
+/*    - display mode: Free uses the Simple workspace; Team Plus        */
+/*      (trial or paid), Business and Enterprise unlock the dense     */
+/*      Business workspace.                                           */
+/*    - sections: Free locks Vendors, Contracts, Renewals, Risk,       */
+/*      Activity and Savings; all are included with Team Plus.         */
+/*    - AI messages: Free 5 / Team Plus+ unlimited, counted per       */
+/*      calendar month.                                               */
+/*    - Gmail/Drive/Slack: Free is excluded; Team Plus+ can connect.  */
 /*                                                                     */
-/*  Paid plans unlock through a verified PayPal subscription: Team is   */
-/*  $20/month, Business is a $999 setup fee then a $1/year renewal.     */
-/*  Both are verified with PayPal on load; a cancelled/expired          */
-/*  subscription revokes access. Enterprise is custom-priced.           */
+/*  Server truth lives at /api/plan (see lib/entitlement.ts) - the    */
+/*  browser only ever applies the state the server resolved, so       */
+/*  localStorage edits cannot extend a trial or grant a plan.         */
 /* ------------------------------------------------------------------ */
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { PayPalSubscribe } from "@/components/dashboard/PayPalSubscribe";
 import { isClerkEnabled } from "@/lib/auth";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 export type DashboardMode = "simple" | "business";
 export type Plan = "free" | "team" | "business" | "enterprise";
+/** Server-side access state (see lib/entitlement.ts). */
+export type EntitlementKind = "none" | "trial" | "paid" | "expired";
 
 export interface PlanDef {
   id: Plan;
   name: string;
-  /** Short price label, e.g. "$11" */
+  /** Short price label, e.g. "$250" */
   price: string;
-  /** Cadence label, e.g. "/month" */
+  /** Cadence label, e.g. "/month" or "CAD · one-time" */
   cadence: string;
   blurb: string;
   features: string[];
@@ -49,6 +53,8 @@ export interface PlanDef {
   aiMessages: number;
   /** Whether the plan can connect Gmail. */
   gmail: boolean;
+  /** How this plan is acquired. */
+  purchase: "trial" | "e-transfer" | "sales";
 }
 
 export const PLANS: PlanDef[] = [
@@ -57,24 +63,25 @@ export const PLANS: PlanDef[] = [
     name: "Free",
     price: "$0",
     cadence: "forever",
-    blurb: "For individuals just getting started with n4ma.",
+    blurb: "Try Team Plus free for 30 days - no credit card.",
     features: [
-      "What needs attention, at a glance",
-      "Upcoming renewals, risks & savings on your dashboard",
+      "30-day Team Plus trial on signup",
       "Manual contract upload & analysis",
+      "What needs attention, at a glance",
       "5 AI messages per month",
       "1 evaluation import from Google Drive or Slack",
     ],
     mode: "simple",
     aiMessages: 5,
     gmail: false,
+    purchase: "trial",
   },
   {
     id: "team",
-    name: "Team",
-    price: "$20",
-    cadence: "/month",
-    blurb: "For teams building a shared view of every contract and vendor.",
+    name: "Team Plus",
+    price: "$250",
+    cadence: "CAD · one-time",
+    blurb: "Every finding, forever - one payment, no subscription.",
     features: [
       "Connect Gmail, Google Drive & Slack - import vendor documents",
       "Renewal & cancellation-deadline alerts",
@@ -83,17 +90,19 @@ export const PLANS: PlanDef[] = [
       "Complete activity log & Business dashboard",
       "Unlimited AI messages",
       "Export to CSV / PDF",
+      "One-time $250 CAD via e-transfer - never auto-charged",
     ],
     mode: "business",
     aiMessages: Infinity,
     gmail: true,
+    purchase: "e-transfer",
   },
   {
     id: "business",
     name: "Business",
-    price: "$999",
-    cadence: "then $1/yr",
-    blurb: "For companies that need advanced features and administration. $999 upfront, then $1 per year to keep it.",
+    price: "Custom",
+    cadence: "sales",
+    blurb: "Continuously monitor spending and identify opportunities to reduce costs.",
     features: [
       "Team members, roles & permissions",
       "Advanced automations",
@@ -103,13 +112,14 @@ export const PLANS: PlanDef[] = [
     mode: "business",
     aiMessages: Infinity,
     gmail: true,
+    purchase: "sales",
   },
   {
     id: "enterprise",
     name: "Enterprise Scale",
     price: "Custom",
     cadence: "pricing",
-    blurb: "For organizations building scalable, flexible workflows with powerful governance.",
+    blurb: "Build n4ma into your organization's financial and procurement workflows.",
     features: [
       "Custom onboarding & migration",
       "Dedicated success manager",
@@ -119,6 +129,7 @@ export const PLANS: PlanDef[] = [
     mode: "business",
     aiMessages: Infinity,
     gmail: true,
+    purchase: "sales",
   },
 ];
 
@@ -131,20 +142,17 @@ export function planDef(plan: Plan): PlanDef {
   return PLAN_MAP[plan] ?? PLAN_MAP.free;
 }
 
-/** Back-compat constant used by older callers. */
-export const BUSINESS_PRICE = "$999 then $1/yr";
-
 /** Plans that unlock the dense Business workspace. */
 const BUSINESS_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
-/** Plans shown in the upgrade picker (all paid tiers; Enterprise is sales). */
+/** Plans shown in the upgrade picker. */
 const UPGRADE_PLANS: readonly Plan[] = ["team", "business", "enterprise"];
 
 /**
  * Workspace sections that a given plan does NOT include, shown as locked
- * with an "included with Team" note (never populated for the account).
+ * with an "included with Team Plus" note (never populated for the account).
  * Free keeps Home / AI / Settings / Import open but locks Vendors,
- * Contracts, Renewals, Risk, Activity and Savings behind the Team plan.
- * The Business plan additionally gates Renewals / Risk / Savings to Team.
+ * Contracts, Renewals, Risk, Activity and Savings behind Team Plus.
+ * Business additionally gates Renewals / Risk / Savings to Team Plus.
  */
 export const PLAN_LOCKED_SECTIONS: Record<Plan, string[]> = {
   free: ["companies", "contracts", "renewals", "risks", "activity", "savings"],
@@ -153,30 +161,13 @@ export const PLAN_LOCKED_SECTIONS: Record<Plan, string[]> = {
   enterprise: [],
 };
 
-/** The PayPal plan id configured for a tier (undefined = not wired yet). */
-export function paypalPlanId(plan: Plan): string | undefined {
-  switch (plan) {
-    case "team":
-      return process.env.NEXT_PUBLIC_PAYPAL_PLAN_TEAM_ID?.trim() || undefined;
-    case "business":
-      return (
-        process.env.NEXT_PUBLIC_PAYPAL_PLAN_ID?.trim() ||
-        process.env.PAYPAL_PLAN_ID?.trim() ||
-        undefined
-      );
-    default:
-      return undefined;
-  }
-}
-
 const MODE_KEY = "vendrz.displayMode";
 const PLAN_KEY = "vendrz.plan";
-const SUBSCRIPTION_KEY = "vendrz.subscription";
 
 interface DisplayModeContextValue {
-  /** Effective mode. Free/Pro always read "simple"; Growth, Business and
-      Team always read "business". Null only before the stored state has
-      been read. */
+  /** Effective mode. Free always reads "simple"; Team Plus, Business and
+      Enterprise always read "business". Null only before the stored state
+      has been read. */
   mode: DashboardMode | null;
   /** True once the stored preference has been read from localStorage. */
   ready: boolean;
@@ -185,6 +176,14 @@ interface DisplayModeContextValue {
   setMode: (m: DashboardMode) => void;
   /** The account's plan. */
   plan: Plan;
+  /** Server-resolved access state: null before the server has answered. */
+  entitlement: EntitlementKind | null;
+  /** Trial end (ISO) when on trial; null otherwise. */
+  trialEndsAt: string | null;
+  /** Whole days of trial remaining as resolved by the server. */
+  trialDaysLeft: number;
+  /** Re-fetch access from /api/plan (used after a manual upgrade). */
+  refreshEntitlement: () => Promise<void>;
   /** True while the upgrade overlay is visible. */
   upgradeOpen: boolean;
   /** Open the upgrade screen, pre-selecting a plan. */
@@ -192,15 +191,15 @@ interface DisplayModeContextValue {
   closeUpgrade: () => void;
   /** The plan pre-selected in the upgrade screen. */
   upgradeTarget: Plan;
-  /** Enable a paid plan after its subscription has been verified. */
+  /** Enable a paid plan after the server has granted it (redeem etc.). */
   activatePlan: (planId: Plan) => void;
-  /** Switch to the free plan. */
+  /** Switch to the free plan (only allowed for non-granted accounts). */
   switchToFree: () => void;
   /** Monthly AI message allowance for the current plan. */
   aiMessageLimit: number;
   /** Whether the current plan can connect Gmail. */
   canUseGmail: boolean;
-  /** Sections locked out of the current plan (e.g. "renewals", "risks", "savings"). */
+  /** Sections locked out of the current plan. */
   lockedSections: string[];
 }
 
@@ -209,6 +208,10 @@ const DisplayModeContext = createContext<DisplayModeContextValue>({
   ready: false,
   setMode: () => {},
   plan: "free",
+  entitlement: null,
+  trialEndsAt: null,
+  trialDaysLeft: 0,
+  refreshEntitlement: async () => {},
   upgradeOpen: false,
   requestUpgrade: () => {},
   closeUpgrade: () => {},
@@ -231,9 +234,30 @@ function readStored<T extends string>(key: string, allowed: T[], fallback: T | n
 
 const ALL_PLANS = PLANS.map((p) => p.id) as Plan[];
 
+interface ServerEntitlement {
+  plan: string;
+  active: boolean;
+  verified: boolean;
+  entitlement?: EntitlementKind;
+  tier?: string | null;
+  trialStartedAt?: string | null;
+  trialEndsAt?: string | null;
+  daysLeft?: number;
+  paidAt?: string | null;
+}
+
+/** Apply a server-resolved plan id to the local state (mirrors activatePlan). */
+function planFromServer(serverPlan: string | undefined | null, current: Plan): Plan {
+  const id = ALL_PLANS.find((p) => p === serverPlan);
+  return id ?? current;
+}
+
 export function DashboardModeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<DashboardMode | null>(null);
   const [plan, setPlanState] = useState<Plan>("free");
+  const [entitlement, setEntitlement] = useState<EntitlementKind | null>(null);
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [ready, setReady] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeTarget, setUpgradeTarget] = useState<Plan>("team");
@@ -248,64 +272,50 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
     // re-ask, never downgrade.
     if (storedPlan && BUSINESS_PLANS.includes(storedPlan)) {
       setModeState("business");
-    }
-    // Free and Pro default to the Simple workspace. The old "business"
-    // preference no longer grants Business mode without a qualifying plan.
-    else setModeState("simple");
+    } else setModeState("simple");
     setReady(true);
     /* eslint-enable react-hooks/set-state-in-effect */
-
-    // Server-side plan reconciliation (Clerk mode only). The paid plan is
-    // bound to the Clerk account by /api/paypal/verify, so on every load we
-    // ask the server for the truth and apply it - paid status follows the
-    // user across browsers and devices, and cancelled/expired subscriptions
-    // are revoked even after a serverless restart.
-    if (!isClerkEnabled) return;
-    let localSub: string | null = null;
-    try {
-      localSub = localStorage.getItem(SUBSCRIPTION_KEY);
-    } catch {
-      /* storage unavailable */
-    }
-    const q = localSub ? `?subscriptionId=${encodeURIComponent(localSub)}` : "";
-    fetch(`/api/plan${q}`)
-      .then((res) => (res.ok ? (res.json() as Promise<ServerPlan>) : null))
-      .then((data) => {
-        if (!data) return;
-        // Server confirmed a paid subscription -> apply it everywhere.
-        if (data.active && data.plan && data.plan !== "free") {
-          const def = planDef(data.plan as Plan);
-          try {
-            localStorage.setItem(PLAN_KEY, data.plan as string);
-            localStorage.setItem(MODE_KEY, def.mode);
-            if (data.subscriptionId) {
-              localStorage.setItem(SUBSCRIPTION_KEY, data.subscriptionId);
-            }
-          } catch {
-            /* storage unavailable - applies for this session */
-          }
-          setPlanState(data.plan as Plan);
-          setModeState(def.mode);
-          return;
-        }
-        // Server checked a known subscription and it is no longer active
-        // (or doesn't exist) -> downgrade to Free.
-        if (data.verified && !data.active && localSub) {
-          try {
-            localStorage.setItem(PLAN_KEY, "free");
-            localStorage.setItem(MODE_KEY, "simple");
-            localStorage.removeItem(SUBSCRIPTION_KEY);
-          } catch {
-            /* storage unavailable */
-          }
-          setPlanState("free");
-          setModeState("simple");
-        }
-      })
-      .catch(() => {
-        // Offline or server unreachable - keep the local state.
-      });
   }, []);
+
+  /** Ask the server for the truth and apply it. Server-only authority. */
+  const refreshEntitlement = useCallback(async (): Promise<void> => {
+    if (!isClerkEnabled) return;
+    try {
+      const res = await fetch("/api/plan");
+      if (!res.ok) return; // 503 etc. - keep current state, never downgrade on a blip
+      const data = (await res.json()) as ServerEntitlement;
+      setEntitlement(data.entitlement ?? (data.active ? "paid" : "none"));
+      setTrialEndsAt(data.trialEndsAt ?? null);
+      setTrialDaysLeft(data.daysLeft ?? 0);
+
+      const next = planFromServer(data.active ? data.plan : "free", plan);
+      const def = planDef(next);
+      try {
+        localStorage.setItem(PLAN_KEY, next);
+        localStorage.setItem(MODE_KEY, def.mode);
+      } catch {
+        /* storage unavailable - applies for this session */
+      }
+      setPlanState(next);
+      setModeState(def.mode);
+    } catch {
+      /* offline or server unreachable - keep the local state */
+    }
+  }, [plan]);
+
+  useEffect(() => {
+    // Server-side access reconciliation (Clerk mode only). The trial and
+    // paid state are bound to the Clerk account by /api/plan, so on every
+    // load we ask the server for the truth and apply it - access follows
+    // the user across browsers and devices, and expired trials are revoked
+    // even after a serverless restart. Local edits can never extend it.
+    if (!isClerkEnabled) return;
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time server
+       reconciliation on mount; the setState calls run in promise callbacks,
+       never synchronously. */
+    void refreshEntitlement();
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [refreshEntitlement]);
 
   const setMode = useCallback(
     (m: DashboardMode) => {
@@ -343,6 +353,8 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
     }
     setPlanState(planId);
     setModeState(def.mode);
+    // A granted plan is paid (or redeemed) - the entitlement UI follows.
+    setEntitlement("paid");
     setUpgradeOpen(false);
   }, []);
 
@@ -355,6 +367,7 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
     }
     setPlanState("free");
     setModeState("simple");
+    setEntitlement("none");
     setUpgradeOpen(false);
   }, []);
 
@@ -364,6 +377,10 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
       ready,
       setMode,
       plan,
+      entitlement,
+      trialEndsAt,
+      trialDaysLeft,
+      refreshEntitlement,
       upgradeOpen,
       requestUpgrade,
       closeUpgrade,
@@ -374,7 +391,22 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
       canUseGmail: planDef(plan).gmail,
       lockedSections: PLAN_LOCKED_SECTIONS[plan] ?? [],
     }),
-    [mode, ready, setMode, plan, upgradeOpen, requestUpgrade, closeUpgrade, upgradeTarget, activatePlan, switchToFree]
+    [
+      mode,
+      ready,
+      setMode,
+      plan,
+      entitlement,
+      trialEndsAt,
+      trialDaysLeft,
+      refreshEntitlement,
+      upgradeOpen,
+      requestUpgrade,
+      closeUpgrade,
+      upgradeTarget,
+      activatePlan,
+      switchToFree,
+    ]
   );
 
   return (
@@ -387,71 +419,89 @@ export function DashboardModeProvider({ children }: { children: React.ReactNode 
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Purchase email (manual e-transfer flow).                          */
+/* ------------------------------------------------------------------ */
+
+const PURCHASE_SUBJECT = "Team Plus purchase - $250 CAD one-time";
+const PURCHASE_BODY = [
+  "Hi,",
+  "",
+  "I'd like to purchase Team Plus for my n4ma workspace.",
+  "",
+  "Plan: Team Plus - $250 CAD one-time (e-transfer)",
+  "Account email: <your account email>",
+  "",
+  "Please send the e-transfer details and I'll arrange payment.",
+].join("\n");
+
+/** mailto: href that opens the user's email client pre-filled. */
+export function purchaseMailto(): string {
+  return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
+    PURCHASE_SUBJECT
+  )}&body=${encodeURIComponent(PURCHASE_BODY)}`;
+}
+
+export function salesMailto(plan: Plan): string {
+  const isEnterprise = plan === "enterprise";
+  const subject = isEnterprise ? "Enterprise plan enquiry" : "Business plan enquiry";
+  return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`;
+}
+
 function UpgradeOverlay() {
-  const { closeUpgrade, activatePlan, plan, upgradeTarget } = useDisplayMode();
-  const [verifying, setVerifying] = useState(false);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const {
+    closeUpgrade,
+    plan,
+    upgradeTarget,
+    entitlement,
+    trialDaysLeft,
+    refreshEntitlement,
+  } = useDisplayMode();
   const [selected, setSelected] = useState<Plan>(upgradeTarget);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const paypalConfigured = !!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
   const selectedDef = planDef(selected);
-  const selectedPlanId = paypalPlanId(selected);
-  const canPay = paypalConfigured && !!selectedPlanId;
+  const trialEnded = entitlement === "expired";
 
-  /** The buyer approved a PayPal subscription. Only enable the plan after the
-      server has confirmed with PayPal that it is real and ACTIVE. */
-  const handlePayPalSuccess = useCallback(
-    async (subscriptionId: string) => {
-      setVerifying(true);
-      setVerifyError(null);
-      try {
-        const res = await fetch("/api/paypal/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ subscriptionId }),
-        });
-        const data = (await res.json().catch(() => null)) as {
-          active?: boolean;
-          plan?: Plan;
-          error?: string;
-        } | null;
-        if (res.ok && data?.active && data.plan) {
-          try {
-            localStorage.setItem(SUBSCRIPTION_KEY, subscriptionId);
-          } catch {
-            /* storage unavailable - plan applies for this session */
-          }
-          activatePlan(data.plan);
-          return;
-        }
-        if (res.status >= 500) {
-          setVerifyError(
-            "We couldn't verify your subscription right now. If this keeps happening, contact support."
-          );
-          return;
-        }
-        setVerifyError(
-          data?.error ?? "We couldn't verify your subscription with PayPal. Try again in a moment."
-        );
-      } catch {
-        setVerifyError("We couldn't reach the payment service. Check your connection and try again.");
-      } finally {
-        setVerifying(false);
-      }
-    },
-    [activatePlan]
-  );
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refreshEntitlement();
+      closeUpgrade();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-5 backdrop-blur-sm">
       <div className="border-sheen w-full max-w-2xl rounded-xl border border-line-strong bg-surface p-6 shadow-2xl shadow-black/60">
-        <p className="text-[10.5px] font-semibold tracking-[-0.01em] text-muted">Upgrade your plan</p>
+        <p className="text-[10.5px] font-semibold tracking-[-0.01em] text-muted">
+          {trialEnded ? "Trial ended" : "Upgrade your plan"}
+        </p>
         <h2 className="mt-2 text-[22px] font-semibold tracking-tight text-fg">
           {selectedDef.name} · {selectedDef.price}
-          <span className="text-[13px] font-normal text-muted"> {selectedDef.cadence}</span>
+          <span className="text-[13px] font-normal text-muted">
+            {" "}
+            {selectedDef.cadence}
+          </span>
         </h2>
 
-        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {trialEnded && (
+          <p className="mt-3 rounded-lg border border-line bg-canvas px-4 py-3 text-[12.5px] leading-relaxed text-muted">
+            Your 30-day Team Plus trial has ended. Upgrade to keep Team Plus
+            features.
+          </p>
+        )}
+        {entitlement === "trial" && selected === "team" && (
+          <p className="mt-3 rounded-lg border border-line bg-canvas px-4 py-3 text-[12.5px] leading-relaxed text-muted">
+            You&apos;re on the 30-day Team Plus trial — {trialDaysLeft} day
+            {trialDaysLeft === 1 ? "" : "s"} left. You can purchase now; Team
+            Plus simply continues when the trial ends.
+          </p>
+        )}
+
+        <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
           {UPGRADE_PLANS.map((id) => {
             const def = planDef(id);
             const active = selected === id;
@@ -471,7 +521,7 @@ function UpgradeOverlay() {
                     {def.name}
                     <span className="text-[11px] font-medium text-zinc-400">
                       {def.price}
-                      {def.cadence !== "forever" && def.cadence !== "one-time" ? def.cadence : ""}
+                      {def.cadence !== "forever" ? ` ${def.cadence}` : ""}
                     </span>
                   </span>
                   <span className="mt-1 block text-[11.5px] leading-relaxed text-muted">
@@ -495,42 +545,46 @@ function UpgradeOverlay() {
           ))}
         </ul>
 
-        {selected === "enterprise" ? (
+        {selected === "team" ? (
+          /* Team Plus - manual e-transfer purchase, no payment processor */
+          <div className="mt-5">
+            <a
+              href={purchaseMailto()}
+              className="flex h-10 w-full items-center justify-center rounded-md bg-white text-[13px] font-semibold text-black transition-opacity hover:opacity-90"
+            >
+              Email to purchase Team Plus
+            </a>
+            <ol className="mt-3 list-decimal space-y-1 pl-5 text-[11.5px] leading-relaxed text-zinc-500">
+              <li>Tap the button — it opens your email client pre-filled.</li>
+              <li>Send the request; we&apos;ll reply with e-transfer details.</li>
+              <li>
+                Pay <span className="text-zinc-300">$250 CAD</span> once by e-transfer.
+              </li>
+              <li>
+                Team Plus is enabled permanently once the transfer is confirmed.
+              </li>
+            </ol>
+            <button
+              onClick={() => void onRefresh()}
+              disabled={refreshing}
+              className="mt-3 flex h-8 w-full items-center justify-center rounded-md border border-line text-[11.5px] font-medium text-muted transition-colors hover:border-line-strong hover:text-fg disabled:opacity-50"
+            >
+              {refreshing ? "Checking…" : "Already paid? Refresh my access"}
+            </button>
+          </div>
+        ) : (
           <a
-            href="mailto:sales@n4ma.app?subject=Enterprise%20plan"
+            href={salesMailto(selected)}
             className="mt-5 flex h-10 w-full items-center justify-center rounded-md bg-white text-[13px] font-semibold text-black transition-opacity hover:opacity-90"
           >
-            Contact sales
+            Contact us about {selectedDef.name}
           </a>
-        ) : canPay ? (
-          <PayPalSubscribe
-            planId={selectedPlanId as string}
-            onSuccess={handlePayPalSuccess}
-          />
-        ) : (
-          <div className="mt-5 rounded-md border border-line bg-canvas px-4 py-3 text-center">
-            <p className="text-[12.5px] font-medium text-fg">Billing isn&apos;t connected for this plan yet</p>
-            <p className="mt-1 text-[11.5px] leading-relaxed text-zinc-500">
-              This plan will be available to subscribe to once its PayPal plan is
-              connected. Check back shortly.
-            </p>
-          </div>
         )}
-        {verifying && (
-          <p className="mt-3 text-center text-[11px] tracking-tight text-muted">
-            Verifying your subscription with PayPal…
-          </p>
-        )}
-        {verifyError && (
-          <p className="mt-3 text-center text-[11px] leading-relaxed text-zinc-400">
-            {verifyError}
-          </p>
-        )}
+
         <p className="mt-2.5 text-center text-[11px] leading-relaxed text-zinc-500">
-          {canPay
-            ? `Subscribe for ${selectedDef.price}${selectedDef.cadence.startsWith("/") ? selectedDef.cadence : ` (${selectedDef.cadence})`} - billed securely by PayPal. You can cancel anytime.`
-            : "Paid plans unlock through a verified PayPal subscription. You can cancel anytime."}
-          {plan === "free" && " You can switch back to Free anytime."}
+          No subscription. No automatic charges. Payment is a one-time e-transfer,
+          arranged by email.
+          {plan === "free" && !trialEnded && " You can switch back to Free anytime."}
         </p>
         <button
           onClick={closeUpgrade}
@@ -541,14 +595,6 @@ function UpgradeOverlay() {
       </div>
     </div>
   );
-}
-
-interface ServerPlan {
-  plan: string;
-  active: boolean;
-  verified: boolean;
-  subscriptionId?: string;
-  status?: string;
 }
 
 export function useDisplayMode(): DisplayModeContextValue {
