@@ -730,6 +730,21 @@ Sections 4–8 prescribe what n4ma *is doing*. This section maps what's *possibl
 - **Skipped:** ~25 ideas skipped for brand fit (giveaways, lifetime deals, engagement pods, humor/reality/cameo), budget tier (all paid), or category fit (developer-tool ideas, ASO).
 
 **What this proves:** n4ma is at ~45% of the available tactical surface area — appropriate for a Tier-1 solo founder. The bank is the inventory: as capacity or funding unlocks (Q2 → Q3 → Tier 2), the shelf is pre-labeled and sequenced, so scaling activity doesn't sacrifice strategic coherence. The idea bank's shape also confirms the story: **story is strong, distribution is the gap, and the audit is the conversion engine that makes raw distribution count** (§13's open decisions rely on it).
+
+### Idea-bank sync (2026-09-04 — post full-skill run)
+
+Statuses above are current as of the full marketingskills run (Batches 1–5, see `ops-run-status.md`). The artifacts produced in that run are the *working specs* for the Now/Q2 rows — and four timing refinements landed:
+
+- **#48 Dynamic Email Capture (Now)** — **shipped in product** (audit-lead capture on the results blur gate + rate-limited capture endpoint). Idea status confirmed by a live feature.
+- **#96 Onboarding Optimization (Now)** — full wizard spec (source → import → findings) in `artifacts/01-onboarding-activation.md`; build it before the Product Hunt date (`artifacts/03` gates PH on the wizard being shipped).
+- **#18 Calculator Marketing (Now)** — build-scored ~30/35 in `artifacts/10-free-tool-pack.md`; static/no-API implementation so it carries no maintenance debt.
+- **#78/#79/#82 (PH launch, early-access referrals, alternatives)** — `artifacts/03-launch-playbook.md` refines timing from "Weeks 5–8" to **wizard-shipped + 7 days** (SLC readiness gate) and gives the day-of calendar + directory wave.
+- **#125 App Marketplaces (Q2)** — listing copy + screenshots prep scoped in `co-marketing-partners-v1.md` (play C); submit Q3.
+- **#62 Affiliate Program (Now/Q2 formal)** — full mechanics (double-sided $50 referrer/$50 referee, accountant flat $50 CAD, Dub.co attribution, fraud rules) in `artifacts/04-referral-program.md`.
+- **#46/#52/#53 (reactivation, win-back, trial reactivation, Q3)** — **full copy already drafted** in `artifacts/02-email-lifecycle.md`; they move from "write" to "enable" the day the ESP is wired. `artifacts/02` is also the spec for #47/#51 (Now) and #50 (Q2).
+- **#14 Side Projects (Q3+)** — the savings calculator + template library in `artifacts/10` are the first two, already scoped.
+
+Every gated row (paid ads, events, community, PR, etc.) now has an exact trigger + prep list in `artifacts/15-stage-gates.md` — the bank's Q3+/Q4+ rows are pre-staged, not deferred indefinitely.
 ---
 
 ## 13. Measurement, RACI, open decisions, appendix
@@ -796,6 +811,3 @@ Ranked by impact.
 **fCMO working drafts (not yet published):** the 90-day sprint artifacts (keyword shortlist, cornerstone outlines, PH launch checklist, accountant outreach list) — generated per §9 and stored alongside this plan as the weeks run.
 
 > Note: paths here are descriptive repo-relative references; no machine-local paths ship with this plan.
----
-
-*N4MA Marketing Plan v1.1. Prepared by fCMO, 2026-09-04. For team review and discussion.*
