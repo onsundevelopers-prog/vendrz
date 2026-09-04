@@ -1,0 +1,24 @@
+{
+  "name": "n4ma-launch-film",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion render N4MAMaster out/final.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.448",
+    "@remotion/google-fonts": "4.0.448",
+    "@remotion/shapes": "4.0.448",
+    "lucide-react": "^1.40.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.448"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "@types/web": "0.0.166",
+    "typescript": "5.8.2"
+  }
+}
