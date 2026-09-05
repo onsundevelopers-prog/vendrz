@@ -1,32 +1,33 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { EASE, STAGGER_MS } from "./motion";
+
+const ease = EASE;
 
 /* ------------------------------------------------------------------ */
-/*  Core differentiator - evidence over vibes.                         */
-/*  "AI discovers the problem. Evidence proves it."                    */
+/*  Core differentiator: every finding cites its source, and the       */
+/*  risk/savings logic is inspectable.                                  */
 /* ------------------------------------------------------------------ */
 
 const ITEMS: { label: string; body: string }[] = [
   {
     label: "Evidence",
-    body: "Every finding links back to the exact source - the clause, document, page, or invoice.",
+    body: "Open any finding and read the sentence it came from - the clause, document page, or invoice line - before you act on it.",
   },
   {
     label: "Risk",
-    body: "Deterministic rules identify renewal, pricing, and contract risks. No vibes, no guesses.",
+    body: "Renewal and pricing checks run on deterministic rules, not model judgment, so the same contract always gets the same answer.",
   },
   {
     label: "Savings",
-    body: "Potential savings are calculated using a transparent methodology you can inspect.",
+    body: "Savings estimates are computed by a published formula from the terms in your document, with the calculation shown next to each figure.",
   },
   {
     label: "Action",
     body: "n4ma explains what should happen next - renew, renegotiate, or cancel - and by when.",
   },
 ];
-
-const ease = [0.22, 1, 0.36, 1] as const;
 
 function CapabilityCard({
   item,
@@ -37,12 +38,12 @@ function CapabilityCard({
 }) {
   return (
     <motion.div
-      initial={false}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 16, scale: 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.55, delay: index * 0.08, ease }}
+      transition={{ duration: 0.55, delay: index * (STAGGER_MS / 1000), ease }}
       whileHover={{ y: -4 }}
-      className="flex aspect-square flex-col items-center justify-center rounded-md border border-line bg-surface p-5 text-center"
+      className="glass-glow flex aspect-square flex-col items-center justify-center rounded-md border border-line bg-surface p-5 text-center"
     >
       <span className="font-mono text-[11px] tracking-[-0.013em] text-ash">
         {String(index + 1).padStart(2, "0")}
@@ -58,7 +59,7 @@ export function Capabilities() {
     <section id="product" className="bg-canvas py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease }}
@@ -68,12 +69,13 @@ export function Capabilities() {
             Why n4ma
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Trust the evidence, not the AI.
+            Check every finding yourself.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            n4ma doesn&apos;t ask finance teams to blindly trust an AI-generated
-            answer. Every important finding is tied back to the underlying
-            document, clause, invoice, or source.
+            The model that reads your document is a starting point, not the
+            verdict. Each finding cites the clause, page, or invoice line it
+            came from, and the numbers behind it are computed by rules you
+            can inspect - so nothing rests on trusting the model.
           </p>
         </motion.div>
 
@@ -85,13 +87,13 @@ export function Capabilities() {
         </div>
 
         <motion.p
-          initial={false}
+          initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.6, ease }}
           className="mx-auto mt-14 max-w-xl px-5 text-center font-mono text-[12px] uppercase tracking-[0.16em] text-ash lg:px-8"
         >
-          AI discovers the problem. Evidence proves it.
+          The reading is assisted. The evidence is not.
         </motion.p>
       </div>
     </section>

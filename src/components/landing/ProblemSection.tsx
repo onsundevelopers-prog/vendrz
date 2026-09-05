@@ -1,6 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { EASE, STAGGER_MS } from "./motion";
+
+const ease = EASE;
 
 const PAINS = [
   {
@@ -11,7 +14,7 @@ const PAINS = [
   {
     num: "02",
     title: "Price increases",
-    body: "A 5% annual escalation quietly compounds into much larger spending year after year.",
+    body: "A 5% annual escalation compounds on a growing base, so the same contract costs more every year without a new decision.",
   },
   {
     num: "03",
@@ -25,15 +28,13 @@ const PAINS = [
   },
 ];
 
-const ease = [0.22, 1, 0.36, 1] as const;
-
 export function ProblemSection() {
   return (
     <section className="bg-surface py-24 lg:py-32">
       <div className="mx-auto grid max-w-7xl gap-14 px-5 lg:grid-cols-[1fr_1.15fr] lg:gap-20 lg:px-8">
         {/* left - editorial header */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease }}
@@ -43,11 +44,12 @@ export function ProblemSection() {
             The problem
           </p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            The money leaks nobody notices.
+            Where the money goes
           </h2>
           <p className="mt-5 max-w-md text-pretty text-[15px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            The biggest waste isn&apos;t always a giant expense. It&apos;s the
-            small costs that keep repeating because nobody is watching.
+            Most companies don&apos;t lose money in one big expense. They lose it
+            in small, repeating costs that were signed for once and never
+            read again. n4ma finds them and computes what each one costs.
           </p>
         </motion.div>
 
@@ -56,10 +58,10 @@ export function ProblemSection() {
           {PAINS.map((pain, i) => (
             <motion.div
               key={pain.num}
-              initial={false}
+              initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, delay: i * 0.08, ease }}
+              transition={{ duration: 0.55, delay: i * (STAGGER_MS / 1000), ease }}
               className="grid gap-4 py-8 first:pt-0 sm:grid-cols-[64px_1fr] sm:gap-8"
             >
               <span className="font-mono text-[13px] tracking-[-0.013em] text-ash">{pain.num}</span>
@@ -77,13 +79,15 @@ export function ProblemSection() {
       </div>
 
       <motion.p
-        initial={false}
+        initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.7, delay: 0.1, ease }}
         className="mx-auto mt-16 max-w-2xl px-5 text-center text-pretty text-[15px] font-normal leading-relaxed tracking-[-0.01em] text-fg lg:px-8"
       >
-        n4ma finds these leaks before they become another invoice.
+        Each of these is a contract term, not a one-off mistake. n4ma reports
+        every instance it finds, with the source line and an annual-cost
+        estimate.
       </motion.p>
     </section>
   );

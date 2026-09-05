@@ -26,10 +26,10 @@ export function LearnMore() {
               software subscriptions, cloud hosting, marketing platforms,
               insurance, and a dozen other vendors with invoices that arrive on
               autopilot. Most of those agreements were signed once, years ago,
-              and never looked at again. Software spend analysis is the practice
-              of actually reviewing that spending - not just this month&apos;s
-              invoices, but the contracts underneath them - to find where money
-              is quietly leaking out.
+              and              never looked at again. Software spend analysis is the practice
+              of reviewing that spending - the contracts underneath this
+              month&apos;s invoices - to find the terms that keep costing you
+              money.
             </p>
             <p>
               The leaks are rarely a single big line item. They are small,
@@ -49,9 +49,8 @@ export function LearnMore() {
               How to find hidden fees in your contracts
             </h3>
             <p>
-              You don&apos;t need to be a lawyer to find hidden fees - you need to
-              know where they hide. In our experience reviewing vendor
-              agreements, the same patterns show up again and again:
+              You don&apos;t need to be a lawyer to find hidden fees. You need to
+              know where they tend to hide:
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
@@ -82,10 +81,10 @@ export function LearnMore() {
               </li>
             </ul>
             <p>
-              n4ma reads your uploaded contracts and invoices with AI and checks
-              for exactly these patterns. Every finding links back to the exact
-              sentence in your document, so you can verify it yourself instead of
-              trusting a black box.
+              n4ma reads your uploaded contracts and invoices and checks for
+              exactly these patterns. Every finding links back to the exact
+              sentence in your document, so you can verify each one before
+              acting on it.
             </p>
           </div>
 
@@ -108,9 +107,9 @@ export function LearnMore() {
               deadline, in writing, and usually to a specific address. n4ma
               extracts your renewal date and your cancellation deadline from the
               document, tells you how many days you have left, and drafts the
-              cancellation notice for you to review - you send it yourself. No
-              surprise renewals, and no more paying for a second term you never
-              wanted.
+              cancellation notice for you to review - you send it yourself.
+              That&apos;s how a renewal gets caught before the deadline, not after
+              the charge.
             </p>
           </div>
 

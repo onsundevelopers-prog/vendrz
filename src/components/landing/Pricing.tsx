@@ -32,7 +32,7 @@ const CARDS: {
     cta: "Start your free trial",
     href: "/audit",
     featured: false,
-    buttonNote: "30 days of Team Plus — no credit card",
+    buttonNote: "30 days of Team Plus, no credit card",
   },
   {
     id: "team",
@@ -60,7 +60,9 @@ const CARDS: {
   },
 ];
 
-const ease = [0.22, 1, 0.36, 1] as const;
+import { EASE, STAGGER_MS } from "./motion";
+
+const ease = EASE;
 
 function Check() {
   return (
@@ -89,10 +91,10 @@ function TierCard({
 
   return (
     <motion.div
-      initial={false}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 18, scale: 0.98 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.6, delay: index * 0.1, ease }}
+      transition={{ duration: 0.6, delay: index * (STAGGER_MS / 1000), ease }}
       whileHover={{ y: -4 }}
       className={`relative flex flex-col rounded-xl border bg-surface transition-colors ${
         card.featured
@@ -165,7 +167,7 @@ export function Pricing() {
     <section id="pricing" className="bg-canvas py-24 lg:py-32">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease }}
@@ -175,12 +177,13 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Start free. Scale when the leaks do.
+            30 days free, then one payment
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Every new account gets 30 days of Team Plus free - no credit card.
-            After that, Team Plus is a one-time $250 CAD payment, arranged by
-            email. No subscription, no automatic charges.
+            Every new account gets 30 days of Team Plus free, without a credit
+            card. After that, Team Plus is a one-time $250 CAD payment arranged
+            by email. There is no subscription and nothing is charged
+            automatically.
           </p>
         </motion.div>
 
@@ -191,16 +194,15 @@ export function Pricing() {
         </div>
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
-          Team Plus is a one-time $250 CAD payment via e-transfer (arranged by email) · nothing is
-          ever charged automatically · refunds on request within 14 days of purchase
+          Team Plus is a one-time $250 CAD payment via e-transfer, arranged by email. Nothing is
+          charged automatically. Refunds on request within 14 days of purchase.
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
-          After your 30-day trial: access returns to Free, your findings stay, and you can buy
-          Team Plus anytime - no automatic charges.
+          After the 30-day trial, access returns to Free. Your findings stay in your workspace,
+          and you can buy Team Plus whenever you want.
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
-          Most n4ma reviews surface more in potential savings in a year than Team Plus costs -
-          figures above are illustrative, not a guarantee.
+          The savings ledger above is an illustrative example, not a customer result or a promise.
         </p>
       </div>
     </section>

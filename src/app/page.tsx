@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { Navbar } from "@/components/landing/Navbar";
+import { SmoothScroll } from "@/components/landing/SmoothScroll";
 import { Hero } from "@/components/landing/Hero";
 import { TrustStrip } from "@/components/landing/TrustStrip";
 import { ProblemSection } from "@/components/landing/ProblemSection";
@@ -22,7 +23,7 @@ const pricingJsonLd = {
   name: "n4ma Pricing",
   url: `${SITE.url}/#pricing`,
   description:
-    "Find your first spending leaks on Free; track renewals, risk, and savings across every connected source on Team Plus, Business, or Enterprise. Every account starts with a free 30-day Team Plus trial - no credit card, and nothing is ever auto-charged.",
+    "n4ma reviews software contracts, invoices, and subscriptions for hidden fees, auto-renewals, price increases, and unused licenses, and estimates what each finding costs per year. Every account starts with a free 30-day Team Plus trial - no credit card, and nothing is ever auto-charged.",
   itemListElement: PRICING_PLANS.map((plan) => ({
     "@type": "Offer",
     name: plan.name,
@@ -59,6 +60,7 @@ export default async function Home() {
     <main className="bg-canvas">
       <JsonLd data={pricingJsonLd} />
       <Navbar signedIn={signedIn} />
+      <SmoothScroll />
       <Hero />
       <TrustStrip />
       <ProblemSection />

@@ -1,31 +1,32 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { EASE, STAGGER_MS } from "./motion";
+
+const ease = EASE;
 
 const STEPS = [
   {
     num: "01",
     title: "Connect",
-    body: "Give n4ma access to the documents and sources that contain your business spending - upload contracts and invoices, or connect Gmail, Google Drive, and Slack. Everything is read-only.",
+    body: "Upload contracts and invoices, or connect Gmail, Google Drive, and Slack read-only. Nothing is imported or changed without you selecting it first.",
   },
   {
     num: "02",
     title: "Detect",
-    body: "n4ma watches for the patterns that waste money: upcoming renewals, cancellation deadlines, price increases, hidden fees, unused seats, duplicate tools, and billing anomalies.",
+    body: "n4ma extracts renewal dates, notice deadlines, escalation rates, and fees, then checks them against the patterns that waste money: auto-renewals, price increases, unused seats, duplicate tools, and billing anomalies.",
   },
   {
     num: "03",
     title: "Prove",
-    body: "Every important finding is backed by evidence - the exact clause, document, page, or invoice it came from, plus the calculation behind every estimate.",
+    body: "Each finding names the clause, page, or invoice line it came from, and shows the calculation behind its estimate.",
   },
   {
     num: "04",
     title: "Save",
-    body: "See what to fix, why it matters, and how much it could save - a quantified list of spending leaks and the action each one calls for.",
+    body: "You get a ranked list: what each leak costs per year, the deadline it carries, and the action it calls for - renew, renegotiate, or cancel.",
   },
 ];
-
-const ease = [0.22, 1, 0.36, 1] as const;
 
 export function HowItWorks() {
   return (
@@ -35,7 +36,7 @@ export function HowItWorks() {
     >
       <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease }}
@@ -45,11 +46,12 @@ export function HowItWorks() {
             How it works
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            From spending data to savings.
+            A review, in four steps.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Upload a document or connect a source and the first review finishes
-            in under two minutes. No forms to fill, no account required to start.
+            Upload a document and the first review finishes in under two
+            minutes, without an account. Connections to Gmail, Drive, and
+            Slack are optional.
           </p>
         </motion.div>
 
@@ -57,10 +59,10 @@ export function HowItWorks() {
           {STEPS.map((step, i) => (
             <motion.div
               key={step.num}
-              initial={false}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.55, delay: i * 0.08, ease }}
+              transition={{ duration: 0.55, delay: i * (STAGGER_MS / 1000), ease }}
               className="rounded-md border border-line bg-surface p-5"
             >
               <span className="font-mono text-[12px] tracking-[-0.013em] text-ash">

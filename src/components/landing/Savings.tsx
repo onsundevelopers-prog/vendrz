@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { EASE, CountUp } from "./motion";
 
 /* ------------------------------------------------------------------ */
 /*  Savings - the quantified financial outcome.                        */
@@ -18,7 +19,7 @@ const ROWS = [
   { label: "Contractual price increases", value: "$2,820" },
 ];
 
-const ease = [0.22, 1, 0.36, 1] as const;
+const ease = EASE;
 
 export function Savings() {
   return (
@@ -26,7 +27,7 @@ export function Savings() {
       <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 lg:grid-cols-[1fr_1.05fr] lg:gap-20 lg:px-8">
         {/* left - editorial header */}
         <motion.div
-          initial={false}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease }}
@@ -35,19 +36,19 @@ export function Savings() {
             What you get
           </p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            See the money before it leaves.
+            What a review produces.
           </h2>
           <p className="mt-5 max-w-md text-pretty text-[15px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Every opportunity is quantified against the terms actually written
-            in your contracts and invoices&mdash;renewal dates, escalation rates,
-            and what you&apos;re paying today&mdash;so you can see the size of the
-            leak and decide what&apos;s worth fixing.
+            Each finding carries an annual-cost estimate computed from the
+            terms in your own documents: renewal dates, escalation rates, and
+            what you pay today. You see the size of each leak and decide
+            what&apos;s worth acting on.
           </p>
           <div className="mt-8 space-y-4">
             {[
               ["What to fix", "Every leak, ranked by size and urgency."],
               ["Why it matters", "The renewal, escalation, or clause behind it."],
-              ["What it could save", "A transparent estimate - never a guess."],
+              ["                  How it's computed", "                  From your contract's own terms, by formula."],
             ].map(([title, body]) => (
               <div key={title} className="grid grid-cols-[110px_1fr] gap-4">
                 <p className="text-[12px] font-[510] uppercase tracking-[0.12em] text-ash">
@@ -63,8 +64,8 @@ export function Savings() {
 
         {/* right - illustrative savings ledger */}
         <motion.div
-          initial={false}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.1, ease }}
           className="rounded-xl border border-line bg-canvas p-6 sm:p-8"
@@ -79,7 +80,7 @@ export function Savings() {
           </div>
 
           <p className="mt-6 text-[44px] font-[510] leading-none tracking-[-0.03em] text-fg sm:text-[56px]">
-            $18,420
+            <CountUp to={18420} prefix="$" duration={1.6} />
           </p>
 
           <div className="mt-8 divide-rule-light">
@@ -108,9 +109,9 @@ export function Savings() {
           </div>
 
           <p className="mt-6 text-[11.5px] font-normal leading-relaxed tracking-[-0.01em] text-ash">
-            Example from a sample review, for illustration only. Your estimates
-            are computed from the terms in your own documents and always labeled
-            as estimates&mdash;never as guaranteed savings.
+            Example from a sample review, for illustration only. Your own
+            estimates are computed from your documents and labeled as
+            estimates - n4ma does not guarantee savings.
           </p>
         </motion.div>
       </div>
