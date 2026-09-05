@@ -105,7 +105,13 @@ const softwareJsonLd = {
   operatingSystem: "Web",
   url: SITE.url,
   description: SITE.description,
-  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  offers: {
+    "@type": "Offer",
+    price: "250",
+    priceCurrency: "CAD",
+    description:
+      "30-day free trial of Team Plus; after the trial, Team Plus is a one-time $250 CAD payment — never a subscription.",
+  },
 };
 
 const faqJsonLd = {
