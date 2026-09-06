@@ -1,0 +1,9 @@
+# Third-party / generated JavaScript bundled into node_modules
+# so ESLint does not waste time (and fail) on non-project files.
+node_modules/**/*.js
+saas-product-demo-video/**/*.tsx
+saas-product-demo-video/**/*.ts
+skills/**/*.ts
+skills/**/*.tsx
+scripts/**/*.mjs
+scripts/**/*.js
