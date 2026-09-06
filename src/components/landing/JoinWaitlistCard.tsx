@@ -403,7 +403,8 @@ function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
       </form>
 
       <p className="mt-3 text-[11px] text-ash">
-        No payment now. You will only be charged after your waitlist path is verified and a billing link is sent to your email.
+        No payment now. You will only be charged after your waitlist path is
+        verified and a billing link is sent to your email.
       </p>
     </div>
   );
