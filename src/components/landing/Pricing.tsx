@@ -24,9 +24,9 @@ export function Pricing() {
             14 days free, then simple pricing
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Every new account gets 14 days of Pro free, without a credit card.
-            After that, Pro is per-seat monthly billing. Team and Enterprise
-            plans are available for larger organizations.
+            Every new account gets 14 days of N4MA free, without a credit card.
+            After that, the Team Plus upgrade is $250 CAD one-time via e-transfer.
+            Business and Enterprise are available for larger organizations.
           </p>
         </motion.div>
 
@@ -37,12 +37,12 @@ export function Pricing() {
         </div>
 
         <p className="mt-10 text-center text-[12px] tracking-tight text-muted">
-          Pro tier is $250/month and is not available for purchase or free trial.
+          The $250/month Pro tier is not available for purchase or free trial.
           It unlocks by joining the Discord, Skool group, newsletter, or referring
           a friend — we&apos;ll email you when your path is verified.
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
-          After the 14-day trial, access returns to Free. Your feedback sessions
+          After the 14-day trial, access returns to Free. Your contract reviews
           stay in your workspace, and you can upgrade whenever you want.
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">

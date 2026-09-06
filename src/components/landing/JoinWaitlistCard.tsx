@@ -43,13 +43,13 @@ const PLAN_MAP: Record<Plan, PlanDef> = {
     name: "Free",
     price: "$0",
     cadence: "forever",
-    blurb: "Try Pro free for 14 days - no credit card.",
+    blurb: "Try N4MA free for 14 days - no credit card.",
     features: [
-      "14-day Pro trial on signup",
-      "Unlimited video uploads",
-      "Voice feedback recording",
+      "14-day N4MA trial on signup",
+      "Unlimited contract uploads",
+      "AI contract analysis",
       "Visual annotations & drawings",
-      "Export feedback as PDF",
+      "Export findings as PDF",
       "Up to 3 team members",
     ],
   },
@@ -58,45 +58,45 @@ const PLAN_MAP: Record<Plan, PlanDef> = {
     name: "Pro",
     price: "$250",
     cadence: "/ month",
-    blurb: "Everything in Free, plus priority support and unlimited feedback.",
+    blurb: "Everything in Free, plus priority support and unlimited contract reviews.",
     features: [
-      "Unlimited videos and feedback sessions",
-      "Unlimited voice notes and annotations",
-      "Team collaboration with threaded feedback",
-      "Reference image uploads",
-      "YouTube and Drive link support",
+      "Unlimited contract uploads",
+      "Unlimited AI review sessions",
+      "Team collaboration with shared findings",
+      "Reference document uploads",
+      "Google Drive and Gmail support",
       "Export to PDF, CSV, and markdown",
       "Priority support",
     ],
   },
   team: {
     id: "team",
-    name: "Team",
-    price: "Custom",
-    cadence: "contact sales",
-    blurb: "For growing teams that need admin controls and advanced workflows.",
+    name: "Team Plus",
+    price: "$250",
+    cadence: "CAD · one-time",
+    blurb: "One payment, every finding forever - no subscription.",
     features: [
-      "Everything in Pro",
-      "Admin dashboard and user management",
-      "Custom feedback templates",
-      "Advanced permissions and roles",
-      "API access for integrations",
-      "Dedicated account manager",
+      "Connect Gmail, Google Drive & Slack - import vendor documents",
+      "Renewal & cancellation-deadline alerts",
+      "Price-increase detection & risk scoring",
+      "Business workspace - dense tables, filters, schema view",
+      "Complete activity log & Business dashboard",
+      "Unlimited AI messages",
+      "Export to CSV / PDF",
+      "One-time $250 CAD via e-transfer - never auto-charged",
     ],
   },
   enterprise: {
     id: "enterprise",
-    name: "Enterprise",
+    name: "Enterprise Scale",
     price: "Custom",
-    cadence: "contact sales",
-    blurb: "For large organizations with custom security and compliance needs.",
+    cadence: "pricing",
+    blurb: "Build N4MA into your organization's financial and procurement workflows.",
     features: [
-      "Everything in Team",
-      "SSO and SCIM provisioning",
-      "Custom SLA and compliance reporting",
-      "On-premise deployment options",
-      "Dedicated success team",
-      "Custom training and onboarding",
+      "Custom onboarding & migration",
+      "Dedicated success manager",
+      "Custom contracts & SLA",
+      "Advanced governance & audit",
     ],
   },
 };
@@ -131,7 +131,7 @@ const CARDS: PricingCard[] = [
     id: "team",
     group: "Everything in Pro, plus:",
     cta: "Contact sales",
-    href: "mailto:hello@flask.video",
+    href: "mailto:hello@n4ma.online",
     featured: false,
     buttonNote: "custom pricing · team plans",
   },
@@ -139,7 +139,7 @@ const CARDS: PricingCard[] = [
     id: "enterprise",
     group: "Everything in Team, plus:",
     cta: "Contact sales",
-    href: "mailto:enterprise@flask.video",
+    href: "mailto:enterprise@n4ma.online",
     featured: false,
     buttonNote: "custom pricing · enterprise",
   },
@@ -284,9 +284,7 @@ interface JoinWaitlistCardProps {
 function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
   const [email, setEmail] = useState("");
   const [reward, setReward] = useState<RewardPath>("discord");
-  const [status, setStatus] = useState<
-    "idle" | "submitting" | "success" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -300,7 +298,7 @@ function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ planId, email, reward }),
+        body: JSON.stringify({ planId: "pro", email, reward }),
       });
 
       if (!res.ok) {

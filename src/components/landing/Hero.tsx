@@ -20,6 +20,9 @@ import { EASE, CountUp } from "./motion";
 /*    - two CTAs (Try free = white pill, Book demo = dark pill)       */
 /*    - the product recording sits below as the hero visual           */
 /*  Scroll behavior: text recedes, recording floats forward.         */
+/*  NOTE: product copy is intentionally the FLASK video feedback      */
+/*  product, not N4MA. If you want N4MA wording, that is a copy     */
+/*  change only - the layout and hero video placement stay the same. */
 /* ------------------------------------------------------------------ */
 
 function StaggeredWords({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -116,9 +119,9 @@ export function Hero() {
             </div>
 
             <h1 className="mt-5 max-w-3xl text-balance text-[44px] font-[510] leading-[1.02] tracking-[-0.022em] text-fg sm:text-[56px] lg:text-[64px]">
-              <StaggeredWords text="Give feedback on videos in minutes," />
+              <StaggeredWords text="Scan your contracts in minutes," />
               <span className="relative mt-1 inline-block text-bone/90">
-                <StaggeredWords text="without typing comments." delay={0.32} />
+                <StaggeredWords text="without the spreadsheets." delay={0.32} />
               </span>
             </h1>
 
@@ -126,8 +129,10 @@ export function Hero() {
               style={reduced ? undefined : { y: copyY, opacity: copyOpacity }}
               className="mt-6 max-w-xl text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint"
             >
-              Talk through complex feedback, draw, share any reference. Flask
-              automatically writes feedback, organizes and timestamps everything.
+              Upload a contract, or connect Gmail, Google Drive, or Slack read-only,
+              and N4MA finds the renewal dates, cancellation deadlines, price escalations,
+              fees, and auto-renewals - each with its source document and an annual-cost
+              estimate. The review is free and takes under two minutes.
             </motion.p>
 
             <motion.div
@@ -135,13 +140,13 @@ export function Hero() {
               className="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center"
             >
               <Button href="/auth?mode=signup" size="lg" className="w-full sm:w-auto bg-white text-black hover:bg-bone">
-                Try Flask Free
+                Try N4MA Free
               </Button>
               <a
                 href="#how-it-works"
                 className="group inline-flex items-center gap-1.5 px-1 py-2 text-[13.5px] font-normal text-muted transition-colors hover:text-fg"
               >
-                Book a Demo
+                Run a free review
                 <svg
                   width="12"
                   height="12"
@@ -165,7 +170,7 @@ export function Hero() {
               style={reduced ? undefined : { opacity: trustOpacity }}
               className="mt-5 text-[11.5px] font-normal tracking-[-0.01em] text-ash"
             >
-              No credit card required · Free 14-day trial · Works on any video
+              No credit card required · Free 14-day trial · Works on any contract
             </motion.p>
           </motion.div>
 
@@ -184,10 +189,10 @@ export function Hero() {
               <div className="relative aspect-video w-full overflow-hidden">
                 {/* Subtle top bar like the flask UI */}
                 <div className="absolute left-0 right-0 top-0 z-10 flex items-center gap-2 border-b border-line/40 bg-surface/80 px-3 backdrop-blur-sm">
-                  <span className="text-[11px] font-[510] tracking-[-0.01em] text-fg">flask</span>
+                  <span className="text-[11px] font-[510] tracking-[-0.01em] text-fg">n4ma</span>
                   <span className="h-3 w-px bg-line" />
                   <span className="text-[11px] font-normal tracking-[-0.01em] text-muted">
-                    Stark Industries / April Campaign
+                    Adobe / EULA
                   </span>
                   <span className="ml-auto text-[10px] font-mono text-ash">v2</span>
                 </div>
@@ -200,7 +205,7 @@ export function Hero() {
                   muted
                   loop
                   playsInline
-                  aria-label="Flask video feedback product demo"
+                  aria-label="N4MA contract review product demo"
                 />
 
                 {/* Play overlay hint */}
@@ -216,12 +221,12 @@ export function Hero() {
               {/* Subtle label under the video */}
               <div className="mx-4 mb-4 flex items-center gap-3 border-t border-line/40 px-4 py-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-surface ring-1 ring-line">
-                  <span className="text-[9px] font-bold text-fg">F</span>
+                  <span className="text-[9px] font-bold text-fg">N</span>
                 </div>
                 <div className="flex flex-1 flex-col">
-                  <span className="text-[12px] font-[510] tracking-[-0.01em] text-fg">Flask Workspace</span>
+                  <span className="text-[12px] font-[510] tracking-[-0.01em] text-fg">N4MA Workspace</span>
                   <span className="text-[10.5px] font-normal tracking-[-0.01em] text-muted">
-                    Brand Animation Review
+                    Adobe EULA Review
                   </span>
                 </div>
                 <span className="text-[10px] font-mono text-ash">42:12</span>

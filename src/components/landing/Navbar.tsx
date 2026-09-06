@@ -12,6 +12,7 @@ const LINKS = [
   { label: "For Agents", href: "#for-agents" },
   { label: "Help", href: "#help" },
   { label: "Pricing", href: "#pricing" },
+  { label: "FAQ", href: "#faq" },
 ];
 
 const LOG_IN_LINK =
@@ -117,9 +118,9 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
       }`}
     >
       <nav className="mx-auto flex h-14 max-w-[1200px] items-center justify-between px-5 lg:px-8">
-        <Link href="/" aria-label="flask home" className="shrink-0 flex items-center gap-2">
+        <Link href="/" aria-label="n4ma home" className="shrink-0 flex items-center gap-2">
           <Logo size="lg" className="h-7 w-7 lg:h-8 lg:w-8" />
-          <span className="text-[15px] font-[510] tracking-[-0.01em] text-fg hidden sm:block">flask</span>
+          <span className="text-[15px] font-[510] tracking-[-0.01em] text-fg hidden sm:block">n4ma</span>
         </Link>
 
         {/* center links - pure typographic, underline on hover */}
@@ -142,10 +143,19 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
           <SignUpPill href="/auth?mode=signup" />
         </div>
 
+        {/* mobile auth area */}
+        <div className="flex md:hidden">                <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
+                <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
+                  Try N4MA Free
+                </Button>
+              </div>
+
         {/* Mobile auth area */}
-        <div className="flex md:hidden">
-          <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
-        </div>
+        <div className="flex md:hidden">                <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
+                <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
+                  Try N4MA Free
+                </Button>
+              </div>
 
         {/* mobile toggle */}
         <button
@@ -192,10 +202,7 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
               <div className="flex flex-col gap-2.5 pt-4">
                 <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
                 <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
-                  Try Flask Free
-                </Button>
-                <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
-                  Try Flask Free
+                  Try N4MA Free
                 </Button>
               </div>
             </div>
