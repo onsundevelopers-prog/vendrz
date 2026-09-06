@@ -9,10 +9,9 @@ import { Button } from "@/components/ui/Button";
 import { isClerkEnabled, useClerkMounted } from "@/lib/auth";
 
 const LINKS = [
-  { label: "Product", href: "#product" },
-  { label: "How it works", href: "#how-it-works" },
+  { label: "For Agents", href: "#for-agents" },
+  { label: "Help", href: "#help" },
   { label: "Pricing", href: "#pricing" },
-  { label: "FAQ", href: "#faq" },
 ];
 
 const LOG_IN_LINK =
@@ -91,12 +90,19 @@ function MobileAuth({ onNavigate, signedIn }: { onNavigate: () => void; signedIn
 export function Navbar({ signedIn }: { signedIn?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [productHuntVisible, setProductHuntVisible] = useState(true);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Fade out Product Hunt badge after initial scroll
+  useEffect(() => {
+    const timer = setTimeout(() => setProductHuntVisible(false), 6000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -111,8 +117,9 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
       }`}
     >
       <nav className="mx-auto flex h-14 max-w-[1200px] items-center justify-between px-5 lg:px-8">
-        <Link href="/" aria-label="n4ma home" className="shrink-0">
-          <Logo />
+        <Link href="/" aria-label="flask home" className="shrink-0 flex items-center gap-2">
+          <Logo size="lg" className="h-7 w-7 lg:h-8 lg:w-8" />
+          <span className="text-[15px] font-[510] tracking-[-0.01em] text-fg hidden sm:block">flask</span>
         </Link>
 
         {/* center links - pure typographic, underline on hover */}
@@ -133,6 +140,11 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
         <div className="hidden items-center gap-5 md:flex">
           <DesktopAuth signedIn={signedIn} />
           <SignUpPill href="/auth?mode=signup" />
+        </div>
+
+        {/* Mobile auth area */}
+        <div className="flex md:hidden">
+          <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
         </div>
 
         {/* mobile toggle */}
@@ -179,8 +191,11 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
               ))}
               <div className="flex flex-col gap-2.5 pt-4">
                 <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
-                <Button href="/audit" className="w-full" onClick={() => setOpen(false)}>
-                  Find my savings
+                <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
+                  Try Flask Free
+                </Button>
+                <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
+                  Try Flask Free
                 </Button>
               </div>
             </div>

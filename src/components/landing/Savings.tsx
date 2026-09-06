@@ -13,10 +13,10 @@ import { EASE, CountUp } from "./motion";
 /* ------------------------------------------------------------------ */
 
 const ROWS = [
-  { label: "Unused licenses", value: "$7,200" },
-  { label: "Upcoming renewal", value: "$4,800" },
-  { label: "Duplicate software", value: "$3,600" },
-  { label: "Contractual price increases", value: "$2,820" },
+  { label: "Voice feedback recorded", value: "47 notes" },
+  { label: "Visual annotations added", value: "23 drawings" },
+  { label: "Reference images shared", value: "12 refs" },
+  { label: "Feedback resolved", value: "89%" },
 ];
 
 const ease = EASE;
@@ -36,26 +36,28 @@ export function Savings() {
             What you get
           </p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            What a review produces.
+            What a feedback session produces.
+          </h2>
+          <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
+            What a single feedback session produces.
           </h2>
           <p className="mt-5 max-w-md text-pretty text-[15px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Each finding carries an annual-cost estimate computed from the
-            terms in your own documents: renewal dates, escalation rates, and
-            what you pay today. You see the size of each leak and decide
-            what&apos;s worth acting on.
+            Every Flask session turns a video review into organized, timestamped
+            voice notes, visual annotations, and shared references - all linked
+            to the exact moments in your footage.
           </p>
           <div className="mt-8 space-y-4">
             {[
-              ["What to fix", "Every leak, ranked by size and urgency."],
-              ["Why it matters", "The renewal, escalation, or clause behind it."],
-              ["                  How it's computed", "                  From your contract's own terms, by formula."],
+              ["What to fix", "Every moment, timestamped to its frame."],
+              ["Why it matters", "The context that text comments lose."],
+              ["How it's organized", "By scene, topic, and reviewer."],
             ].map(([title, body]) => (
               <div key={title} className="grid grid-cols-[110px_1fr] gap-4">
                 <p className="text-[12px] font-[510] uppercase tracking-[0.12em] text-ash">
-                  {title}
+                  {title.trim()}
                 </p>
                 <p className="text-[13.5px] font-normal leading-relaxed tracking-[-0.011em] text-faint">
-                  {body}
+                  {body.trim()}
                 </p>
               </div>
             ))}
@@ -80,7 +82,7 @@ export function Savings() {
           </div>
 
           <p className="mt-6 text-[44px] font-[510] leading-none tracking-[-0.03em] text-fg sm:text-[56px]">
-            <CountUp to={18420} prefix="$" duration={1.6} />
+            <CountUp to={47} prefix="" duration={1.6} />
           </p>
 
           <div className="mt-8 divide-rule-light">
@@ -101,17 +103,19 @@ export function Savings() {
 
           <div className="mt-2 flex items-baseline justify-between gap-4 border-t border-line-strong pt-4">
             <span className="text-[13px] font-[510] tracking-[-0.01em] text-fg">
-              Estimated annual total
+              Feedback resolution rate
             </span>
             <span className="font-mono text-[15px] font-[510] tracking-[-0.01em] text-fg">
-              $18,420
+              89%
             </span>
-          </div>
+          </div>            <p className="mt-6 text-[11.5px] font-normal leading-relaxed tracking-[-0.01em] text-ash">
+            Example from a sample feedback session, for illustration only. Your
+            own session results depend on the length of your video and the size
+            of your review team.
+          </p>
 
-          <p className="mt-6 text-[11.5px] font-normal leading-relaxed tracking-[-0.01em] text-ash">
-            Example from a sample review, for illustration only. Your own
-            estimates are computed from your documents and labeled as
-            estimates - n4ma does not guarantee savings.
+          <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
+            The figures above are an illustrative example, not a promise.
           </p>
         </motion.div>
       </div>

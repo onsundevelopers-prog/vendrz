@@ -8,23 +8,23 @@ const ease = EASE;
 const STEPS = [
   {
     num: "01",
-    title: "Connect",
-    body: "Upload contracts and invoices, or connect Gmail, Google Drive, and Slack read-only. Nothing is imported or changed without you selecting it first.",
+    title: "Upload",
+    body: "Drop in your video file - MP4, MOV, or a screen recording. Flask supports any format and any length, with no file size limits on paid plans.",
   },
   {
     num: "02",
-    title: "Detect",
-    body: "n4ma extracts renewal dates, notice deadlines, escalation rates, and fees, then checks them against the patterns that waste money: auto-renewals, price increases, unused seats, duplicate tools, and billing anomalies.",
+    title: "Record feedback",
+    body: "Play the video and record voice notes at any moment. Draw on the frame, add reference images, or type - however you communicate best.",
   },
   {
     num: "03",
-    title: "Prove",
-    body: "Each finding names the clause, page, or invoice line it came from, and shows the calculation behind its estimate.",
+    title: "Auto-organize",
+    body: "Flask transcribes your voice notes, timestamps everything to the exact frame, and groups feedback by scene, topic, or reviewer.",
   },
   {
     num: "04",
-    title: "Save",
-    body: "You get a ranked list: what each leak costs per year, the deadline it carries, and the action it calls for - renew, renegotiate, or cancel.",
+    title: "Share & resolve",
+    body: "Send the organized feedback thread to your team. Everyone sees the same context with timestamps, reactions, and what's been resolved.",
   },
 ];
 
@@ -46,12 +46,12 @@ export function HowItWorks() {
             How it works
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            A review, in four steps.
+            Give feedback, in four steps.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Upload a document and the first review finishes in under two
-            minutes, without an account. Connections to Gmail, Drive, and
-            Slack are optional.
+            Upload a video, record your feedback in real time, and Flask
+            organizes everything automatically. No more scattered comments or
+            lost context.
           </p>
         </motion.div>
 

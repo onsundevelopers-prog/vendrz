@@ -20,17 +20,17 @@ import { SITE, PRICING_PLANS } from "@/lib/site";
 const pricingJsonLd = {
   "@context": "https://schema.org",
   "@type": "OfferCatalog",
-  name: "n4ma Pricing",
+  name: "Flask Pricing",
   url: `${SITE.url}/#pricing`,
   description:
-    "n4ma reviews software contracts, invoices, and subscriptions for hidden fees, auto-renewals, price increases, and unused licenses, and estimates what each finding costs per year. Every account starts with a free 30-day Team Plus trial - no credit card, and nothing is ever auto-charged.",
+    "Flask helps teams give feedback on videos in minutes, without typing comments. Talk through complex feedback, draw, share any reference. Flask automatically writes feedback, organizes and timestamps everything.",
   itemListElement: PRICING_PLANS.map((plan) => ({
     "@type": "Offer",
     name: plan.name,
     description: plan.blurb,
     url: `${SITE.url}/#pricing`,
     ...(plan.price !== null
-      ? { price: plan.price, priceCurrency: "CAD" }
+      ? { price: plan.price, priceCurrency: "USD" }
       : {}),
     ...(plan.id !== "enterprise"
       ? { priceValidUntil: new Date(new Date().getFullYear() + 1, 11, 31).toISOString().slice(0, 10) }

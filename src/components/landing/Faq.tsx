@@ -22,7 +22,7 @@ export function Faq() {
             FAQ
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Questions, answered
+            Questions, answered.
           </h2>
         </motion.div>
 

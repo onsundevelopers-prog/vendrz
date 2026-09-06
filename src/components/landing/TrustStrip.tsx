@@ -1,16 +1,16 @@
 const FACTS = [
-  "Read-only access to Gmail, Google Drive & Slack",
-  "Encrypted in transit and at rest",
-  "Never shared, sold, or used for training",
-  "First review in under two minutes",
-  "We cannot move money or modify accounts",
+  "Works on any video - MP4, MOV, GIF, or link",
+  "Feedback is automatically transcribed and timestamped",
+  "Draw, annotate, and share any reference in context",
+  "Organized feedback threads by scene or moment",
+  "No credit card required for 14-day free trial",
 ];
 
 const SOURCES = [
-  "Software contracts",
-  "Invoices & order forms",
-  "Subscription terms",
-  "Renewal notices",
+  "Video files",
+  "Screen recordings",
+  "YouTube links",
+  "Drive uploads",
 ];
 
 export function TrustStrip() {
@@ -18,7 +18,7 @@ export function TrustStrip() {
     <div className="border-y border-line bg-canvas">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-7 gap-y-1.5 border-b border-line/60 px-5 py-3 lg:px-8">
         <span className="shrink-0 text-[12px] font-[510] tracking-[-0.01em] text-ash">
-          n4ma reads
+          Flask supports
         </span>
         {SOURCES.map((v) => (
           <span key={v} className="text-[12.5px] font-normal tracking-[-0.011em] text-muted">

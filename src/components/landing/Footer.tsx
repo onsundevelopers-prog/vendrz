@@ -5,17 +5,17 @@ const COLUMNS = [
   {
     title: "Product",
     links: [
-      { label: "Scan a Contract", href: "/upload" },
-      { label: "Overview", href: "/dashboard" },
-      { label: "Vendors", href: "/dashboard/companies" },
+      { label: "How it works", href: "/#how-it-works" },
+      { label: "Features", href: "/#product" },
       { label: "Pricing", href: "/#pricing" },
+      { label: "FAQ", href: "/#faq" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "How It Works", href: "/#how-it-works" },
-      { label: "FAQ", href: "/#faq" },
+      { label: "About", href: "/#about" },
+      { label: "Blog", href: "/blog" },
       { label: "Log in", href: "/auth?mode=login" },
     ],
   },
@@ -36,11 +36,10 @@ export function Footer() {
           <div className="max-w-xs">
             <Logo />
             <p className="mt-4 text-[13px] font-normal leading-relaxed tracking-[-0.011em] text-faint">
-              n4ma is the AI financial watchdog for business software. It
-              watches the money your business spends on software and vendors,
-              finds where it&apos;s being wasted, and proves every finding with
-              evidence - so you can cancel what you don&apos;t need and negotiate the
-              rest.
+              Flask helps creative teams give feedback on videos in minutes,
+              without typing comments. Talk through complex feedback, draw, share
+              any reference. Flask automatically writes feedback, organizes and
+              timestamps everything. Try it free for 14 days.
             </p>
           </div>
           <div className="flex gap-20">
@@ -66,8 +65,8 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-[11.5px] font-normal tracking-[-0.01em] text-ash sm:flex-row">
-          <p>© {new Date().getFullYear()} n4ma. All rights reserved.</p>
-          <p>Encrypted in transit and at rest · Your contract is never shared or sold</p>
+          <p>© {new Date().getFullYear()} Flask. All rights reserved.</p>
+          <p>Encrypted in transit and at rest · Your video is never shared or sold</p>
         </div>
       </div>
     </footer>

@@ -8,23 +8,23 @@ const ease = EASE;
 const PAINS = [
   {
     num: "01",
-    title: "Auto-renewals",
-    body: "A missed cancellation window can lock a company into another year of a tool it barely uses.",
+    title: "Written feedback is slow",
+    body: "Typing out detailed video feedback takes forever, and by the time you finish, the context is already lost.",
   },
   {
     num: "02",
-    title: "Price increases",
-    body: "A 5% annual escalation compounds on a growing base, so the same contract costs more every year without a new decision.",
+    title: "Context gets lost",
+    body: "Scattered comments across email, Slack, and spreadsheets make it impossible to track what was said about which scene.",
   },
   {
     num: "03",
-    title: "Unused software",
-    body: "Companies keep paying for seats, tools, and services nobody actually needs.",
+    title: "No visual references",
+    body: "Without the ability to draw or share references, feedback becomes vague and open to misinterpretation.",
   },
   {
     num: "04",
-    title: "Duplicate spending",
-    body: "Different teams can unknowingly pay multiple vendors for overlapping functionality.",
+    title: "Teams stay out of sync",
+    body: "Without organized, timestamped feedback, reviewers and creators end up misaligned on what needs to change.",
   },
 ];
 
@@ -44,12 +44,12 @@ export function ProblemSection() {
             The problem
           </p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Where the money goes
+            Video feedback, done wrong
           </h2>
           <p className="mt-5 max-w-md text-pretty text-[15px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Most companies don&apos;t lose money in one big expense. They lose it
-            in small, repeating costs that were signed for once and never
-            read again. n4ma finds them and computes what each one costs.
+            Most teams give feedback on videos the hard way: typing long comments,
+            losing context, and hoping everyone interprets things the same way.
+            Flask fixes this by making feedback fast, visual, and organized.
           </p>
         </motion.div>
 
@@ -85,9 +85,9 @@ export function ProblemSection() {
         transition={{ duration: 0.7, delay: 0.1, ease }}
         className="mx-auto mt-16 max-w-2xl px-5 text-center text-pretty text-[15px] font-normal leading-relaxed tracking-[-0.01em] text-fg lg:px-8"
       >
-        Each of these is a contract term, not a one-off mistake. n4ma reports
-        every instance it finds, with the source line and an annual-cost
-        estimate.
+        Each pain is a workflow tax, not a one-off annoyance. Flask removes them
+        by making video feedback fast, visual, and organized from the first
+        comment.
       </motion.p>
     </section>
   );

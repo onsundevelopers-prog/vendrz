@@ -12,20 +12,20 @@ const ease = EASE;
 
 const ITEMS: { label: string; body: string }[] = [
   {
-    label: "Evidence",
-    body: "Open any finding and read the sentence it came from - the clause, document page, or invoice line - before you act on it.",
+    label: "Voice feedback",
+    body: "Record audio feedback directly on the video timeline. Speak naturally and Flask transcribes it, timestamps it, and organizes it by scene.",
   },
   {
-    label: "Risk",
-    body: "Renewal and pricing checks run on deterministic rules, not model judgment, so the same contract always gets the same answer.",
+    label: "Visual annotations",
+    body: "Draw on the video frame, add arrows and shapes, and share reference images - all anchored to the exact moment in the timeline.",
   },
   {
-    label: "Savings",
-    body: "Savings estimates are computed by a published formula from the terms in your document, with the calculation shown next to each figure.",
+    label: "Auto-organization",
+    body: "Feedback is automatically grouped by scene, topic, or reviewer. No more hunting through scattered comments to find what matters.",
   },
   {
-    label: "Action",
-    body: "n4ma explains what should happen next - renew, renegotiate, or cancel - and by when.",
+    label: "Team context",
+    body: "Everyone sees the same organized feedback thread with timestamps, reactions, and resolved status - so creators know exactly what to change.",
   },
 ];
 
@@ -66,16 +66,14 @@ export function Capabilities() {
           className="mx-auto max-w-2xl text-center"
         >
           <p className="text-[12px] font-[510] tracking-[-0.01em] text-faint">
-            Why n4ma
+            Product
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Check every finding yourself.
+            Give feedback the way you think.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            The model that reads your document is a starting point, not the
-            verdict. Each finding cites the clause, page, or invoice line it
-            came from, and the numbers behind it are computed by rules you
-            can inspect - so nothing rests on trusting the model.
+            Voice notes, drawings, reference images, and timestamps - all
+            organized by scene and moment so your team stays in sync.
           </p>
         </motion.div>
 
@@ -84,17 +82,15 @@ export function Capabilities() {
           {ITEMS.map((item, i) => (
             <CapabilityCard key={item.label} item={item} index={i} />
           ))}
-        </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.6, ease }}
-          className="mx-auto mt-14 max-w-xl px-5 text-center font-mono text-[12px] uppercase tracking-[0.16em] text-ash lg:px-8"
-        >
-          The reading is assisted. The evidence is not.
-        </motion.p>
+        </div>          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.6, ease }}
+            className="mx-auto mt-14 max-w-xl px-5 text-center font-mono text-[12px] uppercase tracking-[0.16em] text-ash lg:px-8"
+          >
+            Feedback, organized. Instantly.
+          </motion.p>
       </div>
     </section>
   );

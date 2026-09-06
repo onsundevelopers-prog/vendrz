@@ -18,21 +18,20 @@ export function CtaSection() {
         className="relative mx-auto max-w-2xl px-5 text-center"
       >
         <h2 className="max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-          See what your current contracts actually commit you to.
+          Give feedback on videos in minutes, without typing comments.
         </h2>
         <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-          Upload a contract, or connect Gmail, Google Drive, or Slack read-only,
-          and get the renewal dates, notice deadlines, price escalations, and
-          fees buried in them - each with its source and an annual-cost
-          estimate. The review is free and takes under two minutes.
+          Upload a video, record your feedback, and Flask organizes everything
+          automatically. No more scattered comments, lost context, or endless
+          back-and-forth. Try it free for 14 days.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button href="/audit" size="lg" className="w-full px-8 sm:w-auto shadow-[inset_0_1px_1px_rgba(0,0,0,0.1),inset_0_0_0_1px_rgba(0,0,0,0.08)]">
-            Run a free review
+          <Button href="/auth?mode=signup" size="lg" className="w-full px-8 sm:w-auto shadow-[inset_0_1px_1px_rgba(0,0,0,0.1),inset_0_0_0_1px_rgba(0,0,0,0.08)]">
+            Try Flask Free
           </Button>
         </div>
         <p className="mt-5 text-[12px] font-normal tracking-[-0.01em] text-ash">
-          No signup · No credit card · First review in under two minutes
+          14-day free trial · No credit card · Works on any video
         </p>
       </motion.div>
     </section>

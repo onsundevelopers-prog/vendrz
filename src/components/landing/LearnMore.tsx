@@ -2,10 +2,10 @@
 /*  Long-form content - written for humans and search engines.        */
 /*                                                                     */
 /*  Plain-language explainers around the core questions customers      */
-/*  actually type into Google: what software spend analysis is, how to */
-/*  find hidden fees, and how automatic renewals work. No jargon,      */
-/*  no invented claims - every paragraph describes what n4ma really    */
-/*  does with your documents.                                          */
+/*  actually type into Google: how to give video feedback, why voice   */
+/*  feedback is faster than typing, and what makes Flask different.   */
+/*  No jargon, no invented claims - every paragraph describes what     */
+/*  Flask really does.                                                 */
 /* ------------------------------------------------------------------ */
 
 export function LearnMore() {
@@ -16,122 +16,111 @@ export function LearnMore() {
           Learn
         </p>
         <h2 className="mt-4 text-center text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-          What is software spend analysis, really?
+          Why video feedback should be fast, not painful.
         </h2>
 
         <div className="mt-12 space-y-10 text-[15px] font-normal leading-[1.7] tracking-[-0.011em] text-faint">
           <div className="space-y-4">
             <p>
-              Every business pays for tools and services it barely thinks about:
-              software subscriptions, cloud hosting, marketing platforms,
-              insurance, and a dozen other vendors with invoices that arrive on
-              autopilot. Most of those agreements were signed once, years ago,
-              and              never looked at again. Software spend analysis is the practice
-              of reviewing that spending - the contracts underneath this
-              month&apos;s invoices - to find the terms that keep costing you
-              money.
+              Every creative team has been there: you watch a video, have Ideas
+              about what needs to change, and then spend twenty minutes typing
+              them out as written comments. By the time you finish, you've lost
+              the context, the creator has moved on, and your feedback still
+              reads like it was written by someone who was multitasking. Video
+              feedback shouldn't be this painful.
             </p>
             <p>
-              The leaks are rarely a single big line item. They are small,
-              compounding things: an annual price escalation clause that raises
-              your bill a few percent every year on a growing base, a
-              subscription that auto-renews for another full term because nobody
-              gave notice in time, seats you pay for that nobody uses, and two
-              vendors doing the same job. Individually each one looks small.
-              Together they can add up to a meaningful share of your annual
-              spend - and because they are written into contracts you signed,
-              they keep happening until someone reads the fine print.
+              The problem isn't that people can't write. It's that writing is
+              slow, and video moves fast. When you're watching a 30-second spot
+              or a two-minute explainer, you think of things at the speed of
+              speech - not the speed of typing. So you either hold your thoughts
+              until the video ends (and forget half of them), or you pause every
+              ten seconds to type a comment (and lose the flow). Neither is
+              great.
             </p>
           </div>
 
           <div className="space-y-4">
             <h3 className="text-[19px] font-[510] tracking-[-0.016em] text-fg">
-              How to find hidden fees in your contracts
+              Why voice feedback is faster than typing
             </h3>
             <p>
-              You don&apos;t need to be a lawyer to find hidden fees. You need to
-              know where they tend to hide:
+              Speaking is faster than typing - most people speak three to four
+              times faster than they type, and the ideas come out in the order
+              they occur, with tone and emphasis intact. That's why Flask lets
+              you record voice feedback directly on the video timeline. Press
+              record, speak your note, and Flask captures it at the exact moment
+              in the video.
+            </p>
+            <p>
+              Voice feedback also carries context that text loses: the urgency in
+              your voice when something is critical, the casual tone when
+              something is a suggestion, the natural pauses and emphasis that
+              make your intent clear. A timestamped voice note at 0:47 says more
+              than "fix this" ever could.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-[19px] font-[510] tracking-[-0.016em] text-fg">
+              What makes Flask different from comment threads
+            </h3>
+            <p>
+              Traditional video feedback lives in scattered places: comments on
+              a shared drive, emails with timestamps ("around 1:30 there's an
+              issue"), Slack threads that lose the context, and spreadsheets
+              that nobody maintains. Flask consolidates all of this into one
+              place.
             </p>
             <ul className="list-disc space-y-2 pl-5">
               <li>
-                <span className="font-medium text-fg">Automatic renewal clauses</span>{" "}
-                - the contract renews for another full term unless you cancel in
-                writing before a deadline that is usually 30 to 90 days before
-                the renewal date.
+                <span className="font-medium text-fg">Voice notes at the right moment</span>{" "}
+                - record feedback while watching, and Flask timestamps it to the
+                exact frame. No more "at 1:32-ish" or "the part where the
+                character walks in."
               </li>
               <li>
-                <span className="font-medium text-fg">Annual price escalations</span>{" "}
-                - a fixed percentage increase every year, sometimes with no cap,
-                which compounds on top of last year&apos;s already-increased price.
+                <span className="font-medium text-fg">Draw on the frame</span>{" "}
+                - circle the thing you're talking about, add arrows, sketch an
+                idea. Visual feedback is clearer than verbal feedback, and Flask
+                lets you do both.
               </li>
               <li>
-                <span className="font-medium text-fg">Unused seats and licenses</span>{" "}
-                - you keep paying for the headcount you had two years ago, not
-                the team you have today.
+                <span className="font-medium text-fg">Share reference images</span>{" "}
+                - show, don't just tell. Drop in a reference image at the right
+                moment and your feedback becomes concrete.
               </li>
               <li>
-                <span className="font-medium text-fg">Duplicate tools</span> - two
-                or more vendors providing the same service, each with its own
-                subscription and renewal.
-              </li>
-              <li>
-                <span className="font-medium text-fg">Cancellation windows you missed</span>{" "}
-                - the date to give notice has already passed, so you are locked
-                into another term whether you want it or not.
+                <span className="font-medium text-fg">Auto-organized by scene</span>{" "}
+                - Flask groups your feedback by scene, topic, or reviewer, so
+                creators see what needs attention and reviewers can track what's
+                been resolved.
               </li>
             </ul>
             <p>
-              n4ma reads your uploaded contracts and invoices and checks for
-              exactly these patterns. Every finding links back to the exact
-              sentence in your document, so you can verify each one before
-              acting on it.
+              Flask doesn't replace your existing tools - it replaces the scattered
+              workaround you've built on top of them. Upload a video, give
+              feedback your way, and share the organized result with your team.
             </p>
           </div>
 
           <div className="space-y-4">
             <h3 className="text-[19px] font-[510] tracking-[-0.016em] text-fg">
-              Why contracts auto-renew - and how to stop it
+              Who Flask is for
             </h3>
             <p>
-              Automatic renewal is written into most subscription agreements for
-              the vendor&apos;s benefit: if you forget to cancel, you keep paying,
-              and the vendor avoids the cost of winning you back. The term is
-              almost never in the headline of the contract - it lives in a
-              clause that says something like &quot;this agreement shall
-              automatically renew for successive terms unless either party
-              provides written notice of non-renewal at least N days prior to
-              the expiration of the then-current term.&quot;
+              Flask is for creative teams who review video content regularly:
+              marketing teams reviewing campaign videos, product teams reviewing
+              demos and tutorials, design teams reviewing animations, agencies
+              reviewing client work, and anyone else who's ever said "can you
+              check this video and let me know what you think?"
             </p>
             <p>
-              To stop an auto-renewal you have to act before that notice
-              deadline, in writing, and usually to a specific address. n4ma
-              extracts your renewal date and your cancellation deadline from the
-              document, tells you how many days you have left, and drafts the
-              cancellation notice for you to review - you send it yourself.
-              That&apos;s how a renewal gets caught before the deadline, not after
-              the charge.
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-[19px] font-[510] tracking-[-0.016em] text-fg">
-              How the free contract review works
-            </h3>
-            <p>
-              The review is free, and you don&apos;t need an account to see your
-              results. Upload a PDF or DOCX - a master service agreement, a
-              subscription terms page, an invoice, an order form - and n4ma
-              reads it, extracts the key terms, and builds a report with a risk
-              score, a list of findings with evidence, and a range of potential
-              savings. The whole thing usually finishes in under a minute, and
-              your document is encrypted and never used to train models.
-            </p>
-            <p>
-              If you create an account afterwards, the same analysis is
-              transferred to your workspace so you can track renewals over time
-              and get alerts before deadlines slip. If you don&apos;t, your scan
-              expires after 14 days and is deleted. Either way, the review itself
-              costs nothing and commits you to nothing.
+              If you give feedback on videos more than once a month, Flask pays
+              for itself in the first week by cutting the time you spend
+              coordinating feedback. If you've ever lost a comment in a Slack
+              thread or had to re-explain what you meant in a written review,
+              Flask is the tool you've been looking for.
             </p>
           </div>
         </div>

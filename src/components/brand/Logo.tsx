@@ -5,9 +5,9 @@
 /*  no resynthesis. The only thing CSS controls is the display size    */
 /*  (object-contain keeps the 1:1 asset undistorted).                  */
 /*                                                                     */
-/*  Sizes: "md" (32px) is the default used in the navbar, dashboard     */
-/*  header and footer; "lg" (160px) is reserved for the auth page's     */
-/*  brand panel where the logo anchors the layout.                     */
+/ *  Sizes: "sm" (24px), "md" (32px, default), "lg" (48px for navbar),   */
+/*  "xl" (120px for hero/auth). The size prop controls display size;    */
+/*  the img is always rendered 1:1 with object-contain.                */
 /* ------------------------------------------------------------------ */
 
 export function Logo({
@@ -15,15 +15,15 @@ export function Logo({
   size = "md",
 }: {
   className?: string;
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 }) {
-  const box = size === "lg" ? "h-40 w-40" : "h-8 w-8";
+  const box = size === "xl" ? "h-30 w-30" : size === "lg" ? "h-12 w-12" : size === "sm" ? "h-6 w-6" : "h-8 w-8";
   return (
     <span className={`inline-flex shrink-0 items-center ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element -- brand asset must render 1:1, never re-encoded */}
       <img
         src="/brand/logo.png"
-        alt="n4ma"
+        alt="flask"
         width={2000}
         height={2000}
         className={`block ${box} object-contain`}
