@@ -1,21 +1,13 @@
 import type { Metadata } from "next";
-import { SITE } from "@/lib/site";
-import { ClerkScope } from "@/components/auth/ClerkScope";
+import type { ReactNode } from "react";
 
-/** /audit is a client component, so metadata lives in this server layout. */
 export const metadata: Metadata = {
-  title: "Find Hidden Fees & Wasted Software Spending",
+  title: "Free vendor review",
   description:
-    "Free AI review of your contracts, invoices, and subscriptions. N4MA finds hidden fees, auto-renewals, price increases, and wasted spend - with evidence for every finding. Results in minutes, no signup required.",
+    "Upload a contract or invoice and get evidence-backed findings in about two minutes - auto-renewals, cancellation deadlines, price increases, hidden fees, and more, each with its source document. No account required.",
   alternates: { canonical: "/audit" },
-  openGraph: {
-    title: "Find Hidden Fees & Wasted Software Spending",
-    description:
-      "See where your money is leaking: hidden fees, auto-renewals, and price increases in the software you already pay for. Free review, no signup.",
-    url: `${SITE.url}/audit`,
-  },
 };
 
-export default function AuditLayout({ children }: { children: React.ReactNode }) {
-  return <ClerkScope>{children}</ClerkScope>;
+export default function AuditLayout({ children }: { children: ReactNode }) {
+  return children;
 }

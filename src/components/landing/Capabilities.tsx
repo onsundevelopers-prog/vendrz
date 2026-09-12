@@ -12,20 +12,20 @@ const ease = EASE;
 
 const ITEMS: { label: string; body: string }[] = [
   {
-    label: "Voice feedback",
-    body: "Record audio feedback directly on the video timeline. Speak naturally and Flask transcribes it, timestamps it, and organizes it by scene.",
+    label: "Evidence-backed findings",
+    body: "Every finding cites its source - the contract clause, document page, invoice line, or message it came from - so you can verify it before acting.",
   },
   {
-    label: "Visual annotations",
-    body: "Draw on the video frame, add arrows and shapes, and share reference images - all anchored to the exact moment in the timeline.",
+    label: "Deadline detection",
+    body: "Renewal dates and cancellation notice windows are extracted from your documents and tracked, so the window to act never quietly closes.",
   },
   {
-    label: "Auto-organization",
-    body: "Feedback is automatically grouped by scene, topic, or reviewer. No more hunting through scattered comments to find what matters.",
+    label: "Savings math you can check",
+    body: "Annual impact is calculated from your own terms - escalation percentages applied to what you actually pay - not from generic benchmarks.",
   },
   {
-    label: "Team context",
-    body: "Everyone sees the same organized feedback thread with timestamps, reactions, and resolved status - so creators know exactly what to change.",
+    label: "Read-only connections",
+    body: "Gmail, Google Drive, and Slack connect read-only to surface vendor documents. Nothing in your connected accounts is ever changed.",
   },
 ];
 
@@ -69,11 +69,11 @@ export function Capabilities() {
             Product
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Give feedback the way you think.
+            The AI reads the document. The evidence makes the case.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Voice notes, drawings, reference images, and timestamps - all
-            organized by scene and moment so your team stays in sync.
+            Findings tied to clauses, pages, and invoice lines. Savings
+            calculated from your own terms. Nothing invented, nothing hidden.
           </p>
         </motion.div>
 
@@ -82,15 +82,17 @@ export function Capabilities() {
           {ITEMS.map((item, i) => (
             <CapabilityCard key={item.label} item={item} index={i} />
           ))}
-        </div>          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.6, ease }}
-            className="mx-auto mt-14 max-w-xl px-5 text-center font-mono text-[12px] uppercase tracking-[0.16em] text-ash lg:px-8"
-          >
-            Feedback, organized. Instantly.
-          </motion.p>
+        </div>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, ease }}
+          className="mx-auto mt-14 max-w-xl px-5 text-center font-mono text-[12px] uppercase tracking-[0.16em] text-ash lg:px-8"
+        >
+          Connect. Detect. Prove. Save.
+        </motion.p>
       </div>
     </section>
   );

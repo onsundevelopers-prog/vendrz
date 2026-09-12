@@ -20,17 +20,16 @@ import { SITE, PRICING_PLANS } from "@/lib/site";
 const pricingJsonLd = {
   "@context": "https://schema.org",
   "@type": "OfferCatalog",
-  name: "Flask Pricing",
+  name: "N4MA Pricing",
   url: `${SITE.url}/#pricing`,
-  description:
-    "Flask helps teams give feedback on videos in minutes, without typing comments. Talk through complex feedback, draw, share any reference. Flask automatically writes feedback, organizes and timestamps everything.",
+  description: SITE.description,
   itemListElement: PRICING_PLANS.map((plan) => ({
     "@type": "Offer",
     name: plan.name,
     description: plan.blurb,
     url: `${SITE.url}/#pricing`,
     ...(plan.price !== null
-      ? { price: plan.price, priceCurrency: "USD" }
+      ? { price: plan.price, priceCurrency: plan.currency ?? "USD" }
       : {}),
     ...(plan.id !== "enterprise"
       ? { priceValidUntil: new Date(new Date().getFullYear() + 1, 11, 31).toISOString().slice(0, 10) }

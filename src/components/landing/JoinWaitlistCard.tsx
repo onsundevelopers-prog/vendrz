@@ -43,9 +43,9 @@ const PLAN_MAP: Record<Plan, PlanDef> = {
     name: "Free",
     price: "$0",
     cadence: "forever",
-    blurb: "Try N4MA free for 14 days - no credit card.",
+    blurb: "Start free - every new account gets a 30-day Team Plus trial.",
     features: [
-      "14-day N4MA trial on signup",
+      "30-day Team Plus trial on signup",
       "Unlimited contract uploads",
       "AI contract analysis",
       "Visual annotations & drawings",
@@ -117,7 +117,7 @@ const CARDS: PricingCard[] = [
     cta: "Start your free trial",
     href: "/auth?mode=signup",
     featured: false,
-    buttonNote: "14 days free, no credit card",
+    buttonNote: "30 days free, no credit card",
   },
   {
     id: "pro",
@@ -325,7 +325,7 @@ function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
         href="/auth?mode=signup"
         className="block w-full rounded-md border border-line bg-canvas px-4 py-2.5 text-center text-[13px] font-medium text-faint transition-colors hover:border-line-strong hover:text-fg"
       >
-        14-day free trial
+        30-day free trial
       </a>
 
       <div className="mt-3 rounded-md border border-line-strong bg-canvas px-4 py-3 text-[11.5px] leading-relaxed text-faint">

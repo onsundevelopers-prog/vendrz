@@ -5,7 +5,7 @@
 /*  no resynthesis. The only thing CSS controls is the display size    */
 /*  (object-contain keeps the 1:1 asset undistorted).                  */
 /*                                                                     */
-/ *  Sizes: "sm" (24px), "md" (32px, default), "lg" (48px for navbar),   */
+/*  Sizes: "sm" (24px), "md" (32px, default), "lg" (48px for navbar),  */
 /*  "xl" (120px for hero/auth). The size prop controls display size;    */
 /*  the img is always rendered 1:1 with object-contain.                */
 /* ------------------------------------------------------------------ */
@@ -23,7 +23,7 @@ export function Logo({
       {/* eslint-disable-next-line @next/next/no-img-element -- brand asset must render 1:1, never re-encoded */}
       <img
         src="/brand/logo.png"
-        alt="flask"
+        alt="N4MA"
         width={2000}
         height={2000}
         className={`block ${box} object-contain`}

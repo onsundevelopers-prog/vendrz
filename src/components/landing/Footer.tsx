@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
+import { SITE } from "@/lib/site";
 
 const COLUMNS = [
   {
@@ -14,8 +15,7 @@ const COLUMNS = [
   {
     title: "Company",
     links: [
-      { label: "About", href: "/#about" },
-      { label: "Blog", href: "/blog" },
+      { label: "Free vendor review", href: "/audit" },
       { label: "Log in", href: "/auth?mode=login" },
     ],
   },
@@ -36,10 +36,10 @@ export function Footer() {
           <div className="max-w-xs">
             <Logo />
             <p className="mt-4 text-[13px] font-normal leading-relaxed tracking-[-0.011em] text-faint">
-              Flask helps creative teams give feedback on videos in minutes,
-              without typing comments. Talk through complex feedback, draw, share
-              any reference. Flask automatically writes feedback, organizes and
-              timestamps everything. Try it free for 14 days.
+              {SITE.name} is the AI financial watchdog for business software. It
+              reads the contracts, invoices, and subscriptions behind your
+              software spending, finds the leaks, and backs every finding with
+              evidence from your own documents.
             </p>
           </div>
           <div className="flex gap-20">
@@ -65,8 +65,8 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-14 flex flex-col items-start justify-between gap-3 border-t border-line pt-6 text-[11.5px] font-normal tracking-[-0.01em] text-ash sm:flex-row">
-          <p>© {new Date().getFullYear()} Flask. All rights reserved.</p>
-          <p>Encrypted in transit and at rest · Your video is never shared or sold</p>
+          <p>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
+          <p>Encrypted in transit and at rest · Read-only connections · Your documents are never shared or sold</p>
         </div>
       </div>
     </footer>

@@ -13,16 +13,12 @@ import { Button } from "@/components/ui/Button";
 import { EASE, CountUp } from "./motion";
 
 /* ------------------------------------------------------------------ */
-/*  Hero - sticky scroll scene for video feedback product.            */
+/*  Hero - sticky scroll scene for the N4MA contract review product.   */
 /*                                                                     */
-/*  Mirrors flask.do's minimal black premium layout:                  */
-/*    - centered eyebrow, big two-line heading, muted subcopy         */
-/*    - two CTAs (Try free = white pill, Book demo = dark pill)       */
-/*    - the product recording sits below as the hero visual           */
-/*  Scroll behavior: text recedes, recording floats forward.         */
-/*  NOTE: product copy is intentionally the FLASK video feedback      */
-/*  product, not N4MA. If you want N4MA wording, that is a copy     */
-/*  change only - the layout and hero video placement stay the same. */
+/*    - eyebrow (product positioning), big two-line heading, subcopy   */
+/*    - two CTAs (Try free = white pill, Run a free review = link)     */
+/*    - the product recording sits below as the hero visual            */
+/*  Scroll behavior: text recedes, recording floats forward.           */
 /* ------------------------------------------------------------------ */
 
 function StaggeredWords({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -106,22 +102,17 @@ export function Hero() {
             style={reduced ? undefined : { y: headY, scale: headScale, opacity: headOpacity }}
             className="max-w-3xl"
           >
-            {/* Product Hunt badge */}
+            {/* Positioning eyebrow */}
             <div className="mb-6 flex items-center justify-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-1.5 text-[11px] font-[510] tracking-[0.04em] uppercase text-muted">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-coral text-white text-[10px] font-bold">
-                  P
-                </span>
-                Product Hunt
-                <span className="ml-1.5 text-ash">#1 Product of the Month</span>
-              <span className="ml-2 flex h-4 w-4 items-center justify-center rounded-full border border-line text-[9px] text-ash" aria-hidden="true">✦</span>
+                The AI financial watchdog for business software
               </span>
             </div>
 
             <h1 className="mt-5 max-w-3xl text-balance text-[44px] font-[510] leading-[1.02] tracking-[-0.022em] text-fg sm:text-[56px] lg:text-[64px]">
-              <StaggeredWords text="Scan your contracts in minutes," />
+              <StaggeredWords text="Your business is leaking money." />
               <span className="relative mt-1 inline-block text-bone/90">
-                <StaggeredWords text="without the spreadsheets." delay={0.32} />
+                <StaggeredWords text="N4MA finds it." delay={0.32} />
               </span>
             </h1>
 
@@ -170,7 +161,7 @@ export function Hero() {
               style={reduced ? undefined : { opacity: trustOpacity }}
               className="mt-5 text-[11.5px] font-normal tracking-[-0.01em] text-ash"
             >
-              No credit card required · Free 14-day trial · Works on any contract
+              No credit card required · Works on any contract
             </motion.p>
           </motion.div>
 
@@ -184,10 +175,9 @@ export function Hero() {
               animate={reduced ? undefined : { opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
               className="border-sheen rounded-xl sm:rounded-2xl overflow-hidden bg-surface"
-            >
-              {/* Video player frame - mirrors flask.do UI preview */}
+            >                {/* Video player frame */}
               <div className="relative aspect-video w-full overflow-hidden">
-                {/* Subtle top bar like the flask UI */}
+                {/* Subtle top bar like the product UI */}
                 <div className="absolute left-0 right-0 top-0 z-10 flex items-center gap-2 border-b border-line/40 bg-surface/80 px-3 backdrop-blur-sm">
                   <span className="text-[11px] font-[510] tracking-[-0.01em] text-fg">n4ma</span>
                   <span className="h-3 w-px bg-line" />

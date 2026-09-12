@@ -18,20 +18,20 @@ export function CtaSection() {
         className="relative mx-auto max-w-2xl px-5 text-center"
       >
         <h2 className="max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-          Give feedback on videos in minutes, without typing comments.
+          Your business is leaking money. N4MA finds it.
         </h2>
         <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-          Upload a video, record your feedback, and Flask organizes everything
-          automatically. No more scattered comments, lost context, or endless
-          back-and-forth. Try it free for 14 days.
+          Upload a contract or connect a read-only source, and get
+          evidence-backed findings with the annual impact calculated from your
+          own terms. Start with a free 30-day Team Plus trial.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button href="/auth?mode=signup" size="lg" className="w-full px-8 sm:w-auto shadow-[inset_0_1px_1px_rgba(0,0,0,0.1),inset_0_0_0_1px_rgba(0,0,0,0.08)]">
-            Try Flask Free
+            Try N4MA Free
           </Button>
         </div>
         <p className="mt-5 text-[12px] font-normal tracking-[-0.01em] text-ash">
-          14-day free trial · No credit card · Works on any video
+          30-day free trial · No credit card · Read-only connections
         </p>
       </motion.div>
     </section>

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 /*  RollingNumber - NumberFlow-style rolling digit counter.           */
 /*  Each digit lives in its own vertical mask; on value change the    */
 /*  column rolls to the target digit with a springy ease. Mirrors     */
-/*  the number-flow web component flask.do uses for its timer.        */
+/*  the number-flow pattern used for animated counters.               */
 /* ------------------------------------------------------------------ */
 
 export function useInView<T extends HTMLElement>(threshold = 0.3) {

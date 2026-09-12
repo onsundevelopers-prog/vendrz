@@ -8,23 +8,23 @@ const ease = EASE;
 const PAINS = [
   {
     num: "01",
-    title: "Written feedback is slow",
-    body: "Typing out detailed video feedback takes forever, and by the time you finish, the context is already lost.",
+    title: "Renewals slip through unnoticed",
+    body: "Auto-renewal clauses buried on page 9 of a contract quietly renew at full price - or worse, at an escalated rate - because nobody tracked the notice deadline.",
   },
   {
     num: "02",
-    title: "Context gets lost",
-    body: "Scattered comments across email, Slack, and spreadsheets make it impossible to track what was said about which scene.",
+    title: "The terms live in scattered documents",
+    body: "The contract is in Drive, the invoice is in an email thread, the renewal notice is in Slack. No single place shows what you agreed to, what you pay, or when the window to act closes.",
   },
   {
     num: "03",
-    title: "No visual references",
-    body: "Without the ability to draw or share references, feedback becomes vague and open to misinterpretation.",
+    title: "Nobody verifies the bill",
+    body: "Invoices arrive with fees, seat counts, and price bumps that may not match what you signed. Checking every line against the contract by hand never happens - so overbilling just gets paid.",
   },
   {
     num: "04",
-    title: "Teams stay out of sync",
-    body: "Without organized, timestamped feedback, reviewers and creators end up misaligned on what needs to change.",
+    title: "Decisions get made without evidence",
+    body: "Renew or cancel is decided from memory and gut feel. Without the clause, the invoice line, and the calculated annual impact in front of you, you either overpay or cut something you needed.",
   },
 ];
 
@@ -44,12 +44,12 @@ export function ProblemSection() {
             The problem
           </p>
           <h2 className="mt-4 max-w-xl text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Video feedback, done wrong
+            Software spending, leaking quietly
           </h2>
           <p className="mt-5 max-w-md text-pretty text-[15px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Most teams give feedback on videos the hard way: typing long comments,
-            losing context, and hoping everyone interprets things the same way.
-            Flask fixes this by making feedback fast, visual, and organized.
+            Most companies lose money to their own software contracts: renewals
+            nobody tracked, escalations nobody noticed, fees nobody verified.
+            N4MA reads the source documents and finds the leaks.
           </p>
         </motion.div>
 
@@ -85,9 +85,9 @@ export function ProblemSection() {
         transition={{ duration: 0.7, delay: 0.1, ease }}
         className="mx-auto mt-16 max-w-2xl px-5 text-center text-pretty text-[15px] font-normal leading-relaxed tracking-[-0.01em] text-fg lg:px-8"
       >
-        Each pain is a workflow tax, not a one-off annoyance. Flask removes them
-        by making video feedback fast, visual, and organized from the first
-        comment.
+        Each leak is recurring, not one-off: the same missed deadline and
+        unverified invoice charge you again next year. N4MA finds them from the
+        documents you already have.
       </motion.p>
     </section>
   );

@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
-import { SITE } from "@/lib/site";
+import type { ReactNode } from "react";
 import { ClerkScope } from "@/components/auth/ClerkScope";
 
-/** /upload is a client component, so metadata lives in this server layout. */
 export const metadata: Metadata = {
-  title: "Upload Your Contracts for AI Analysis",
+  title: "Contract review",
   description:
-    "Upload PDF or DOCX contracts and invoices and let n4ma's AI extract renewal dates, cancellation deadlines, price escalations, and savings opportunities - with evidence for every finding.",
+    "Upload contracts and invoices and N4MA extracts renewal dates, cancellation deadlines, escalations, and fees - every finding backed by its source document.",
   alternates: { canonical: "/upload" },
-  openGraph: {
-    title: "Upload Your Contracts for AI Analysis",
-    description:
-      "Drop in your contracts and get renewal dates, hidden fees, and savings opportunities - with evidence for every finding.",
-    url: `${SITE.url}/upload`,
-  },
 };
 
-export default function UploadLayout({ children }: { children: React.ReactNode }) {
+/* The upload page consumes the Clerk session client-side (useUser), so it
+   needs the per-route Clerk provider - the root layout intentionally ships
+   no Clerk JS. ClerkScope is inert (renders children as-is) when Clerk
+   keys are absent, keeping demo mode working. */
+export default function UploadLayout({ children }: { children: ReactNode }) {
   return <ClerkScope>{children}</ClerkScope>;
 }

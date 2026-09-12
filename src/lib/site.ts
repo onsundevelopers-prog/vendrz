@@ -17,56 +17,58 @@ export const SUPPORT_EMAIL =
   process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || "onsundevelopers@gmail.com";
 
 export const SITE = {
-  name: "Flask",
+  name: "N4MA",
   /** Canonical site URL - override with NEXT_PUBLIC_SITE_URL when the live
-      domain differs from flask.app (used by robots.txt, sitemap.xml, and
+      domain differs from n4ma.online (used by robots.txt, sitemap.xml, and
       canonical/OpenGraph tags). */
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://flask.app").replace(/\/+$/, ""),
-  /** The main tagline - video feedback, organized instantly. */
-  tagline: "Video feedback, organized instantly",
+  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://n4ma.online").replace(/\/+$/, ""),
+  /** The main tagline. */
+  tagline: "The AI financial watchdog for business software",
   /** Human-readable, jargon-free description (shown to Google + readers). */
   description:
-    "Flask helps creative teams give feedback on videos in minutes, without typing comments. Talk through complex feedback, draw, share any reference. Flask automatically writes feedback, organizes and timestamps everything.",
+    "N4MA reads the contracts, invoices, and subscriptions behind your business software spending and finds the leaks - auto-renewals, cancellation deadlines, price increases, hidden fees, unused licenses, and duplicate tools. Every finding is backed by evidence from your own documents, with the financial impact calculated from your terms.",
   /**
    * Keyword strategy (short-tail head terms, long-tail phrases,
    * informational and transactional queries).
    */
   keywords: [
     // Head / short-tail - broad, high-volume terms
-    "video feedback tool",
-    "video review software",
-    "collaborative video feedback",
-    "video annotation tool",
-    "voice feedback for video",
-    "creative team feedback",
+    "software spend management",
+    "contract review software",
+    "SaaS subscription audit",
+    "vendor contract analysis",
+    "software cost optimization",
     // Long-tail - specific phrases that convert
-    "give feedback on videos",
-    "video feedback without typing",
-    "timestamped video comments",
-    "draw on video frame feedback",
-    "organized video review",
+    "find hidden fees in contracts",
+    "track contract renewal deadlines",
+    "auto-renewal contract alerts",
+    "unused software license audit",
+    "duplicate software subscriptions",
     // Informational - what people want to learn
-    "how to give video feedback",
-    "video review workflow for teams",
-    "voice notes on video",
+    "how to audit software spending",
+    "contract renewal tracking for business",
+    "AI contract analysis with evidence",
     // Transactional - ready to take action
-    "try video feedback tool free",
-    "best video feedback software",
-    "collaborative video review tool",
+    "free contract review tool",
+    "software spending leak detector",
+    "contract risk review service",
   ].join(", "),
 };
 
 /* ------------------------------------------------------------------ */
 /*  Pricing plans - mirrored from the client PLAN_MAP so server        */
 /*  components can emit OfferCatalog structured data without importing  */
-/*  a "use client" module. Keep in sync with src/lib/displayMode.tsx.  */
+/*  a "use client" module. Keep in sync with src/lib/displayMode.tsx    */
+/*  and src/components/landing/JoinWaitlistCard.tsx.                    */
 /* ------------------------------------------------------------------ */
 
 export interface PricingPlan {
-  id: "free" | "team" | "business" | "enterprise";
+  id: "free" | "pro" | "team" | "enterprise";
   name: string;
   /** Numeric price; null for custom-priced plans. */
   price: string | null;
+  /** ISO 4217 currency for the price, or null when unpriced. */
+  currency: "USD" | "CAD" | null;
   /** Human cadence label, e.g. "CAD · one-time", "forever". */
   cadence: string;
   blurb: string;
@@ -78,62 +80,64 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: "free",
     name: "Free",
     price: "0",
+    currency: "USD",
     cadence: "forever",
-    blurb: "Try Pro free for 14 days - no credit card.",
+    blurb: "Start free - every new account gets a 30-day Team Plus trial.",
     features: [
-      "14-day Pro trial on signup",
-      "Unlimited video uploads",
-      "Voice feedback recording",
-      "Visual annotations & drawings",
-      "Export feedback as PDF",
+      "30-day Team Plus trial on signup",
+      "Unlimited contract uploads",
+      "AI contract analysis with source evidence",
+      "Export findings as PDF",
       "Up to 3 team members",
     ],
   },
   {
-    id: "team",
+    id: "pro",
     name: "Pro",
-    price: "29",
-    cadence: "USD / seat / month",
-    blurb: "Everything for creative teams - unlimited feedback, full collaboration.",
+    price: "250",
+    currency: "USD",
+    cadence: "USD / month",
+    blurb: "Everything in Free, plus priority support and unlimited contract reviews.",
     features: [
-      "Unlimited videos and feedback sessions",
-      "Unlimited voice notes and annotations",
-      "Team collaboration with threaded feedback",
-      "Reference image uploads",
-      "YouTube and Drive link support",
+      "Unlimited contract uploads",
+      "Unlimited AI review sessions",
+      "Team collaboration with shared findings",
+      "Reference document uploads",
+      "Google Drive and Gmail support",
       "Export to PDF, CSV, and markdown",
-      "Custom branding on shared feedback views",
       "Priority support",
     ],
   },
   {
-    id: "business",
-    name: "Team",
-    price: null,
-    cadence: "contact sales",
-    blurb: "For growing teams that need admin controls and advanced workflows.",
+    id: "team",
+    name: "Team Plus",
+    price: "250",
+    currency: "CAD",
+    cadence: "CAD · one-time",
+    blurb: "One payment, every finding forever - no subscription.",
     features: [
-      "Everything in Pro",
-      "Admin dashboard and user management",
-      "Custom feedback templates",
-      "Advanced permissions and roles",
-      "API access for integrations",
-      "Dedicated account manager",
+      "Connect Gmail, Google Drive & Slack - import vendor documents",
+      "Renewal & cancellation-deadline alerts",
+      "Price-increase detection & risk scoring",
+      "Business workspace - dense tables, filters, schema view",
+      "Complete activity log & Business dashboard",
+      "Unlimited AI messages",
+      "Export to CSV / PDF",
+      "One-time $250 CAD via e-transfer - never auto-charged",
     ],
   },
   {
     id: "enterprise",
-    name: "Enterprise",
+    name: "Enterprise Scale",
     price: null,
-    cadence: "contact sales",
-    blurb: "For large organizations with custom security and compliance needs.",
+    currency: null,
+    cadence: "custom pricing",
+    blurb: "Build N4MA into your organization's financial and procurement workflows.",
     features: [
-      "Everything in Team",
-      "SSO and SCIM provisioning",
-      "Custom SLA and compliance reporting",
-      "On-premise deployment options",
-      "Dedicated success team",
-      "Custom training and onboarding",
+      "Custom onboarding & migration",
+      "Dedicated success manager",
+      "Custom contracts & SLA",
+      "Advanced governance & audit",
     ],
   },
 ];
@@ -149,43 +153,43 @@ export interface FaqItem {
 
 export const FAQS: FaqItem[] = [
   {
-    q: "What kind of videos does Flask support?",
-    a: "Flask supports any video format - MP4, MOV, GIF, screen recordings, and YouTube links. There are no file size limits on paid plans and no length limits. Upload directly or share a link and Flask handles the rest.",
+    q: "What does N4MA actually do?",
+    a: "N4MA reads the documents behind your company's software spending - contracts, invoices, subscription terms, and renewal notices - and identifies potential spending leaks: auto-renewals, cancellation deadlines, price increases, annual escalation clauses, hidden fees, unused licenses, duplicate tools, and billing anomalies. Every finding is backed by evidence from your own documents.",
   },
   {
-    q: "Do I need an account to try Flask?",
-    a: "No. You can start a 14-day free trial without a credit card. Create an account when you're ready to keep your feedback sessions and invite your team.",
+    q: "What documents and sources does N4MA support?",
+    a: "You can upload PDF, DOCX, TXT, MD, and CSV files directly, or connect Gmail, Google Drive, or Slack with read-only access so N4MA can surface vendor emails, renewal notices, agreements, order forms, and related documents. Nothing in your connected accounts is ever changed.",
   },
   {
-    q: "How does voice feedback work?",
-    a: "Play the video and press the record button to speak your feedback. Flask transcribes your voice note, timestamps it to the exact frame, and organizes it in the feedback thread. You can also draw on the frame, add reference images, or type - whatever communicates your idea best.",
+    q: "Do I need an account to try N4MA?",
+    a: "No. The free vendor review on the audit page runs without an account and takes about two minutes: upload a contract or invoice and get evidence-backed findings. Creating an account keeps your reviews, adds deadline alerts, and unlocks the Gmail, Drive, and Slack imports.",
   },
   {
-    q: "Can my team collaborate on feedback?",
-    a: "Yes. Flask organizes feedback by scene, topic, or reviewer, so everyone sees the same threaded context with timestamps, reactions, and what's been resolved. Creators know exactly what to change and reviewers can see what's been addressed.",
+    q: "What kinds of spending leaks does N4MA find?",
+    a: "Auto-renewals you forgot about, cancellation windows that are about to close, annual escalation clauses, hidden fees, licenses for people who left, duplicate tools doing the same job, and billing anomalies that don't match your terms.",
   },
   {
-    q: "How is Flask different from written comments?",
-    a: "Voice feedback is faster and more natural than typing. You can speak while watching the video, and Flask captures your tone and context. Combined with drawings and reference images, your feedback becomes clearer and more actionable than a text comment thread ever could be.",
+    q: "How does N4MA prove a finding?",
+    a: "Every finding cites its source: the exact contract clause, the document page, the invoice line, or the message it came from. You can open the evidence and verify it yourself before acting - the AI reads the document, the evidence makes the case.",
   },
   {
-    q: "Can Flask replace my existing review tools?",
-    a: "Flask is built for video feedback specifically - it's not a general project tool. But for creative teams reviewing video content, Flask replaces scattered comments, email threads, and spreadsheets with one organized place for all feedback.",
+    q: "Are the savings estimates real numbers?",
+    a: "They are calculations from your own terms and spending - for example, an escalation percentage applied to what you actually pay - not generic benchmarks. Every estimate is labeled as an estimate, and N4MA never presents fabricated customer results.",
   },
   {
-    q: "What integrations does Flask support?",
-    a: "Flask works with video files you upload directly, screen recordings, YouTube links, and Google Drive. Feedback sessions can be shared via link, and results can be exported for teams that need them in other tools.",
+    q: "Does N4MA cancel subscriptions or change my accounts?",
+    a: "No. N4MA is read-only. It identifies the action required - renew, renegotiate, or cancel - and helps you draft it, but you approve and send everything. It never contacts vendors or modifies anything on your behalf.",
   },
   {
-    q: "Is my video content used to train AI?",
-    a: "Never. Your videos and feedback are encrypted in transit and at rest, are never shared or sold, and are never used to train AI models. Your content stays in your workspace and you control who sees it.",
+    q: "Is my data used to train AI?",
+    a: "No. Your documents and findings are encrypted in transit and at rest and are never used to train AI models. See the privacy policy for the current data-handling terms.",
   },
   {
-    q: "What video formats can I upload?",
-    a: "MP4, MOV, AVI, GIF, and screen recordings up to 5GB on paid plans. YouTube links are also supported - paste the URL and Flask loads the video for feedback. Each video gets its own feedback session with its own organized thread.",
+    q: "What happens after the 30-day trial?",
+    a: "Every new account starts with a 30-day Team Plus trial - no credit card. After it ends, the Free tier keeps manual uploads and a limited number of AI messages. Team Plus is a one-time $250 CAD payment arranged by email via e-transfer - never a subscription, and nothing is ever auto-charged.",
   },
   {
-    q: "Is there a free trial?",
-    a: "Yes. Every new account gets 14 days of Pro free, with no credit card required. After the trial, access returns to Free. You can upgrade anytime to keep your Pro features.",
+    q: "Who is N4MA for?",
+    a: "Any business that buys software: founders and finance leads tracking SaaS renewals, operations teams managing vendor contracts, and procurement or IT teams that need evidence-backed numbers before a renewal decision.",
   },
 ];

@@ -8,23 +8,23 @@ const ease = EASE;
 const STEPS = [
   {
     num: "01",
-    title: "Upload",
-    body: "Drop in your video file - MP4, MOV, or a screen recording. Flask supports any format and any length, with no file size limits on paid plans.",
+    title: "Connect",
+    body: "Upload contracts and invoices (PDF, DOCX, CSV) or connect Gmail, Google Drive, or Slack read-only. N4MA never changes anything in your connected accounts.",
   },
   {
     num: "02",
-    title: "Record feedback",
-    body: "Play the video and record voice notes at any moment. Draw on the frame, add reference images, or type - however you communicate best.",
+    title: "Detect",
+    body: "Vendors, spending, renewal dates, cancellation deadlines, escalation percentages, fees, and seat counts are extracted - then checked for leaks.",
   },
   {
     num: "03",
-    title: "Auto-organize",
-    body: "Flask transcribes your voice notes, timestamps everything to the exact frame, and groups feedback by scene, topic, or reviewer.",
+    title: "Prove",
+    body: "Every finding links to its source: the clause, the document page, the invoice line, or the message. Open the evidence and verify it yourself.",
   },
   {
     num: "04",
-    title: "Share & resolve",
-    body: "Send the organized feedback thread to your team. Everyone sees the same context with timestamps, reactions, and what's been resolved.",
+    title: "Save",
+    body: "A ranked list of findings: what's wrong, why it matters, the estimated annual impact, the deadline, and the recommended next action - renew, renegotiate, or cancel.",
   },
 ];
 
@@ -46,12 +46,12 @@ export function HowItWorks() {
             How it works
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            Give feedback, in four steps.
+            Connect. Detect. Prove. Save.
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Upload a video, record your feedback in real time, and Flask
-            organizes everything automatically. No more scattered comments or
-            lost context.
+            Upload your documents or connect a read-only source, and N4MA does
+            the reading. You get evidence-backed findings with the annual
+            impact calculated from your own terms.
           </p>
         </motion.div>
 

@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { isClerkEnabled, useClerkMounted } from "@/lib/auth";
 
 const LINKS = [
-  { label: "For Agents", href: "#for-agents" },
-  { label: "Help", href: "#help" },
+  { label: "How it works", href: "#how-it-works" },
+  { label: "Product", href: "#product" },
   { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
 ];
@@ -91,19 +91,12 @@ function MobileAuth({ onNavigate, signedIn }: { onNavigate: () => void; signedIn
 export function Navbar({ signedIn }: { signedIn?: boolean }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [productHuntVisible, setProductHuntVisible] = useState(true);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Fade out Product Hunt badge after initial scroll
-  useEffect(() => {
-    const timer = setTimeout(() => setProductHuntVisible(false), 6000);
-    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -144,18 +137,9 @@ export function Navbar({ signedIn }: { signedIn?: boolean }) {
         </div>
 
         {/* mobile auth area */}
-        <div className="flex md:hidden">                <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
-                <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
-                  Try N4MA Free
-                </Button>
-              </div>
-
-        {/* Mobile auth area */}
-        <div className="flex md:hidden">                <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
-                <Button href="/auth?mode=signup" className="w-full" onClick={() => setOpen(false)}>
-                  Try N4MA Free
-                </Button>
-              </div>
+        <div className="flex md:hidden">
+          <MobileAuth onNavigate={() => setOpen(false)} signedIn={signedIn} />
+        </div>
 
         {/* mobile toggle */}
         <button

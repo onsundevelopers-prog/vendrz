@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 /**
  * Magnetic - the child element is gently pulled toward the cursor on hover
- * and springs back on leave. A signature flask.do-style micro-interaction
+ * and springs back on leave. A signature Linear-style micro-interaction
  * for CTAs and primary actions.
  */
 export function Magnetic({
