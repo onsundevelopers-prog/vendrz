@@ -69,19 +69,31 @@ Clerk is the only auth path:
   Team Plus (one-time $250 CAD e-transfer) is granted manually by the founder via
   /api/entitlement. Status follows the user across browsers and devices.
 
-### Why sign-in can get stuck (and how it self-heals)
+### How Clerk traffic flows
 
-n4ma moved between Clerk instances/domains during development, and the live
-publishable key encodes a decommissioned frontend domain, so all Clerk traffic
-is proxied through this app at `/__clerk` (`src/proxy.ts`). A browser that
-visited under an older Clerk setup can keep stale first-party `__session` /
-`__client` cookies that the current stack can't validate - the sign-in widget
-hangs and it looks like "only incognito works". The middleware now clears those
-cookies whenever the server has already determined there is no valid session
-(`src/lib/clerkCookies.ts`), and the sign-in recovery box offers a "Reset
-sign-in state" action, so affected users recover on their next visit without
-incognito. Do not set `CLERK_DISABLE_AUTO_PROXY` on the deployment - it points
-clerk-js back at the dead domain.
+The instance runs in DNS mode: the primary domain is n4ma.online and the
+Frontend API lives on https://clerk.n4ma.online (a CNAME to
+frontend-api.clerk.services, verified healthy). The publishable key
+encodes that FAPI domain, so browsers talk to Clerk directly - there is
+no proxy registration and none is needed. Do NOT set
+`NEXT_PUBLIC_CLERK_PROXY_URL` in production: an unregistered proxy makes
+Clerk reject calls with `host_invalid` / `invalid_proxy_configuration`
+("Clerk Frontend API cannot be accessed through the proxy URL"), and the
+dashboard's own proxy-URL validator will fail for the same reason.
+
+The app still serves `/__clerk` server-side (`src/proxy.ts`, the
+`frontendApiProxy` option of `clerkMiddleware()`) so proxy mode can be
+turned on later; it is only exercised when a client explicitly targets
+that path.
+
+A browser that visited under an older Clerk setup can keep stale
+first-party `__session` / `__client` cookies that the current stack can't
+validate - the sign-in widget hangs and it looks like "only incognito
+works". The middleware clears those cookies whenever the server has
+already determined there is no valid session
+(`src/lib/clerkCookies.ts`), and the sign-in recovery box offers a
+"Reset sign-in state" action, so affected users recover on their next
+visit without incognito.
 
 ## Deployment (Render Blueprint)
 

@@ -43,13 +43,20 @@ services:
         value: https://ollama.com/v1
       - key: OLLAMA_API_KEY
         sync: false      # set it in the Render dashboard
-      # Clerk authentication (DNS mode). The Clerk instance's primary domain
-      # is n4ma.online - frontend API https://clerk.n4ma.online, DNS-verified
-      # and live. clerk-js talks to clerk.n4ma.online directly from the
-      # browser; do NOT set NEXT_PUBLIC_CLERK_PROXY_URL here (that is the
-      # local-dev proxy path only). Paste the publishable + secret keys from
-      # the Clerk dashboard (API Keys) into the Render dashboard - both are
-      # marked sync:false so they are not read from this file.
+      # Clerk authentication. The instance runs in DNS mode: the primary
+      # domain is n4ma.online and the Frontend API lives on
+      # https://clerk.n4ma.online (a CNAME to frontend-api.clerk.services,
+      # verified healthy). The publishable key encodes that FAPI domain and
+      # browsers talk to it directly - no proxy registration is involved.
+      # Do NOT set NEXT_PUBLIC_CLERK_PROXY_URL on this deployment: it would
+      # route clerk-js through /__clerk, which is not registered as a proxy
+      # for this instance, and Clerk rejects it (host_invalid /
+      # invalid_proxy_configuration). clerkMiddleware still serves /__clerk
+      # server-side via frontendApiProxy, but it is only exercised when a
+      # client explicitly asks for that path.
+      # Paste the publishable + secret keys from the Clerk dashboard
+      # (API Keys) into the Render dashboard - both are marked sync:false so
+      # they are not read from this file.
       - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
         sync: false
       - key: CLERK_SECRET_KEY

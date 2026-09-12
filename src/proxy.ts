@@ -1,12 +1,15 @@
 /* ------------------------------------------------------------------ */
-/*  Route protection + Clerk Frontend API proxy.                       */
+/*  Route protection + optional Clerk Frontend API proxy.              */
 /*                                                                     */
-/*  Clerk's Frontend API is proxied through this app at /__clerk so    */
-/*  auth works even though the production publishable key predates a   */
-/*  legacy (now dead) frontend domain: agent attribution happens       */
-/*  server-side via the Clerk-Secret-Key header, not the domain        */
-/*  encoded inside the key. The browser loads clerk-js and talks to    */
-/*  /v1/* exclusively through this origin (NEXT_PUBLIC_CLERK_PROXY_URL).*/
+/*  Production runs Clerk in DNS mode: the publishable key encodes the
+/*  Frontend API domain (clerk.n4ma.online) and browsers talk to it
+/*  directly. The /__clerk proxy below is dormant unless proxy mode is
+/*  explicitly requested with NEXT_PUBLIC_CLERK_PROXY_URL - and proxy
+/*  mode additionally requires the URL to be registered in the Clerk
+/*  dashboard (Domains > Frontend API > Set proxy configuration).
+/*  Serving /__clerk unconditionally made every request to that path
+/*  return Clerk's 400 host_invalid ("unable to attribute this request
+/*  to an instance"), which looks like a broken deployment.
 /*                                                                     */
 /*  Stale-session self-heal: browsers that visited under an older      */
 /*  Clerk instance/domain keep first-party __session/__client cookies  */
@@ -76,7 +79,11 @@ export default hasClerkKeys
       },
       {
         frontendApiProxy: {
-          enabled: true,
+          // Dormant in DNS mode (no NEXT_PUBLIC_CLERK_PROXY_URL): /__clerk
+          // then falls through to normal routing instead of answering with
+          // Clerk's misleading host_invalid error. Set the env var AND
+          // register the proxy in the Clerk dashboard to activate.
+          enabled: !!process.env.NEXT_PUBLIC_CLERK_PROXY_URL,
         },
       }
     )
