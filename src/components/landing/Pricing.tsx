@@ -21,10 +21,10 @@ export function Pricing() {
             Pricing
           </p>
           <h2 className="mt-4 text-balance text-4xl font-[510] leading-[1.05] tracking-[-0.022em] text-fg sm:text-5xl">
-            14 days free, then simple pricing
+            30 days free, then simple pricing
           </h2>
           <p className="mt-5 text-pretty text-[16px] font-normal leading-[1.5] tracking-[-0.011em] text-faint">
-            Every new account gets 14 days of N4MA free, without a credit card.
+            Every new account gets 30 days of N4MA free, without a credit card.
             After that, the Team Plus upgrade is $250 CAD one-time via e-transfer.
             Business and Enterprise are available for larger organizations.
           </p>
@@ -42,7 +42,7 @@ export function Pricing() {
           a friend — we&apos;ll email you when your path is verified.
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">
-          After the 14-day trial, access returns to Free. Your contract reviews
+          After the 30-day trial, access returns to Free. Your contract reviews
           stay in your workspace, and you can upgrade whenever you want.
         </p>
         <p className="mt-2 text-center text-[12px] tracking-tight text-muted">

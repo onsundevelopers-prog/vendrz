@@ -45,15 +45,24 @@ export interface RateLimitResult {
   remaining: number;
 }
 
-export function rateLimit(key: string): RateLimitResult {
-  const unlimited = MAX <= 0;
+/**
+ * Consume one hit for `key`.
+ *
+ * `max` overrides the env-configured ceiling for this call, so a cheap
+ * form endpoint (the waitlist) can allow more signups per window than an
+ * endpoint that triggers paid inference. Each key keeps its own counter
+ * and window, so callers with different limits never share a bucket.
+ */
+export function rateLimit(key: string, opts?: { max?: number }): RateLimitResult {
+  const max = opts?.max ?? MAX;
+  const unlimited = max <= 0;
   if (unlimited) return { ok: true, retryAfterSec: 0, remaining: Infinity };
 
   const now = Date.now();
   sweep(now);
 
   const stamps = (hits.get(key) ?? []).filter((t) => now - t < WINDOW_MS);
-  if (stamps.length >= MAX) {
+  if (stamps.length >= max) {
     const retryAfterSec = Math.max(1, Math.ceil((stamps[0] + WINDOW_MS - now) / 1000));
     return { ok: false, retryAfterSec, remaining: 0 };
   }
@@ -64,7 +73,7 @@ export function rateLimit(key: string): RateLimitResult {
     if (oldest !== undefined) hits.delete(oldest);
   }
   hits.set(key, stamps);
-  return { ok: true, retryAfterSec: 0, remaining: MAX - stamps.length };
+  return { ok: true, retryAfterSec: 0, remaining: max - stamps.length };
 }
 
 /**

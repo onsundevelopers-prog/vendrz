@@ -283,8 +283,11 @@ interface JoinWaitlistCardProps {
 
 function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
   const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [softwareCount, setSoftwareCount] = useState("");
   const [reward, setReward] = useState<RewardPath>("discord");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [confirmation, setConfirmation] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -293,24 +296,39 @@ function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
 
     setStatus("submitting");
     setMessage(null);
+    setConfirmation(null);
+
+    // Only send the optional extras when they were actually filled in.
+    const parsed = Number.parseInt(softwareCount, 10);
+    const count = Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ planId: "pro", email, reward }),
+        body: JSON.stringify({
+          planId,
+          email,
+          reward,
+          companyName: company.trim() || undefined,
+          softwareCount: count,
+        }),
       });
 
+      const body = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error ?? "Could not join the waitlist");
+        // Server messages are already written for visitors (e.g. "Too many
+        // signups from this network"), so surface them as-is.
+        throw new Error(body?.error ?? "Something went wrong. Please try again.");
       }
 
       setStatus("success");
-      setMessage(
-        "You are on the list. We will email you when a spot opens — check your inbox in a few minutes."
+      setConfirmation(
+        typeof body?.message === "string"
+          ? body.message
+          : "You're on the list - we'll email you when Pro opens."
       );
-      setEmail("");
     } catch (err) {
       setStatus("error");
       setMessage(
@@ -318,6 +336,22 @@ function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
       );
     }
   };
+
+  if (status === "success" && confirmation) {
+    return (
+      <div className="w-full">
+        <div className="flex items-start gap-2.5 rounded-md border border-line bg-canvas px-4 py-3">
+          <Check />
+          <div>
+            <p className="text-[13px] leading-snug text-fg">{confirmation}</p>
+            <p className="mt-1 text-[11.5px] leading-relaxed text-muted">
+              No payment now. We will email you when Pro access opens.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -348,6 +382,35 @@ function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
             className="flex-1 rounded-md border border-line bg-canvas px-3 py-2 text-[13px] text-fg placeholder:text-muted outline-none transition-colors focus:border-line-strong disabled:opacity-50 sm:flex-none sm:w-44"
           />
         </div>
+
+        <details className="group">
+          <summary className="cursor-pointer text-[11.5px] text-muted transition-colors hover:text-fg">
+            Add company details (optional)
+          </summary>
+          <div className="mt-2 space-y-2">
+            <input
+              type="text"
+              autoComplete="organization"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Company name"
+              maxLength={120}
+              disabled={status === "submitting"}
+              className="w-full rounded-md border border-line bg-canvas px-3 py-2 text-[13px] text-fg placeholder:text-muted outline-none transition-colors focus:border-line-strong disabled:opacity-50"
+            />
+            <input
+              type="number"
+              min={0}
+              max={100000}
+              inputMode="numeric"
+              value={softwareCount}
+              onChange={(e) => setSoftwareCount(e.target.value)}
+              placeholder="Software subscriptions"
+              disabled={status === "submitting"}
+              className="w-full rounded-md border border-line bg-canvas px-3 py-2 text-[13px] tabular-nums text-fg placeholder:text-muted outline-none transition-colors focus:border-line-strong disabled:opacity-50"
+            />
+          </div>
+        </details>
 
         <fieldset className="flex flex-wrap gap-2">
           <legend className="sr-only">How do you want to unlock this tier?</legend>
@@ -385,18 +448,13 @@ function JoinWaitlistCard({ planId, planName }: JoinWaitlistCardProps) {
           {status === "submitting" ? "Sending…" : "Join waitlist"}
         </Button>
 
-        {message && (
-          <motion.p
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`rounded-md px-3 py-2.5 text-[12.5px] leading-relaxed ${
-              status === "success"
-                ? "border border-line bg-white/10 text-fg"
-                : "border border-line-strong bg-surface text-muted"
-            }`}
+        {status === "error" && message && (
+          <p
+            role="alert"
+            className="rounded-md border border-coral/40 bg-coral/5 px-3 py-2.5 text-[12.5px] leading-relaxed text-fg"
           >
             {message}
-          </motion.p>
+          </p>
         )}
       </form>
 

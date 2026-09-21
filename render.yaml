@@ -144,6 +144,15 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      # Pro waitlist (Waitlister) - powers POST /api/waitlist from the
+      # pricing page (see src/lib/waitlist.ts). Waitlister owns the
+      # confirmation email, queue position and referrals; the signup is
+      # also recorded in Supabase (waitlist_subscriptions). Both are
+      # server-only. Values go in the Render dashboard.
+      - key: WAITLISTER_API_KEY
+        sync: false
+      - key: WAITLISTER_WAITLIST_KEY
+        sync: false
       # Optional one-time redemption codes (code:plan pairs). Omit to
       # disable code redemption entirely.
       - key: REDEEM_CODES
