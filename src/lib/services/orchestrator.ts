@@ -32,6 +32,7 @@ import type {
   AgentTaskStep,
 } from "@/lib/agentTask";
 import { executeTool } from "@/lib/ai/agentTools";
+import { executeLiveTool } from "@/lib/ai/liveTools";
 
 export interface OrchestratorCallbacks {
   /** Emit one real event to the client stream. */
@@ -94,6 +95,7 @@ interface Intent {
     | "portfolio"
     | "vendor_status"
     | "emails"
+    | "slack"
     | "email_draft"
     | "documents"
     | "compare"
@@ -106,6 +108,24 @@ interface Intent {
 function extractVendor(lower: string, pattern: RegExp): string | null {
   const m = lower.match(pattern);
   return m?.[1]?.trim() || null;
+}
+
+/**
+ * Turn a whole request into a Slack search query.
+ *
+ * Slack's search syntax is keyword-based, so the surrounding instruction
+ * words ("search", "slack", "show me my") are stripped and what the user
+ * actually wants found is kept. Falls back to the recurring document words
+ * so an over-broad "search slack" still does something useful.
+ */
+function slackQuery(request: string): string {
+  const cleaned = request
+    .toLowerCase()
+    .replace(/\b(slack|search|find|look|check|show|read|me|my|the|in|for|from|about|any|all|messages?|files?|channels?|dms?|contains?|says?)\b/g, " ")
+    .replace(/[^a-z0-9 .&'-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return cleaned.length >= 3 ? cleaned : "contract renewal invoice";
 }
 
 function parseIntent(request: string): Intent {
@@ -159,6 +179,13 @@ function parseIntent(request: string): Intent {
           ? "renewal"
           : "follow_up";
     return { kind: "email_draft", vendorQuery: vendor ?? "", draftPurpose: purpose };
+  }
+
+  /* -------- slack (search channels, DMs and files) -------- */
+  // Checked before the email patterns because Slack requests often say
+  // "messages" too, and this is the only path that reads Slack.
+  if (/\bslack\b/.test(lower)) {
+    return { kind: "slack", vendorQuery: slackQuery(request) };
   }
 
   /* -------- emails (find / read / search / summarize correspondence) -------- */
@@ -223,11 +250,20 @@ async function runTool(
     activity: AgentTaskCreateInput["activity"];
     analyses: AgentTaskCreateInput["analyses"];
     gmailConnected: boolean;
+    /** Present when the caller is authenticated - unlocks live sources. */
+    userId?: string;
   }
 ): Promise<string> {
   await emit(ev(taskId, "tool.started", { stepId, tool: name, label: toolLabel(name), detail: toolDetail(name, args) }));
   await sleep(PACE);
-  const body = executeTool(
+  // Live sources first: search_slack / read_gmail hit the real providers
+  // with the user's stored token. executeLiveTool returns null for tools it
+  // does not own (and for search_gmail when no Gmail is connected), so the
+  // synchronous workspace-snapshot executor still answers everything else.
+  const live = data.userId
+    ? await executeLiveTool({ id: `live-${stepId}`, name, arguments: args }, { userId: data.userId })
+    : null;
+  const body = live ?? executeTool(
     { name, arguments: args },
     {
       contracts: data.contracts,
@@ -260,6 +296,8 @@ function toolLabel(name: string): string {
     case "get_vendor_risk": return "Scoring vendor risk";
     case "get_savings_opportunities": return "Finding savings";
     case "search_gmail": return "Searching Gmail";
+    case "search_slack": return "Searching Slack";
+    case "read_gmail": return "Reading email";
     case "search_email_threads": return "Reading stored correspondence";
     case "get_portfolio_summary": return "Reading portfolio";
     case "draft_email": return "Drafting email";
@@ -280,6 +318,8 @@ function toolDetail(name: string, args: Record<string, unknown>): string {
     case "get_cancellation_deadlines": return `Look ahead ${String(args.days ?? 90)} days`;
     case "get_vendor_risk": return args.vendor_name ? `Vendor: ${String(args.vendor_name)}` : "Min score 60";
     case "search_gmail": return args.vendor_name ? `Vendor: ${String(args.vendor_name)}` : "All indexed correspondence";
+    case "search_slack": return `Query: ${String(args.query ?? "")}`;
+    case "read_gmail": return `Query: ${String(args.query ?? "")}`;
     case "search_email_threads": return args.vendor_name ? `Vendor: ${String(args.vendor_name)}` : "All stored threads";
     case "verify_result": return "Cross-checking against the register";
     default: return "";
@@ -297,6 +337,8 @@ function toolOutcome(name: string, result: Record<string, unknown>): string {
     return n > 0 ? `${n} clause finding(s) read` : String(result.note ?? "No clause analysis yet");
   }
   if (name === "search_gmail") return String(result.note ?? "Gmail searched");
+  if (name === "search_slack") return String(result.note ?? "Slack searched");
+  if (name === "read_gmail") return String(result.note ?? "Read email");
   if (name === "search_email_threads") return `${String(result.count ?? 0)} threads found`;
   if (name === "get_upcoming_renewals") return `${String(result.count ?? 0)} renewals within window`;
   if (name === "get_cancellation_deadlines") return `${String(result.count ?? 0)} deadlines found`;
@@ -391,6 +433,12 @@ function buildPlan(intent: Intent): AgentTaskStep[] {
         makeStep("execute", "Delivering reply", "Routes the reply to the connected inbox"),
         makeStep("verify", "Verifying result", "Cross-checking the prepared reply against the register"),
         makeStep("record", "Updating the activity trail", "Recording the prepared request"),
+      ];
+    case "slack":
+      return [
+        ...base,
+        makeStep("retrieve", "Searching Slack", "Reading the channels, DMs and files the user can access", v),
+        makeStep("record", "Compiling result", "Summarizing what was found in Slack"),
       ];
     case "emails":
       return [
@@ -612,6 +660,7 @@ export async function executeTaskPlan(
     activity: input.activity,
     analyses: input.analyses ?? [],
     gmailConnected: input.gmailConnected === true,
+    userId: input.userId,
   };
 
   const task: AgentTask = taskRef ?? {
@@ -941,6 +990,15 @@ export async function executeTaskPlan(
             task.result = result;
             continue;
           }
+          case "slack": {
+            const raw = await runTool(taskId, emit, step.id, "search_slack", { query: intent.vendorQuery ?? "", type: "both" }, data);
+            const res = summarizeSlack(raw);
+            await emit(ev(taskId, "step.completed", { stepId: step.id, detail: res }));
+            setStep(step.id, { status: "completed", result: res });
+            // The Slack search IS the answer, so it becomes the task result.
+            task.result = res;
+            continue;
+          }
           case "gmail": {
             const raw = await runTool(taskId, emit, step.id, "search_gmail", intent.vendorQuery ? { vendor_name: intent.vendorQuery } : {}, data);
             const res = summarizeGmail(raw);
@@ -1101,6 +1159,46 @@ function titleFor(prompt: string): string {
   return capped.length <= 52 ? capped : `${capped.slice(0, 52).trim()}…`;
 }
 
+/**
+ * Render a real Slack search payload as a readable, honest answer.
+ * The connected/not-connected distinction is preserved verbatim - a
+ * missing Slack connection must never read as "nothing found".
+ */
+function summarizeSlack(raw: string): string {
+  let d: Record<string, unknown>;
+  try {
+    d = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return "Slack returned a result that could not be read.";
+  }
+  const query = String(d.query ?? "");
+  if (d.connected === false) {
+    return `**Slack is not connected for this account** — ${String(d.note ?? "connect Slack, then ask again. Nothing was searched.")}`;
+  }
+  if (d.error) return `Slack search failed: ${String(d.error)}`;
+  const messages = Array.isArray(d.messages) ? (d.messages as Array<Record<string, unknown>>) : [];
+  const files = Array.isArray(d.files) ? (d.files as Array<Record<string, unknown>>) : [];
+  if (messages.length === 0 && files.length === 0) {
+    return `No Slack messages or files matched \`${query}\`. Nothing was found — this is an empty result, not an error.`;
+  }
+  const lines: string[] = [
+    `**Slack** · searched for \`${query}\` (FACT)${d.workspace ? ` · workspace ${String(d.workspace)}` : ""}`,
+    "",
+  ];
+  for (const m of messages.slice(0, 8)) {
+    const text = String(m.text ?? "").replace(/\s+/g, " ").slice(0, 180);
+    lines.push(`- **${String(m.channel ?? "channel")}** · ${String(m.from ?? "unknown sender")} — ${text}`);
+  }
+  for (const f of files.slice(0, 8)) {
+    const kind = String(f.filetype ?? "file");
+    lines.push(
+      `- File: **${String(f.name ?? "untitled")}** (${kind})${f.importable === false ? ` — not importable${f.import_hint ? `: ${String(f.import_hint)}` : ""}` : ""}`
+    );
+  }
+  lines.push("", "Every item above comes from Slack; open the permalink to verify it.");
+  return lines.join("\n");
+}
+
 /** Map a step title to its handler op. */
 function opFor(title: string): string {
   switch (title) {
@@ -1128,6 +1226,7 @@ function opFor(title: string): string {
     case "Finding vendor": return "find_vendor";
     case "Reading vendor record": return "vendor_record";
     case "Searching Gmail": return "gmail";
+    case "Searching Slack": return "slack";
     case "Reading correspondence": return "threads";
     case "Summarizing correspondence": return "summarize_threads";
     case "Comparing vendors": return "compare";

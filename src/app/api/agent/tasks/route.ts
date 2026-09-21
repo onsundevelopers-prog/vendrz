@@ -97,8 +97,12 @@ export async function POST(req: NextRequest) {
 
       void (async () => {
         try {
+          // `userId` comes from the session, never from the request body -
+          // spreading after it guarantees a client cannot spoof it. The
+          // orchestrator needs it to read the caller's own token stores for
+          // live steps (Slack search, live Gmail reads).
           const task = await executeTaskPlan(
-            body,
+            { ...body, userId },
             {
               emit: async (e: AgentEvent) => {
                 emitFrame(taskId, sseFrame(e.type, e));

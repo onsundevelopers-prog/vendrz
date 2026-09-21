@@ -213,6 +213,13 @@ export interface AgentTaskCreateInput {
   analyses?: AgentContractAnalysis[];
   /** Real Gmail connection state (client-side, honest). */
   gmailConnected?: boolean;
+  /**
+   * Server-injected Clerk user id. /api/agent/tasks sets this from the
+   * authenticated session and overwrites anything the client sent, so the
+   * orchestrator can read the user's own OAuth token stores (Slack, Gmail)
+   * when a step needs a live source.
+   */
+  userId?: string;
 }
 
 export interface AgentTask {
