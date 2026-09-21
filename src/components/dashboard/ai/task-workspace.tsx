@@ -43,28 +43,77 @@ function statusLabel(s: AgentTask["status"]): string {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Execution log (collapsible developer view).                        */
+/*  Execution log - a quiet activity timeline, in product language.    */
+/*                                                                     */
+/*  This renders what the system actually did, phrased the way an       */
+/*  operator would describe it ("Gmail · Searching invoices") rather    */
+/*  than as raw event types ("tool.completed · search_gmail"). The      */
+/*  integration is named because it tells you where the evidence came  */
+/*  from, which is the point of the log.                               */
 /* ------------------------------------------------------------------ */
 
-function eventLabel(type: AgentEvent["type"]): string {
-  const m: Record<string, string> = {
-    "task.created": "Task created",
-    "task.started": "Task started",
-    "plan.created": "Plan created",
-    "step.started": "Step started",
-    "step.completed": "Step completed",
-    "step.failed": "Step failed",
-    "approval.required": "Approval required",
-    "approval.granted": "Approval granted",
-    "approval.denied": "Approval denied",
-    "tool.started": "Tool started",
-    "tool.completed": "Tool completed",
-    "tool.failed": "Tool failed",
-    "task.completed": "Task completed",
-    "task.failed": "Task failed",
-    "task.cancelled": "Task cancelled",
-  };
-  return m[type] ?? type;
+interface ToolVoice {
+  /** Which system was touched - shown as the source of the action. */
+  source: string;
+  /** Present continuous, while the call is in flight. */
+  active: string;
+  /** Simple past, once it returned. */
+  done: string;
+}
+
+const TOOL_VOICE: Record<string, ToolVoice> = {
+  search_slack: { source: "Slack", active: "Searching Slack", done: "Searched Slack" },
+  read_gmail: { source: "Gmail", active: "Reading email", done: "Read email" },
+  search_gmail: { source: "Gmail", active: "Searching email", done: "Searched email" },
+  search_email_threads: { source: "Gmail", active: "Searching correspondence", done: "Searched correspondence" },
+  open_document: { source: "n4ma Analysis", active: "Opening source document", done: "Opened source document" },
+  analyze_clauses: { source: "n4ma Analysis", active: "Reading contract clauses", done: "Read contract clauses" },
+  get_contract: { source: "n4ma Analysis", active: "Reading contract terms", done: "Read contract terms" },
+  search_contracts: { source: "Contracts", active: "Searching contracts", done: "Searched contracts" },
+  find_vendor: { source: "Contracts", active: "Matching vendor", done: "Matched vendor" },
+  get_upcoming_renewals: { source: "Renewals", active: "Checking renewals", done: "Checked renewals" },
+  get_cancellation_deadlines: { source: "Renewals", active: "Checking cancellation deadlines", done: "Checked cancellation deadlines" },
+  get_vendor_risk: { source: "n4ma Analysis", active: "Scoring vendor risk", done: "Scored vendor risk" },
+  get_savings_opportunities: { source: "n4ma Analysis", active: "Finding savings", done: "Found savings" },
+  get_portfolio_summary: { source: "n4ma Analysis", active: "Summarising portfolio", done: "Summarised portfolio" },
+  get_activity: { source: "Workspace", active: "Reading activity", done: "Read activity" },
+  verify_result: { source: "Verification", active: "Checking the result", done: "Checked the result" },
+  draft_email: { source: "Draft", active: "Drafting email", done: "Drafted email" },
+};
+
+/** Human phrasing for one event, or null when it isn't worth showing. */
+function describeEvent(e: AgentEvent): { source: string | null; text: string; pending: boolean } | null {
+  switch (e.type) {
+    case "tool.started": {
+      const v = e.tool ? TOOL_VOICE[e.tool] : undefined;
+      return { source: v?.source ?? "n4ma", text: v?.active ?? e.tool ?? "Working", pending: true };
+    }
+    case "tool.completed": {
+      const v = e.tool ? TOOL_VOICE[e.tool] : undefined;
+      return { source: v?.source ?? "n4ma", text: v?.done ?? e.tool ?? "Done", pending: false };
+    }
+    case "tool.failed": {
+      const v = e.tool ? TOOL_VOICE[e.tool] : undefined;
+      return { source: v?.source ?? "n4ma", text: `${v?.done ?? e.tool ?? "Action"} - failed`, pending: false };
+    }
+    case "approval.required":
+      return { source: null, text: "Waiting for your approval", pending: true };
+    case "approval.granted":
+      return { source: null, text: "You approved this", pending: false };
+    case "approval.denied":
+      return { source: null, text: "You declined this", pending: false };
+    case "step.failed":
+      return { source: null, text: e.detail ? `Step failed - ${e.detail}` : "Step failed", pending: false };
+    case "task.failed":
+      return { source: null, text: e.detail ? `Stopped - ${e.detail}` : "Stopped", pending: false };
+    case "task.cancelled":
+      return { source: null, text: "Stopped at your request", pending: false };
+    case "task.completed":
+      return { source: null, text: "Finished", pending: false };
+    default:
+      // Plan/step bookkeeping stays out of the operator-facing log.
+      return null;
+  }
 }
 
 function AgentEventLogLight({
@@ -76,44 +125,58 @@ function AgentEventLogLight({
   open: boolean;
   onToggle?: () => void;
 }) {
-  const events = [...task.events].reverse();
+  const rows = useMemo(
+    () =>
+      task.events.flatMap((e) => {
+        const d = describeEvent(e);
+        return d ? [{ e, d }] : [];
+      }),
+    [task.events]
+  );
   const running = task.status === "running" || task.status === "awaiting_approval";
+  const last = rows[rows.length - 1]?.d;
+
   return (
     <div className="border-t border-line/60">
       <button
         onClick={onToggle}
-        className="flex w-full items-center gap-2 px-4 py-1.5 text-left"
+        className="group flex w-full items-center gap-2.5 px-4 py-2 text-left transition-colors hover:bg-white/[0.03]"
         disabled={!onToggle}
+        aria-expanded={open}
       >
-        <span className="text-[10px] font-medium tracking-[-0.01em] text-zinc-500">
-          Activity log · {events.length}
+        <span className="shrink-0 text-[11px] tracking-[-0.01em] text-zinc-500">
+          Activity
         </span>
-        {running && (
-          <span className="flex items-center gap-1 text-[10px] text-zinc-500">
-            <span className="size-1 animate-pulse rounded-full bg-zinc-400" /> live
+        {/* Collapsed, the latest action is the useful summary - not a count. */}
+        {last && (
+          <span className="flex min-w-0 items-center gap-1.5 truncate text-[11px] text-zinc-500">
+            {last.pending && running && (
+              <span className="size-1 shrink-0 animate-pulse rounded-full bg-zinc-400" />
+            )}
+            {last.source && <span className="shrink-0 text-zinc-600">{last.source}</span>}
+            <span className="truncate text-zinc-400">{last.text}</span>
           </span>
         )}
-        {onToggle && <span className="ml-auto text-[10px] text-zinc-600">{open ? "Hide" : "Show"}</span>}
+        {onToggle && (
+          <span className="ml-auto shrink-0 text-[10.5px] text-zinc-600 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100">
+            {open ? "Hide" : `${rows.length} steps`}
+          </span>
+        )}
       </button>
-      {(open || running) && (
-        <div className="max-h-56 overflow-y-auto pb-2">
-          {events.length === 0 ? (
-            <p className="px-4 py-2 text-[11px] text-zinc-600">No events yet.</p>
-          ) : (
-            events.map((e, i) => (
-              <div key={i} className="flex items-start gap-2.5 px-4 py-1">
-                <span className="mt-0.5 w-12 shrink-0 text-right text-[9.5px] tabular-nums text-zinc-600">
-                  {formatTime(e.at)}
-                </span>
-                <span className="min-w-0 flex-1 text-[11px] leading-relaxed text-zinc-400">
-                  {eventLabel(e.type)}
-                  {e.tool ? <span className="text-zinc-500"> · {e.tool}</span> : null}
-                  {e.detail ? <span className="text-zinc-500"> — {e.detail}</span> : null}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
+      {(open || running) && rows.length > 0 && (
+        <ol className="max-h-56 overflow-y-auto pb-2.5">
+          {rows.map(({ e, d }, i) => (
+            <li key={i} className="flex items-baseline gap-2.5 px-4 py-[3px]">
+              <span className="w-[38px] shrink-0 text-right text-[9.5px] tabular-nums text-zinc-600">
+                {formatTime(e.at)}
+              </span>
+              <span className="min-w-0 flex-1 text-[11.5px] leading-relaxed">
+                {d.source && <span className="mr-1.5 text-zinc-600">{d.source}</span>}
+                <span className={d.pending ? "text-zinc-400" : "text-zinc-300"}>{d.text}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
       )}
     </div>
   );

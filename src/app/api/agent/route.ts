@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getAIProvider } from "@/lib/ai";
 import { AGENT_TOOLS, executeTool } from "@/lib/ai/agentTools";
+import {
+  LIVE_SOURCE_TOOLS,
+  executeLiveTool,
+  getSourceAvailability,
+} from "@/lib/ai/liveTools";
 import { advisorReply, type AdvisorDraft } from "@/lib/agentQuery";
 import type { ActivityRecord, ContractRecord, EmailThread } from "@/lib/types";
 import { money } from "@/lib/format";
@@ -42,12 +47,14 @@ RULES:
 2. Use search_contracts to find vendors. Use get_contract for details.
 3. Use get_upcoming_renewals and get_cancellation_deadlines for time-sensitive items.
 4. Use get_vendor_risk for risk analysis. Use get_savings_opportunities for savings.
-5. Use search_email_threads to read vendor correspondence.
-6. Use draft_email to prepare communications (NEVER send them - only draft).
-7. Use get_portfolio_summary for high-level questions.
-8. If you cannot find data, say so honestly.
-9. Mark claims as FACT (directly from data), ESTIMATE (calculated), or RECOMMENDATION (suggested action).
-10. Be concise and decisive. Every answer should help the user act.
+5. Use search_email_threads for correspondence already stored in the workspace.
+6. Use search_slack to search the user's connected Slack and read_gmail to read their connected Gmail. These reach live data the workspace has not imported, so prefer them when the answer may live in a Slack channel or a mailbox.
+7. search_slack and read_gmail report honestly when a source is not connected. NEVER claim to have read Slack or email you could not actually read, and never present stored threads as if they were live Slack or Gmail content.
+8. Use draft_email to prepare communications (NEVER send them - only draft).
+9. Use get_portfolio_summary for high-level questions.
+10. If you cannot find data, say so honestly.
+11. Mark claims as FACT (directly from data), ESTIMATE (calculated), or RECOMMENDATION (suggested action).
+12. Be concise and decisive. Every answer should help the user act.
 
 You can call multiple tools in sequence to build a complete answer.
 For example: search_contracts("Microsoft") → get_contract(vendor_name="Microsoft") → search_email_threads(vendor_name="Microsoft") → draft_email(vendor_name="Microsoft", purpose="negotiation")`;
@@ -93,10 +100,21 @@ export async function POST(req: NextRequest) {
     return d >= 0 && d <= 90;
   }).length;
 
+  // Resolve which external sources this account can actually reach, in
+  // the only place that knows for sure: the server-side token stores. The
+  // model is told the truth so it never offers a Slack search it can't run.
+  const sources = await getSourceAvailability(userId);
+
   const contextHint = [
     `PORTFOLIO: ${contracts.length} contracts, ${money(total)}/yr total value, ${atRisk} at risk, ${renewing90} renewing within 90 days.`,
     threads.length > 0 ? `${threads.length} email threads stored.` : "No vendor correspondence stored.",
     activity.length > 0 ? `${activity.length} activity events.` : "",
+    sources.slack
+      ? "Slack: CONNECTED - search_slack can read it."
+      : "Slack: NOT CONNECTED - if asked about Slack, say it is not connected rather than guessing.",
+    sources.gmail
+      ? "Gmail: CONNECTED - read_gmail can read live mail."
+      : "Gmail: NOT CONNECTED - only stored threads are searchable.",
   ].filter(Boolean).join(" ");
 
   try {
@@ -107,11 +125,15 @@ export async function POST(req: NextRequest) {
       {
         system: AGENT_SYSTEM,
         prompt: `${contextHint}\n\nUser: ${question}\n\nUse the available tools to find and return the answer.`,
-        tools: AGENT_TOOLS,
+        tools: [...AGENT_TOOLS, ...LIVE_SOURCE_TOOLS],
         maxRounds: 5,
       },
       async (toolCall) => {
-        // Execute the tool against real data
+        // Live sources first (Slack / Gmail, via the user's stored token),
+        // then the workspace snapshot for everything else. executeLiveTool
+        // returns null for tools it does not own, so the two never overlap.
+        const live = await executeLiveTool(toolCall, { userId });
+        if (live !== null) return live;
         return executeTool(toolCall, toolData);
       }
     );
